@@ -1,0 +1,66 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+
+[x-cloak] {
+    display: none !important;
+}
+
+/* CSS-only star rating: DOM order 5→1 + row-reverse renders 1→5. */
+.rating {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+}
+
+.rating label {
+    color: #cbd5e1;
+    cursor: pointer;
+}
+
+.rating label:has(:checked),
+.rating label:has(:checked) ~ label,
+.rating label:hover,
+.rating label:hover ~ label {
+    color: #f59e0b;
+}
+
+/* The radios are visually hidden, so surface keyboard focus on the star. */
+.rating label:has(:focus-visible) {
+    outline: 2px solid var(--color-brand-600);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+/* Respect users who ask the OS to reduce motion (WCAG 2.3.3). */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme {
+    /* System fonts only — zero external requests. */
+    --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+    /* Brand teal (see docs/BRAND.md). */
+    --color-brand-50: #f0fdfa;
+    --color-brand-100: #ccfbf1;
+    --color-brand-200: #99f6e4;
+    --color-brand-300: #5eead4;
+    --color-brand-400: #2dd4bf;
+    --color-brand-500: #14b8a6;
+    --color-brand-600: #0d9488;
+    --color-brand-700: #0f766e;
+    --color-brand-800: #115e59;
+    --color-brand-900: #134e4a;
+
+    --color-ink: #0f172a;
+}
