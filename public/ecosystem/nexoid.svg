@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="Nexo Events">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="Nexo ID">
   <defs>
     <linearGradient id="nexoTile" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#8b5cf6"/>
@@ -7,7 +7,7 @@
   </defs>
   <rect x="2" y="2" width="44" height="44" rx="12" fill="url(#nexoTile)"/>
   <g fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-    <rect x="12" y="18" width="24" height="14" rx="3"/>
-    <line x1="27" y1="18" x2="27" y2="32" stroke-dasharray="2.5 3.5"/>
+    <circle cx="24" cy="19" r="5"/>
+    <path d="M15 34a9 9 0 0 1 18 0"/>
   </g>
 </svg>
