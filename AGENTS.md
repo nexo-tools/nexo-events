@@ -5,11 +5,11 @@
 
 ## What this project is
 
-Free event registration and QR ticketing of the Nexo ecosystem: anyone creates an event, people register with just an email, receive a QR ticket, and the organizer validates entry at the door by scanning with their phone. Open source, multi-instance, self-hostable, cookieless — like its siblings (Nexo Links, Nexo Agenda, Nexo Short, Nexo ID). **Current state: Phase 0 (planning) — no product code yet.** Start at [docs/PLAN.md](docs/PLAN.md).
+Free event registration and QR ticketing of the Nexo ecosystem: anyone creates an event, people register with just an email, receive a QR ticket, and the organizer validates entry at the door by scanning with their phone. Open source, multi-instance, self-hostable, cookieless — like its siblings (Nexo Links, Nexo Agenda, Nexo Short, Nexo ID). **Current state: MVP built + branded, pre-launch, not deployed** — working through the launch phases. Start at [docs/PLAN.md](docs/PLAN.md), which carries the executed history, the verified gap register and the phase in progress.
 
 ## Stack
 
-Decided in ADR-002 (pending Gate 0 acceptance): Laravel (latest) + MySQL on Hostinger shared hosting, alongside the sibling tools. Paid tickets (v2) will target AR/LatAm (Mercado Pago candidate). QR scanning is a web page (camera + JS decode), no native app.
+Decided in ADR-002 (Accepted 2026-07-26): Laravel 13 + MySQL on Hostinger shared hosting, alongside the sibling tools. Paid tickets (v2) will target AR/LatAm (Mercado Pago candidate). QR scanning is a web page (camera + JS decode), no native app.
 
 ## How to run it
 
@@ -35,7 +35,7 @@ Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./ven
 
 ## Production
 
-Not deployed. Planned: `nexoevents.alvarocdev.com` (proposed, Gate 0 decides) via the `deploy-laravel-hostinger` skill, in Phase 4. Operational rule already decided: no deploys/maintenance while any event is in its door window — downtime during a live event strands people at the door.
+Not deployed yet. Target `nexoevents.alvarocdev.com` (subdomain already created) via the `deploy-laravel-hostinger` skill, in PLAN Phase 8. Operational rule already decided: no deploys/maintenance while any event is in its door window — downtime during a live event strands people at the door, so the deploy script itself refuses to run then (task 8.1).
 
 ## Project conventions
 
@@ -46,7 +46,8 @@ Not deployed. Planned: `nexoevents.alvarocdev.com` (proposed, Gate 0 decides) vi
 
 ## Key decisions
 
-- **2026-07-19** — Phase 0 executed: SCOPE, ADRs 001–007 (Proposed), PLAN, formalization. **Gate 0 sign-off pending.** Decisions taken by Alvaro during planning: stack = Laravel + Hostinger; attendees = email-only in v1 (no attendee accounts); open source multi-instance confirmed.
+- **2026-07-26** — **Plan reconciled with reality and ADRs 001–007 Accepted** (sign-off by Alvaro). Owner flags resolved: email provider account and the `nexoevents.alvarocdev.com` subdomain already exist; launch happens when development ends (no calendar date); SSO and beacon activation are launch-independent and validated in task 8.6 once the in-flight nexoid/nexotools work is stable; **event image upload deferred post-v1** (SCOPE amended below). The PLAN's gap register — built from a full code audit, not from the docs — is the authoritative list of what is actually missing.
+- **2026-07-19** — Phase 0 executed: SCOPE, ADRs 001–007, PLAN, formalization. Decisions taken by Alvaro during planning: stack = Laravel + Hostinger; attendees = email-only in v1 (no attendee accounts); open source multi-instance confirmed.
 - **2026-07-19** — Coordination with Nexo ID settled by their accepted ADR-004: Nexo Events ships standalone organizer auth; Nexo ID is an optional env-configured SSO provider, integrated post-MVP via their Phase 3 client pattern. Cross-note left in nexoid's AGENTS.md. No launch coupling in either direction.
 - **2026-07-19** — `nexoevents.md` (root) is the pre-planning evaluation brief: treat as **input, not decisions**, except its §2 (product decisions closed by Alvaro). ADR-004 supersedes its §8 data model. It is Spanish and pre-decision — candidate to drop/move before the repo goes public (same call as nexoid's `nexo-id.md`). `planning-prompt.md` is gitignored (local paths).
 

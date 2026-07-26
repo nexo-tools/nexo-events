@@ -13,7 +13,7 @@ Source input: evaluation brief [`nexoevents.md`](../nexoevents.md) (Cowork sessi
 ### In
 
 - **Organizer accounts** — mandatory to create events (anti-abuse, closed decision). Standalone local auth; email verified before an event can be published (ADR-003, ADR-007).
-- **Event management**: create/edit with title, description, date/time, venue, optional capacity, image; status lifecycle including cancel and admin kill-switch; manual registration close.
+- **Event management**: create/edit with title, description, date/time, venue, optional capacity; status lifecycle including cancel and admin kill-switch; manual registration close. *(Event image deferred post-v1 — see Amendments.)*
 - **Public event page** with shareable URL (slug), SEO base and i18n (es/en/pt) from the first commit, per ecosystem standards.
 - **Attendee registration with email only** — no attendee account (conversion first; closed decision 2026-07-19). One ticket per email per event.
 - **Atomic capacity**: two simultaneous registrations for the last spot resolve to exactly one ticket (sold-out). Mandatory race-condition tests (AC-traced).
@@ -54,3 +54,10 @@ Source input: evaluation brief [`nexoevents.md`](../nexoevents.md) (Cowork sessi
 - Attendee accounts + "my tickets" — via Nexo ID once its client pattern exists (nexoid ADR-004 / Phase 3).
 - Ticket types, quotas per type, discount codes; waitlist; ticket transfer; email reminders — brief §7.
 - Nexo Short auto short-link per event; Nexo Links featured event; Nexo Agenda bridge — post-launch integrations (ADR-006).
+- Event image upload — deferred at the 2026-07-26 sign-off (see Amendments).
+
+## Amendments
+
+<!-- Dated changes to the scope above, with the why. Never edit history silently. -->
+
+- **2026-07-26 — Event image upload deferred post-v1.** The MVP "in" list promised an event image; it was never built (no column, no upload path). Rather than add it now, it moves to the backlog. Why: it is not part of the core loop (create → register → ticket → door), and an upload field on a public multi-organizer tool brings its own surface — storage limits, image moderation, and files that a DB-only backup would not cover. Keeping v1 DB-only keeps the restore drill (PLAN 8.4) honest. Public event pages ship with the shared OG image until this lands.
