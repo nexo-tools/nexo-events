@@ -13,7 +13,25 @@ Decided in ADR-002 (pending Gate 0 acceptance): Laravel (latest) + MySQL on Host
 
 ## How to run it
 
-Nothing to run yet — Phase 1 scaffolds the app (Sail-based, no local PHP, per `laravel-bootstrap-docker-only`).
+Docker only, no local PHP. Stateful services are **not** in this repo's `compose.yaml`: MySQL, Mailpit and phpMyAdmin run once for the whole ecosystem in the shared dev environment (`~/dev-environment`, compose project `nexo`). This app is app-runtime-only and reaches them over `host.docker.internal`.
+
+```bash
+cd ~/dev-environment && docker compose up -d mysql mailpit   # once per session, shared
+cd ~/nexoevents && docker compose up -d                      # this app
+docker compose exec laravel.test php artisan migrate
+```
+
+| What | Where |
+|---|---|
+| App | http://localhost:8103 (`APP_PORT`) |
+| Vite dev server | port 5178 (`VITE_PORT`) |
+| MySQL | `host.docker.internal:3307`, db `nexo_events`, user/pass `dev`/`dev` |
+| Mailpit | SMTP `host.docker.internal:1025` · UI http://localhost:8025 |
+| phpMyAdmin | http://localhost:8306 |
+
+Ports are fixed per tool (map in `alvaro/templates/dev-environment/README.md`) — 8103/5178 is this tool's slot; 3306 and 8081 belong to the unrelated `work` stack, never use them. `.env` must also pin `WWWUSER`/`WWWGROUP` (501/20 on Alvaro's macOS) so files written in the container stay writable outside.
+
+Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./vendor/bin/phpstan analyse`, `./vendor/bin/pest`. Tests never touch the shared MySQL — `phpunit.xml` pins SQLite `:memory:`.
 
 ## Production
 
@@ -34,6 +52,17 @@ Not deployed. Planned: `nexoevents.alvarocdev.com` (proposed, Gate 0 decides) vi
 
 ## Accumulated context
 
+- **2026-07-26** — **Local dev migrated to the shared `nexo` Docker stack** (last of the 6 tools to
+  migrate). Per-project MySQL/Mailpit are gone: `compose.yaml` is now app-runtime-only and the app
+  reaches the shared services via `host.docker.internal`. The `nexo_events` database was dumped from
+  the old `nexoevents_sail-mysql` volume and imported into `nexo-mysql-1` (row counts verified table
+  by table; the DB held only the 7 migration rows — no dev data existed). Backup kept at
+  `~/dev-environment/backups/2026-07-26-migracion-nexo/nexo_events.sql`; old containers and the
+  volume removed only after `migrate:status`, HTTP 200 and the full suite verified green.
+  **Gotcha for any future migration of this kind:** the old per-project MySQL could not simply be
+  started to dump it — its compose published `FORWARD_DB_PORT=3307`, the port the shared stack now
+  owns, so `docker start` failed with "port is already allocated". The fix is to mount the old
+  volume in a throwaway `mysql:8.4` container that publishes **no** ports and dump from there.
 - **2026-07-23** — **MVP core built and green** (ecosystem run, Gate 0 authorized by Alvaro to
   proceed). Scaffolded by cloning the sibling **nexo-agenda** infrastructure (Laravel 13 +
   Sail on the shared dev-environment, Pest/Pint/Larastan L6, CI, strict CSP + `.htaccess`
