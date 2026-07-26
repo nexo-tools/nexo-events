@@ -35,7 +35,7 @@ Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./ven
 
 ## Production
 
-Not deployed yet. Target `nexoevents.alvarocdev.com` (subdomain already created) via the `deploy-laravel-hostinger` skill, in PLAN Phase 8. Operational rule already decided: no deploys/maintenance while any event is in its door window — downtime during a live event strands people at the door, so the deploy script itself refuses to run then (task 8.1).
+**LIVE at https://nexoevents.alvarocdev.com since 2026-07-26** (PLAN 8.2/8.3). Deployed via `gh workflow run deploy.yml`; the app lives in `~/domains/alvarocdev.com/nexo-events` (hyphenated slug, like the siblings) with `public_html/nexoevents` symlinked to its `public/`. Smoke passed: every public surface and brand asset 200, the strict CSP survives LiteSpeed, `camera=(self)` present, ticket pages `noindex`, sitemap listing published events, and a real registration delivered its ticket email through SMTP with no failed jobs. Operational rule already decided: no deploys/maintenance while any event is in its door window — downtime during a live event strands people at the door, so the deploy script itself refuses to run then (task 8.1).
 
 ## Project conventions
 
@@ -53,6 +53,19 @@ Not deployed yet. Target `nexoevents.alvarocdev.com` (subdomain already created)
 
 ## Accumulated context
 
+- **2026-07-26** — **First production deploy done.** Three things blocked it, all worth
+  remembering: (1) the org's deploy secrets are scoped to **public repositories** and this repo
+  was private, so they expanded to empty strings and `ssh` failed with `Bad port ''` — and the
+  server could not clone a private repo either; making the repo public fixed both at once.
+  (2) `DEPLOY_PATH` must use the **hyphenated** slug `nexo-events`, matching the siblings.
+  (3) `config/app.php` had `'timezone' => 'UTC'` **hardcoded**, so `APP_TIMEZONE` did nothing —
+  fixed, because in an events app that silently shifts every `starts_at` vs `now()` comparison,
+  including the door guard's window.
+  Also fixed on the way: `deploy.sh` could leave the site in maintenance mode forever (`set -e`
+  after `artisan down`, exiting before `artisan up`) — now trapped.
+  **Deviation on record:** the instance sends through **Hostinger SMTP**, which ADR-005 §3
+  forbids. Acceptable to bring the instance up; blocking for launch (Gate 9), because a ticket
+  in a spam folder is a person at a door without a ticket. The whole ecosystem shares this.
 - **2026-07-26** — **Production-mode dry run (pre-deploy).** With `config:cache` +
   `route:cache` + `view:cache` applied, every public surface still answers 200. One trap found
   and documented in `DEPLOYMENT.md`: **`routes/nexo-sso.php` returns early when SSO is off, so
