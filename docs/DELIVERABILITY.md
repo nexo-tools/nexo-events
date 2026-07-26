@@ -27,6 +27,26 @@ Without that cron **no ticket email ever leaves**, while the app looks perfectly
 
 Locally, Mailpit catches everything: `MAIL_HOST=host.docker.internal`, `MAIL_PORT=1025`, inbox at <http://localhost:8025>.
 
+## Current state of the hosted instance — a known, temporary deviation
+
+**2026-07-26.** The production instance is configured against **Hostinger's own SMTP**
+(`smtp.hostinger.com:465`, `MAIL_SCHEME=smtps`) using a mailbox on the domain, **not** a
+transactional relay. This contradicts **ADR-005 §3** ("Never the Hostinger SMTP for ticket
+mail") and is recorded here rather than left implicit.
+
+Why it is acceptable *for now*: it lets the instance come up and the whole flow be exercised
+end to end — register, receive a ticket, scan it at the door — without waiting on a relay
+account and DNS propagation.
+
+Why it **cannot be what is live at launch**: the entire reason ADR-005 exists is that
+shared-host SMTP lands in spam, and in this product the ticket *is* the email. A ticket in
+someone's spam folder is a person at a door without a ticket. DNS today confirms the gap —
+`alvarocdev.com` publishes only `include:_spf.mail.hostinger.com`, with no DKIM for any
+relay.
+
+**This is a launch blocker, tracked in PLAN Gate 9.** Migrating is env-only (§ How the app
+sends) plus the DNS records below; no code changes.
+
 ## Why not the hosting provider's SMTP
 
 Shared-hosting SMTP routinely lands in spam — the problem ADR-005 exists to avoid. Use a transactional relay whose domain reputation is managed (Brevo, Resend, Postmark, SES…). Free tiers are enough for v1 volume; the binding constraint is the **daily cap**, because registrations spike on announcement day rather than spreading evenly.
