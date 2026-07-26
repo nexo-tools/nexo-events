@@ -97,5 +97,13 @@
     "¿Ya te registraste y no encontrás tu entrada?": "Already registered and can't find your ticket?",
     "Reenviarme mi entrada": "Resend my ticket",
     "Si ese email tiene una entrada para este evento, te la reenviamos. Revisá tu correo.": "If that email has a ticket for this event, we have resent it. Check your inbox.",
-    "Te enviamos una entrada nueva y la anterior deja de funcionar.": "We send you a new ticket and the previous one stops working."
+    "Te enviamos una entrada nueva y la anterior deja de funcionar.": "We send you a new ticket and the previous one stops working.",
+    "Reenviar el enlace": "Resend the link",
+    "Te enviamos un enlace a :email. Abrilo para poder publicar tus eventos; mientras tanto podés crear y editar borradores.": "We sent a link to :email. Open it to publish your events; in the meantime you can create and edit drafts.",
+    "Te reenviamos el enlace de verificación.": "We have resent the verification link.",
+    "Tu email quedó verificado. Ya podés publicar eventos.": "Your email is verified. You can publish events now.",
+    "Verificá tu email": "Verify your email",
+    "Verificá tu email para poder publicar eventos.": "Verify your email to publish events.",
+    "Verificá tu email para poder publicar eventos. Te enviamos el enlace al registrarte.": "Verify your email to publish events. We sent you the link when you signed up.",
+    "Volver al panel": "Back to the dashboard"
 }

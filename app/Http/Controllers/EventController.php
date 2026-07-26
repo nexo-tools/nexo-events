@@ -45,6 +45,15 @@ class EventController extends Controller
     {
         $this->owned($request, $event);
 
+        // Publishing is the one action that puts content under this instance's
+        // public domain, so it is the one gated on a verified email — the
+        // cheapest effective brake on drive-by spam events (ADR-007 §1).
+        if (! $request->user()->hasVerifiedEmail()) {
+            return back()->withErrors([
+                'publish' => __('Verificá tu email para poder publicar eventos. Te enviamos el enlace al registrarte.'),
+            ]);
+        }
+
         if (in_array($event->status, [EventStatus::Draft, EventStatus::Closed], true)) {
             $event->update(['status' => EventStatus::Published]);
         }

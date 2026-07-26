@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
@@ -37,6 +38,15 @@ Route::middleware('guest')->group(function () {
 // Organizer area.
 Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+
+    // Email verification. Deliberately NOT applied as `verified` middleware on
+    // the organizer area: it gates publishing only (ADR-007 §1), so drafts stay
+    // reachable while the organizer waits for the mail.
+    Route::get('verify-email', [EmailVerificationController::class, 'notice'])->name('verification.notice');
+    Route::get('verify-email/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+        ->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
+    Route::post('verify-email/send', [EmailVerificationController::class, 'send'])
+        ->middleware('throttle:6,1')->name('verification.send');
 
     Route::prefix('app')->group(function () {
         Route::get('/', DashboardController::class)->name('dashboard');

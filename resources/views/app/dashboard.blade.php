@@ -1,4 +1,15 @@
 <x-guest-layout>
+    @unless (auth()->user()->hasVerifiedEmail())
+        <div class="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100" role="status">
+            {{ __('Verificá tu email para poder publicar eventos.') }}
+            <a href="{{ route('verification.notice') }}" class="font-medium underline">{{ __('Reenviar el enlace') }}</a>
+        </div>
+    @endunless
+
+    @if (session('status'))
+        <p class="mb-4 rounded-lg bg-brand-100 px-4 py-3 text-sm text-brand-900" role="status">{{ session('status') }}</p>
+    @endif
+
     <div class="flex items-center justify-between">
         <h1 class="text-xl font-bold">{{ __('Tus eventos') }}</h1>
         <a href="{{ route('events.create') }}" class="rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-700">{{ __('Nuevo evento') }}</a>

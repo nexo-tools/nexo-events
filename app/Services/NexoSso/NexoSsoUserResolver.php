@@ -40,7 +40,14 @@ class NexoSsoUserResolver
                 throw new NexoSsoLinkRefusedException('Email not verified by the identity provider.');
             }
 
-            $existing->forceFill(['nexo_id_sub' => $sub])->save();
+            // The provider just asserted this email is verified, so a local
+            // account that never confirmed it is confirmed now — otherwise an
+            // SSO organizer would be asked to verify an address Nexo ID already
+            // verified, and the publish gate would never open for them.
+            $existing->forceFill([
+                'nexo_id_sub' => $sub,
+                'email_verified_at' => $existing->email_verified_at ?? now(),
+            ])->save();
 
             return $existing;
         }

@@ -6,6 +6,13 @@
         <p class="mb-4 rounded-lg bg-brand-100 px-4 py-3 text-sm text-brand-900" role="status">{{ session('status') }}</p>
     @endif
 
+    @error('publish')
+        <p class="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100" role="alert">
+            {{ $message }}
+            <a href="{{ route('verification.notice') }}" class="font-medium underline">{{ __('Reenviar el enlace') }}</a>
+        </p>
+    @enderror
+
     <form method="POST" action="{{ route('events.update', $event) }}" class="space-y-4">
         @csrf @method('PUT')
         @include('app.events._fields', ['event' => $event])
