@@ -7,16 +7,20 @@ use App\Http\Requests\ResendTicketRequest;
 use App\Mail\TicketIssued;
 use App\Models\Event;
 use App\Services\EventRegistrar;
+use App\Services\EventViewCounter;
 use App\Services\TicketResender;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
 class PublicEventController extends Controller
 {
-    public function show(Event $event): View
+    public function show(Request $request, Event $event, EventViewCounter $views): View
     {
         abort_unless($event->status->isPublic(), 404);
+
+        $views->record($event, $request);
 
         return view('public.event.show', ['event' => $event]);
     }

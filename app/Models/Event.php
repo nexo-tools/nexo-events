@@ -47,6 +47,16 @@ class Event extends Model
         return $this->hasMany(EventReport::class);
     }
 
+    /**
+     * Unique visitor-days on the public page (cookieless, ADR-007 §6).
+     *
+     * @return HasMany<EventView, $this>
+     */
+    public function views(): HasMany
+    {
+        return $this->hasMany(EventView::class);
+    }
+
     /** @return BelongsTo<User, $this> */
     public function organizer(): BelongsTo
     {
