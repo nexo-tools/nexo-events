@@ -64,7 +64,7 @@ it('AC-VIEWS-5: shows the organizer unique visits alongside ticket counts', func
 
     $this->actingAs($organizer)->get(route('dashboard'))
         ->assertOk()
-        ->assertSee('1 '.__('visitas'), escape: false);
+        ->assertSee(__(':count visitas', ['count' => 1]), escape: false);
 });
 
 it('AC-VIEWS-1: a killed or draft event records nothing, because its page is gone', function (): void {

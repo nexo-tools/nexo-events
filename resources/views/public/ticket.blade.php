@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-guest-layout :noindex="true">
     <h1 class="mb-1 text-xl font-bold">{{ __('Tu entrada') }}</h1>
     <p class="mb-4 text-sm text-slate-500">{{ $ticket->event->title }} · {{ $ticket->event->starts_at->format('d/m/Y H:i') }}</p>
 

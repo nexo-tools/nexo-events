@@ -10,7 +10,9 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventReportController;
 use App\Http\Controllers\HelpController;
+use App\Http\Controllers\LegalController;
 use App\Http\Controllers\PublicEventController;
+use App\Http\Controllers\SeoController;
 use App\Http\Controllers\TicketController;
 use Illuminate\Support\Facades\Route;
 
@@ -19,6 +21,15 @@ Route::view('/', 'welcome')->name('home');
 // Public help center. Registered before the prefixed public surfaces below; the
 // app uses no bare {slug} catch-all, so 'help' is safe as a top-level path.
 Route::get('/help', HelpController::class)->name('help');
+
+// Legal pages. Required by the Nexo standard wherever a tool handles personal
+// data — this one holds attendee names and emails.
+// Discovery surfaces (routes, not static files: each instance has its own domain).
+Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots');
+Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
+
+Route::get('/privacidad', [LegalController::class, 'privacy'])->name('legal.privacy');
+Route::get('/terminos', [LegalController::class, 'terms'])->name('legal.terms');
 
 Route::middleware('guest')->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])->name('register');

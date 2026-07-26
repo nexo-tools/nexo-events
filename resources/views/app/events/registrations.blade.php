@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-guest-layout :noindex="true">
     <h1 class="mb-1 text-xl font-bold">{{ __('Registrados') }}</h1>
     <p class="mb-4 text-sm text-slate-500">{{ $event->title }} · {{ $tickets->count() }} {{ __('entradas') }}</p>
 

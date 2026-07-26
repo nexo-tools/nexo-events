@@ -124,5 +124,9 @@
     "¿Qué problema tiene este evento?": "What is wrong with this event?",
     "Tu email (opcional)": "Your email (optional)",
     "Enviar reporte": "Send report",
-    "visitas": "visits"
+    "Privacidad": "Privacy",
+    "Términos": "Terms",
+    "Creá eventos gratis, recibí registros por email y validá las entradas con QR en la puerta.": "Create free events, take registrations by email and validate tickets with a QR code at the door.",
+    ":count entradas": ":count tickets",
+    ":count visitas": ":count visits"
 }

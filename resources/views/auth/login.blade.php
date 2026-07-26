@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-guest-layout :noindex="true">
     <h1 class="mb-6 text-xl font-bold">{{ __('Inicia sesión') }}</h1>
 
     @if (session('status'))

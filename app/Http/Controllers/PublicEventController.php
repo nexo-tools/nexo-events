@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\EventStatus;
 use App\Http\Requests\RegisterAttendeeRequest;
 use App\Http\Requests\ResendTicketRequest;
 use App\Mail\TicketIssued;
@@ -12,6 +13,7 @@ use App\Services\TicketResender;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class PublicEventController extends Controller
@@ -22,7 +24,15 @@ class PublicEventController extends Controller
 
         $views->record($event, $request);
 
-        return view('public.event.show', ['event' => $event]);
+        return view('public.event.show', [
+            'event' => $event,
+            // Per-event metadata: without it every event shared on social would
+            // carry the same generic title and description as the home page.
+            'title' => $event->title,
+            'description' => $this->seoDescription($event),
+            'seoType' => 'article',
+            'seoJsonLd' => $this->eventJsonLd($event),
+        ]);
     }
 
     public function register(RegisterAttendeeRequest $request, Event $event, EventRegistrar $registrar): RedirectResponse
@@ -51,6 +61,62 @@ class PublicEventController extends Controller
             EventRegistrar::SOLD_OUT => back()->withErrors(['email' => __('El evento está agotado.')]),
             default => back()->withErrors(['email' => __('El registro para este evento está cerrado.')]),
         };
+    }
+
+    /** A one-line summary for search results and link previews. */
+    private function seoDescription(Event $event): string
+    {
+        $when = $event->starts_at->format('d/m/Y H:i');
+        $where = $event->venue ? ' · '.$event->venue : '';
+
+        return Str::limit(
+            trim($when.$where.' — '.(string) $event->description),
+            160
+        );
+    }
+
+    /**
+     * schema.org/Event, so search engines and messaging apps can show the date
+     * and venue rather than a bare link. `eventStatus` is emitted honestly:
+     * a cancelled event must not keep advertising itself as scheduled.
+     *
+     * @return array<string, mixed>
+     */
+    private function eventJsonLd(Event $event): array
+    {
+        return array_filter([
+            '@context' => 'https://schema.org',
+            '@type' => 'Event',
+            'name' => $event->title,
+            'description' => (string) $event->description,
+            'startDate' => $event->starts_at->toIso8601String(),
+            // A cancelled event still has a public page (it has to tell people
+            // it was cancelled), so this must not keep claiming "scheduled" —
+            // that is the claim Google surfaces in results.
+            'eventStatus' => $event->status === EventStatus::Cancelled
+                ? 'https://schema.org/EventCancelled'
+                : 'https://schema.org/EventScheduled',
+            'eventAttendanceMode' => 'https://schema.org/OfflineEventAttendanceMode',
+            'url' => route('public.event', $event),
+            'location' => $event->venue ? [
+                '@type' => 'Place',
+                'name' => $event->venue,
+                'address' => $event->venue,
+            ] : null,
+            'organizer' => [
+                '@type' => 'Organization',
+                'name' => $event->organizer->name,
+            ],
+            'offers' => [
+                '@type' => 'Offer',
+                'price' => '0',
+                'priceCurrency' => 'ARS',
+                'availability' => $event->isSoldOut()
+                    ? 'https://schema.org/SoldOut'
+                    : 'https://schema.org/InStock',
+                'url' => route('public.event', $event),
+            ],
+        ], fn ($value): bool => $value !== null);
     }
 
     /**

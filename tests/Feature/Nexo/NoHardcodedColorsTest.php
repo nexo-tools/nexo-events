@@ -21,6 +21,8 @@ it('has no hardcoded hex colors in blade views or app css (use --nexo-* tokens)'
         'css/nexo-tokens.css',
         'css/nexo-ui.css',
         'views/partials/head.blade.php',
+        // <meta name="theme-color"> cannot reference a CSS variable either.
+        'views/components/nexo-seo.blade.php',
     ];
 
     // Whole directories that legitimately inline literal colors.

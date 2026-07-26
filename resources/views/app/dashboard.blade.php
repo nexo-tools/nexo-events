@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-guest-layout :noindex="true">
     @unless (auth()->user()->hasVerifiedEmail())
         <div class="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100" role="status">
             {{ __('Verificá tu email para poder publicar eventos.') }}
@@ -19,7 +19,7 @@
         @forelse ($events as $event)
             <li class="rounded-lg border border-slate-200 p-3 dark:border-slate-700">
                 <a href="{{ route('events.edit', $event) }}" class="font-medium hover:underline">{{ $event->title }}</a>
-                <div class="text-xs text-slate-500">{{ $event->starts_at->format('d/m/Y H:i') }} · {{ $event->status->value }} · {{ $event->tickets_count }} {{ __('entradas') }} · {{ $event->views_count }} {{ __('visitas') }}</div>
+                <div class="text-xs text-slate-500">{{ $event->starts_at->format('d/m/Y H:i') }} · {{ $event->status->value }} · {{ __(':count entradas', ['count' => $event->tickets_count]) }} · {{ __(':count visitas', ['count' => $event->views_count]) }}</div>
             </li>
         @empty
             <li class="text-sm text-slate-600 dark:text-slate-400">{{ __('Aún no creaste ningún evento.') }}</li>

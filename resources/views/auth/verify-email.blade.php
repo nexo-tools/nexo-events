@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-guest-layout :noindex="true">
     <h1 class="mb-2 text-xl font-bold">{{ __('Verificá tu email') }}</h1>
 
     <p class="mb-4 text-sm text-slate-600 dark:text-slate-400">

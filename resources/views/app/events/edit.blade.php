@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-guest-layout :noindex="true">
     <h1 class="mb-1 text-xl font-bold">{{ $event->title }}</h1>
     <p class="mb-4 text-sm text-slate-500">{{ __('Estado') }}: {{ $event->status->value }}</p>
 

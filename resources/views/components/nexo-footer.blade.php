@@ -24,4 +24,9 @@
     <a href="{{ $eco['github_org_url'] ?? 'https://github.com/nexo-tools' }}" rel="noopener">
         {{ __('nexo.footer.source') }}
     </a>
+
+    {{-- Local addition to the shared component: this tool holds attendee names
+         and emails, so the legal pages have to be reachable from every page. --}}
+    <a href="{{ route('legal.privacy') }}">{{ __('Privacidad') }}</a>
+    <a href="{{ route('legal.terms') }}">{{ __('Términos') }}</a>
 </footer>

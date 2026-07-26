@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-guest-layout :title="$title" :description="$description" :seo-type="$seoType" :seo-json-ld="$seoJsonLd">
     <h1 class="mb-1 text-2xl font-bold">{{ $event->title }}</h1>
     <p class="mb-4 text-sm text-slate-500">
         {{ $event->starts_at->format('d/m/Y H:i') }}@if ($event->venue) · {{ $event->venue }}@endif
