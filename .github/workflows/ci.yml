@@ -30,6 +30,9 @@ jobs:
       - name: Larastan (static analysis)
         run: vendor/bin/phpstan analyse --no-progress
 
+      - name: Composer audit (known vulnerabilities)
+        run: composer audit
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22

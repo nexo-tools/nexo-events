@@ -26,5 +26,6 @@
 <link rel="manifest" href="/site.webmanifest">
 
 @include('partials.theme-init')
+@include('partials.beacon')
 
 @vite(['resources/css/app.css', 'resources/js/app.js'])

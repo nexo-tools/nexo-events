@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\ResetPasswordQueued;
 use App\Notifications\VerifyEmailQueued;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -41,6 +42,12 @@ class User extends Authenticatable implements MustVerifyEmail
     public function events(): HasMany
     {
         return $this->hasMany(Event::class, 'organizer_id');
+    }
+
+    /** Queued for the same reason as the verification mail, and translated. */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify((new ResetPasswordQueued($token))->locale(app()->getLocale()));
     }
 
     /**

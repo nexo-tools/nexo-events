@@ -15,6 +15,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Theme and language ride a cookie scoped to the parent domain so a
+        // choice made in one Nexo tool holds in the others. Laravel encrypts
+        // cookies with THIS app's key, which the sibling tools do not have — an
+        // encrypted value would be unreadable to them (and to the inline
+        // theme-init script). These two carry no secrets.
+        $middleware->encryptCookies(except: ['nexo-theme', 'nexo-lang']);
+
         $middleware->web(append: [
             SetLocale::class,
             SecurityHeaders::class,

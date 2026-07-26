@@ -6,11 +6,14 @@ it('defaults to spanish on the home page', function () {
     $this->get('/')->assertSee('Crea eventos gratis');
 });
 
-it('switches with the lang parameter and persists in the session', function () {
+it('switches with the lang parameter and persists in the shared nexo-lang cookie', function () {
+    // Persistence moved from the session to a cookie scoped to the parent
+    // domain, so the choice now survives across the whole Nexo ecosystem rather
+    // than just this app's session.
     $this->get('/?lang=en')->assertSee('Create free events');
 
-    // Next request without the parameter keeps English.
-    $this->get('/')->assertSee('Create free events');
+    // A browser carrying that cookie keeps English with no parameter.
+    $this->withUnencryptedCookie('nexo-lang', 'en')->get('/')->assertSee('Create free events');
 });
 
 it('ignores unsupported locales', function () {
