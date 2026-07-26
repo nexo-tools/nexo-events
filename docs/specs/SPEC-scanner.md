@@ -59,6 +59,10 @@ The scanner page is server-rendered with the manual form working. The camera UI 
 
 Automated ACs green with name-traced tests · Pint + Larastan + Pest + i18n `--check` clean · CSP/`.htaccess` sync guardian green · device pass (6.5) executed on one iOS and one Android phone with evidence, or explicitly recorded as owner-gated and outstanding · `AGENTS.md` updated.
 
+## Reconciliation
+
+- **2026-07-26 (spike, task 6.2)** — `jsQR@1.4.0` confirmed: pure JS, no wasm, no worker, bundles from our own origin, and **decodes this app's own generated tickets** — a QR produced by `QrPng` reads back as the exact token. That round trip is now a permanent guardian (`QrRoundTripTest`, AC-SCAN-1) rather than one-off spike evidence, because "valid image, unreadable code" is a failure that would otherwise appear for the first time at a venue door. PNG decoding in that script uses **pngjs, not sharp**: sharp ships a platform-specific native binary and the suite runs inside the Linux container against a `node_modules` installed on the macOS host, which fails to load. Pure JS keeps host, container and CI interchangeable.
+
 ## Known limitations
 
 - **Online-only** (ADR-002): the door needs connectivity. A venue with no signal falls back to nothing — offline check-in with sync is backlog, and the organizer should know before choosing the venue.
