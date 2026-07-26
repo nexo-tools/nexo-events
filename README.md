@@ -13,6 +13,7 @@ Create an event, share the page, attendees register with just an email and get a
 ![Laravel 13](https://img.shields.io/badge/Laravel-13-ff2d20.svg)
 
 [Scope](docs/SCOPE.md) ·
+[Deployment](DEPLOYMENT.md) ·
 [Plan & gates](docs/PLAN.md)
 
 </div>
@@ -31,13 +32,20 @@ single account ([Nexo ID](https://github.com/nexo-tools/nexo-id) SSO).
 - **No per-ticket fees, no lock-in** — your events, attendees and data live on *your*
   domain. Commercial platforms take a cut of every ticket; this one is free to run.
 - **Register with just an email** — attendees sign up from the public event page with
-  no account and no app to install, and immediately get their ticket.
-- **QR tickets** — every registration produces a unique, server-generated QR ticket on
-  its own shareable page, ready to show at the door.
-- **Check-in at the door from a phone** — open the scanner for an event, point the
-  camera at a ticket, and it's validated. Check-in is **atomic**: a ticket already used
-  is flagged instead of admitted twice, so no double entry — plus a manual fallback for
-  each attendee.
+  no account and no app to install, and get their ticket on screen immediately.
+- **The ticket arrives by email** — a queued message with the QR embedded as an image
+  and a link that still works when images are blocked. Lost it? A resend flow issues a
+  fresh ticket (and retires the old QR).
+- **QR tickets that carry nothing** — the code is a random token; the database stores
+  only its hash, so a leaked database cannot be turned into working tickets.
+- **Check-in at the door from a phone** — open the scanner, point the rear camera at a
+  ticket, and it validates on-device (no image ever leaves the phone). Check-in is
+  **atomic**: a second scan is flagged instead of admitted twice. Manual entry always
+  stays available for a broken QR or a denied camera.
+- **Abuse handling** — anyone can report an event; the operator takes one down with
+  `events:kill` and can undo it with `events:restore`.
+- **Cookieless visit counts** — see how many distinct people opened an event page,
+  measured with a fingerprint that rotates daily and stores no IP.
 - **Full event lifecycle** — create, edit, **publish**, **close** registrations and
   **cancel**, with a live registrations list per event.
 - **Organizer accounts, your way** — standalone local login out of the box, or turn on
@@ -52,8 +60,11 @@ single account ([Nexo ID](https://github.com/nexo-tools/nexo-id) SSO).
 
 PHP 8.3+ · Laravel 13 · Blade + Alpine.js + Tailwind CSS (Vite) · MySQL
 
-QR generation with [bacon/bacon-qr-code](https://github.com/Bacon/BaconQrCode); Nexo ID
-id_token verification with [firebase/php-jwt](https://github.com/firebase/php-jwt).
+QR generation with [bacon/bacon-qr-code](https://github.com/Bacon/BaconQrCode) (emailed
+as a PNG drawn with GD, so no Imagick requirement); door decoding with
+[jsQR](https://github.com/cozmo/jsQR), loaded only on the scanner page and falling back
+to the browser's native `BarcodeDetector` where it exists. Nexo ID id_token verification
+with [firebase/php-jwt](https://github.com/firebase/php-jwt).
 Quality: [Pest](https://pestphp.com) · [Pint](https://laravel.com/docs/pint) ·
 [Larastan](https://github.com/larastan/larastan) · GitHub Actions CI.
 Zero external runtime requests — system font stack, no CDNs.
@@ -74,8 +85,9 @@ docker run --rm -v "$(pwd):/app" -w /app composer:latest composer install
 ./vendor/bin/sail npm install && ./vendor/bin/sail npm run build
 ```
 
-Open [http://localhost](http://localhost). Local email inbox (Mailpit):
-[http://localhost:8025](http://localhost:8025).
+Open [http://localhost:8103](http://localhost:8103) (`APP_PORT`). Ticket emails land in
+Mailpit at [http://localhost:8025](http://localhost:8025) — set `MAIL_MAILER=smtp` and
+point `MAIL_HOST` at it.
 
 ## Self-hosting
 
@@ -88,23 +100,33 @@ infrastructure. Key configuration (see `.env.example`):
 | `NEXO_ATTRIBUTION_URL` | Footer link target | unset |
 | `NEXO_SUPPORT_EMAIL` | Contact address on the `/help` center | `hola@alvarocdev.com` |
 | `NEXO_SUPPORT_URL` | Support URL (wins over the mailto when set) | unset |
-| `NEXO_SSO_ENABLED` | Sign organizers in with Nexo ID instead of local auth | `false` |
+| `NEXO_SSO_ENABLED` | Add "Sign in with Nexo ID" alongside local auth | `false` |
+| `NEXO_SSO_SILENT` | With SSO on, sign in automatically when a Nexo ID session exists | `true` |
+| `NEXO_BEACON_ENABLED` | Report cookieless pageviews to a Nexo hub | `false` |
+| `MAIL_*` | SMTP for ticket delivery — **the ticket is the email**, see [deliverability](docs/DELIVERABILITY.md) | Mailpit |
+| `NEXO_DOOR_GUARD_BEFORE` / `_AFTER` | Minutes around an event start when deploys are refused | `120` / `360` |
 
 Attribution and support settings live in [`config/nexo.php`](config/nexo.php).
 
 ## Status
 
-**MVP built (pre-launch).** Organizer accounts (local auth + optional Nexo ID SSO),
-event create / edit / publish / close / cancel, email-only attendee registration, QR
-tickets and phone-based door check-in are all implemented, on top of the shared Nexo
-brand/chrome, i18n (`es`/`en`/`pt`) and a `/help` center. Not yet deployed —
-production hardening and launch are the remaining work.
+**Feature-complete, pre-launch — not yet deployed.** Everything described above is
+built and covered by the test suite: organizer accounts (local auth + optional Nexo ID
+SSO with silent sign-in), the full event lifecycle, email-only registration, **ticket
+delivery by email**, **camera check-in**, report + kill-switch, cookieless counters, the
+SEO layer, legal pages and i18n (`es`/`en`/`pt`).
+
+What remains is production itself: first deploy to `nexoevents.alvarocdev.com`, verified
+backups and uptime monitoring, real-inbox deliverability checks, and a camera pass on
+physical iOS/Android handsets. Tracked in [docs/PLAN.md](docs/PLAN.md) — Phases 8–9.
 
 ## Documentation
 
-- [Scope](docs/SCOPE.md)
-- [Plan & gates](docs/PLAN.md)
-- [Decisions (ADRs)](docs/adr/)
+- [Scope](docs/SCOPE.md) — what is in v1 and what is deliberately not
+- [Plan & gates](docs/PLAN.md) — phases, gates and what is still open
+- [Decisions (ADRs)](docs/adr/) — why the design is the way it is
+- [Deployment](DEPLOYMENT.md) — including the deploy freeze during events
+- [Email deliverability](docs/DELIVERABILITY.md) — the ticket *is* the email
 
 ## Nexo ecosystem
 
@@ -113,14 +135,14 @@ Nexo is a family of open-source, self-hostable tools that share one visual ident
 ([Nexo ID](https://github.com/nexo-tools/nexo-id) SSO) and one set of engineering
 standards. Every tool runs **fully standalone** — the ecosystem is opt-in.
 
-| Tool | What it is | Repo |
-| --- | --- | --- |
-| **Nexo Tools** | Ecosystem hub — discover the tools and hop between them with one account | [nexo-tools](https://github.com/nexo-tools/nexo-tools) |
-| **Nexo Links** | Link-in-bio you host yourself (Linktree alternative) | [nexo-links](https://github.com/nexo-tools/nexo-links) |
-| **Nexo Agenda** | Bookings for service businesses (AgendaPro / Fresha / Booksy alternative) | [nexo-agenda](https://github.com/nexo-tools/nexo-agenda) |
-| **Nexo Short** | Self-hosted URL shortener | [nexo-short](https://github.com/nexo-tools/nexo-short) |
-| **Nexo Events** | Event tickets and passes | — you are here |
-| **Nexo ID** | One account for every tool — OAuth 2.0 / OIDC SSO | [nexo-id](https://github.com/nexo-tools/nexo-id) |
+| Tool | What it is | Live | Repo |
+| --- | --- | --- | --- |
+| **Nexo Tools** | Ecosystem hub — discover the tools and hop between them with one account | [nexotools.alvarocdev.com](https://nexotools.alvarocdev.com) | [nexo-tools](https://github.com/nexo-tools/nexo-tools) |
+| **Nexo Links** | Link-in-bio you host yourself (Linktree alternative) | [nexolinks.alvarocdev.com](https://nexolinks.alvarocdev.com) | [nexo-links](https://github.com/nexo-tools/nexo-links) |
+| **Nexo Agenda** | Bookings for service businesses (AgendaPro / Fresha / Booksy alternative) | [nexoagenda.alvarocdev.com](https://nexoagenda.alvarocdev.com) | [nexo-agenda](https://github.com/nexo-tools/nexo-agenda) |
+| **Nexo Short** | Self-hosted URL shortener | [nxo.li](https://nxo.li) | [nexo-short](https://github.com/nexo-tools/nexo-short) |
+| **Nexo Events** | Event tickets and QR check-in | soon | — you are here |
+| **Nexo ID** | One account for every tool — OAuth 2.0 / OIDC SSO | [nexoid.alvarocdev.com](https://nexoid.alvarocdev.com) | [nexo-id](https://github.com/nexo-tools/nexo-id) |
 
 New to Nexo? Start at **[nexotools.alvarocdev.com](https://nexotools.alvarocdev.com)**.
 Built by **[alvarocdev.com](https://alvarocdev.com)** — the tech behind Nexo.

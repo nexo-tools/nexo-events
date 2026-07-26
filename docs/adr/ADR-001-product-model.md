@@ -5,7 +5,7 @@
 
 ## Context
 
-The evaluation brief (`nexoevents.md`, 2026-07-20) closed the core product decisions; this ADR records them as the immutable baseline and resolves the points the brief left to the planning (license/distribution model, naming).
+The evaluation brief (2026-07-20, not part of this repository) closed the core product decisions; this ADR records them as the immutable baseline and resolves the points the brief left to the planning (license/distribution model, naming).
 
 ## Decision
 

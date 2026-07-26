@@ -49,10 +49,20 @@ Not deployed yet. Target `nexoevents.alvarocdev.com` (subdomain already created)
 - **2026-07-26** — **Plan reconciled with reality and ADRs 001–007 Accepted** (sign-off by Alvaro). Owner flags resolved: email provider account and the `nexoevents.alvarocdev.com` subdomain already exist; launch happens when development ends (no calendar date); SSO and beacon activation are launch-independent and validated in task 8.6 once the in-flight nexoid/nexotools work is stable; **event image upload deferred post-v1** (SCOPE amended below). The PLAN's gap register — built from a full code audit, not from the docs — is the authoritative list of what is actually missing.
 - **2026-07-19** — Phase 0 executed: SCOPE, ADRs 001–007, PLAN, formalization. Decisions taken by Alvaro during planning: stack = Laravel + Hostinger; attendees = email-only in v1 (no attendee accounts); open source multi-instance confirmed.
 - **2026-07-19** — Coordination with Nexo ID settled by their accepted ADR-004: Nexo Events ships standalone organizer auth; Nexo ID is an optional env-configured SSO provider, integrated post-MVP via their Phase 3 client pattern. Cross-note left in nexoid's AGENTS.md. No launch coupling in either direction.
-- **2026-07-19** — `nexoevents.md` (root) is the pre-planning evaluation brief: treat as **input, not decisions**, except its §2 (product decisions closed by Alvaro). ADR-004 supersedes its §8 data model. It is Spanish and pre-decision — candidate to drop/move before the repo goes public (same call as nexoid's `nexo-id.md`). `planning-prompt.md` is gitignored (local paths).
+- **2026-07-19** — `nexoevents.md` (root) is the pre-planning evaluation brief: treat as **input, not decisions**, except its §2 (product decisions closed by Alvaro). ADR-004 supersedes its §8 data model. It is Spanish and pre-decision. **Resolved 2026-07-26 (task 9.1):** it stays gitignored and out of the repo — never tracked, so nothing to scrub — and the public docs no longer link to it. `planning-prompt.md` and `CLAUDE.local.md` likewise.
 
 ## Accumulated context
 
+- **2026-07-26** — **`audit-open-source`: CLEAN** (task 9.1, pre-public). Full history across
+  every commit + HEAD + repo metadata. No secret was ever committed: `.env`, the private brief
+  (`nexoevents.md`), `planning-prompt.md` and `CLAUDE.local.md` were **never tracked**, so there
+  is nothing to scrub — only `.env.example` ever entered git. The only `secret`-looking matches
+  are GitHub Actions `${{ secrets.* }}` references, which are placeholders. No real `APP_KEY`, no
+  hosting account, no server path, no customer data. **Fixed here:** `docs/SCOPE.md` linked the
+  gitignored brief (`../nexoevents.md`), which would have been a broken link the day the repo went
+  public. **Owner-accepted notes:** author email `alvaro@mc4pc.com` appears in every commit;
+  `hola@alvarocdev.com` is the intentional public support address; ADR-002 mentions Hostinger's
+  generic SSH port (65002) as the *reason* for a design constraint — no account, host or path.
 - **2026-07-26** — **Phase 7 done: the tool now meets the full Nexo standard** (164 tests green).
   Report flow + kill-switch commands, cookieless view counters, the whole SEO layer, legal pages,
   cross-tool theme/language, beacon wired off, hardening. Non-obvious things:

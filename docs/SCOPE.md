@@ -6,7 +6,7 @@
 
 Free event registration and QR ticketing, end to end: anyone creates an event, people register and receive a QR ticket by email, and the organizer validates entry at the door by scanning with their phone. Part of the Nexo ecosystem (Nexo Links, Nexo Agenda, Nexo Short, Nexo ID): open source, multi-instance, self-hostable, privacy-first (cookieless, zero third-party requests at runtime).
 
-Source input: evaluation brief [`nexoevents.md`](../nexoevents.md) (Cowork session, 2026-07-20). Its section 2 records product decisions closed by Alvaro; its sections 8–9 are input re-evaluated by the ADRs.
+Source input: a pre-planning evaluation brief (2026-07-20), kept out of this repository — it is Spanish, pre-decision working material. Everything from it that still governs the product was carried into this document and the ADRs, which supersede it.
 
 ## MVP
 
