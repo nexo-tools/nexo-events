@@ -15,6 +15,36 @@ jobs:
     name: Build & deploy to production
     runs-on: ubuntu-latest
     steps:
+      # Fail fast and legibly. An org secret scoped to "selected repositories"
+      # silently expands to an empty string in a repo that was never added to
+      # it, and the failure surfaces much later as `Bad port ''` from ssh — with
+      # no hint that a secret is the cause. Checked via env, never interpolated
+      # into the script: DEPLOY_KEY is a multi-line private key.
+      - name: Verify the deploy secrets are actually available here
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          missing=()
+          [ -n "$DEPLOY_HOST" ] || missing+=(DEPLOY_HOST)
+          [ -n "$DEPLOY_PORT" ] || missing+=(DEPLOY_PORT)
+          [ -n "$DEPLOY_USER" ] || missing+=(DEPLOY_USER)
+          [ -n "$DEPLOY_KEY" ]  || missing+=(DEPLOY_KEY)
+          [ -n "$DEPLOY_PATH" ] || missing+=(DEPLOY_PATH)
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::Missing deploy secrets: ${missing[*]}"
+            echo "DEPLOY_KEY/HOST/PORT/USER live at the nexo-tools org level. If one is"
+            echo "scoped to 'selected repositories', this repo has to be added to it"
+            echo "(Org settings -> Secrets and variables -> Actions -> the secret ->"
+            echo "Repository access). DEPLOY_PATH is per-repo, since each tool lives in"
+            echo "its own directory on the server."
+            exit 1
+          fi
+          echo "All five deploy secrets are present."
+
       - uses: actions/checkout@v4
 
       - name: Setup Node

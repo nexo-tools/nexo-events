@@ -28,7 +28,13 @@ php artisan events:door-guard --json   # for pipelines
 gh workflow run deploy.yml --repo nexo-tools/nexo-events
 ```
 
-The workflow builds the assets in CI (no Node on the shared host), rsyncs `public/build/`, then runs `scripts/deploy.sh` over SSH. Secrets: `DEPLOY_KEY`, `DEPLOY_HOST`, `DEPLOY_PORT`, `DEPLOY_USER` (org level) and `DEPLOY_PATH` (per repo).
+The workflow builds the assets in CI (no Node on the shared host), rsyncs `public/build/`, then runs `scripts/deploy.sh` over SSH.
+
+**Secrets:** `DEPLOY_KEY`, `DEPLOY_HOST`, `DEPLOY_PORT`, `DEPLOY_USER` at the **org** level, and `DEPLOY_PATH` **per repo** (each tool lives in its own directory).
+
+⚠️ An org secret scoped to *"selected repositories"* expands to an **empty string** in a repo that was not added to it — no warning, no error at that point. It surfaced here as `Bad port ''` from `ssh`, which says nothing about secrets. The workflow now checks all five up front and names the missing ones. If that step fails: *Org settings → Secrets and variables → Actions → the secret → Repository access → add this repo*.
+
+**The workflow updates an existing installation; it does not create one.** Its first SSH step is `cd $DEPLOY_PATH && php artisan …`, so the app must already be cloned and configured there. First provisioning is manual — see below.
 
 ## First provisioning
 
