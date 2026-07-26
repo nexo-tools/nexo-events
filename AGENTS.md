@@ -53,6 +53,13 @@ Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./ven
 
 ## Accumulated context
 
+- **2026-07-26** — **Backups verified + restore drilled.** The cross-tool `~/backups/bin/nexo-backup.sh`
+  auto-discovers apps by scanning `~/domains/*/*/.env`, so this app was picked up with no change.
+  A **real restore** was run against the production database and row counts matched — done at the
+  one moment it is free of risk, while the data is all test data. Uptime monitoring is still open.
+  **Neighbour finding, not ours to fix:** `nexo-tools` FAILS in that backup every single night and
+  has never been backed up — its production `.env` still carries dev values (`DB_DATABASE` pointing
+  at a SQLite file, `DB_USERNAME=sail`), so `mysqldump` is denied. Worth a look; that is the hub.
 - **2026-07-26** — **First production deploy done.** Three things blocked it, all worth
   remembering: (1) the org's deploy secrets are scoped to **public repositories** and this repo
   was private, so they expanded to empty strings and `ssh` failed with `Bad port ''` — and the
