@@ -52,6 +52,19 @@ Not deployed. Planned: `nexoevents.alvarocdev.com` (proposed, Gate 0 decides) vi
 
 ## Accumulated context
 
+- **2026-07-26** — **Silent SSO adopted** from the hardened `nexo-sso-client` template (nonce,
+  RP-initiated central logout, and `prompt=none` auto-login all arrived together — this repo was
+  still on the pre-nonce copy). Standalone is untouched: with `NEXO_SSO_ENABLED=false` the routes
+  never register and the middleware is a pass-through. **The exclusion list is the decision worth
+  remembering:** silent SSO exists for *organizers*, who have accounts; **attendees never do**
+  (ADR-003), so `e/*` (public event page) and `t/*` (the ticket) are excluded by both path and
+  route name. A bounce on `t/{token}` is a person stuck at the venue door with a spinning
+  browser — that is the failure this config exists to prevent. `NexoSsoSilentExclusionsTest`
+  guards it against this app's real routes, and its last test deliberately proves the middleware
+  IS active on a non-excluded page, so a green suite can't mean "inert middleware".
+  **Not done on purpose:** the dashboard logout button still posts to the local `logout` route,
+  not `nexo-sso.logout` (same as the sibling tools). Rewiring it belongs to the SSO activation
+  batch (PLAN task 8.6) together with registering the prod client and `post_logout_redirect_uri`.
 - **2026-07-26** — **Local dev migrated to the shared `nexo` Docker stack** (last of the 6 tools to
   migrate). Per-project MySQL/Mailpit are gone: `compose.yaml` is now app-runtime-only and the app
   reaches the shared services via `host.docker.internal`. The `nexo_events` database was dumped from
