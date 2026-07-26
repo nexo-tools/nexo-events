@@ -53,6 +53,14 @@ Not deployed yet. Target `nexoevents.alvarocdev.com` (subdomain already created)
 
 ## Accumulated context
 
+- **2026-07-26** — **Production-mode dry run (pre-deploy).** With `config:cache` +
+  `route:cache` + `view:cache` applied, every public surface still answers 200. One trap found
+  and documented in `DEPLOYMENT.md`: **`routes/nexo-sso.php` returns early when SSO is off, so
+  `route:cache` bakes the absence of those routes into the cache.** Flipping
+  `NEXO_SSO_ENABLED=true` in a production `.env` therefore does *nothing* until the routes are
+  re-cached — `/auth/nexo/redirect` keeps 404-ing. That is exactly how SSO gets activated in
+  task 8.6, so it would have cost real debugging time. `scripts/deploy.sh` re-caches on every
+  deploy; the hazard is only hand-editing `.env` between deploys.
 - **2026-07-26** — **`audit-open-source`: CLEAN** (task 9.1, pre-public). Full history across
   every commit + HEAD + repo metadata. No secret was ever committed: `.env`, the private brief
   (`nexoevents.md`), `planning-prompt.md` and `CLAUDE.local.md` were **never tracked**, so there

@@ -43,6 +43,25 @@ Follow the `deploy-laravel-hostinger` skill. What this app needs on top of the s
 4. **Re-assert the CSP in `public/.htaccess`** — LiteSpeed's "Force HTTPS" overwrites the header the middleware sends. The file already contains the policy; `SecurityHeadersTest` keeps it byte-identical to the middleware, so never edit one without the other.
 5. **Verify** with the smoke checks below.
 
+## Flipping an env flag is not enough: re-cache the routes
+
+`routes/nexo-sso.php` returns early when `NEXO_SSO_ENABLED` is false, so the SSO routes are
+**not registered at all**. `php artisan route:cache` then bakes that absence into the cached
+route file. Consequence, verified locally:
+
+> Setting `NEXO_SSO_ENABLED=true` in production changes **nothing** until the routes are
+> re-cached. `/auth/nexo/redirect` keeps 404-ing and the login button leads nowhere.
+
+The same applies to the beacon (`NEXO_BEACON_ENABLED`) for config caching. So after editing
+`.env` in production, always:
+
+```bash
+php artisan config:cache && php artisan route:cache && php artisan view:cache
+```
+
+`scripts/deploy.sh` already does this on every deploy — the trap is only when you edit `.env`
+by hand *between* deploys, which is exactly how SSO gets switched on (PLAN task 8.6).
+
 ## Post-deploy smoke
 
 ```bash
