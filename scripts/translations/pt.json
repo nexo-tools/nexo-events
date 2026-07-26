@@ -41,7 +41,6 @@
     "Validar": "Validar",
     "Ver registrados": "Ver inscritos",
     "Volver": "Voltar",
-    "Ya estás registrado con ese email; revisa tu correo para tu entrada.": "Você já está inscrito com esse e-mail; verifique seu e-mail para o ingresso.",
     "Ya ingresaste a este evento.": "Você já fez check-in neste evento.",
     "Continuar con Nexo ID": "Continuar com o Nexo ID",
     "El inicio de sesión con Nexo ID no está disponible por ahora. Inténtalo de nuevo más tarde.": "O login com o Nexo ID está temporariamente indisponível. Tente novamente mais tarde.",
@@ -87,5 +86,12 @@
     "Saltar al contenido": "Pular para o conteúdo",
     "Si el email existe, te enviamos un enlace para restablecer la contraseña.": "Se o email existir, enviamos um link para redefinir a senha.",
     "Tu nombre": "Seu nome",
-    "Preguntas frecuentes: crear eventos, entradas con QR y registro de asistentes por email.": "Perguntas frequentes: criar eventos, ingressos com QR e inscrição de participantes por e-mail."
+    "Preguntas frecuentes: crear eventos, entradas con QR y registro de asistentes por email.": "Perguntas frequentes: criar eventos, ingressos com QR e inscrição de participantes por e-mail.",
+    "A nombre de :name": "Em nome de :name",
+    "Código QR de tu entrada": "O código QR do seu ingresso",
+    "Guardá este correo: es tu entrada. No la compartas — quien tenga el código puede ingresar en tu lugar.": "Guarde este e-mail — ele é o seu ingresso. Não o compartilhe: quem tiver o código pode entrar no seu lugar.",
+    "Si no ves el código, abrí tu entrada desde este enlace:": "Se você não vir o código, abra o seu ingresso por este link:",
+    "Tu entrada para :event": "Seu ingresso para :event",
+    "Ver mi entrada": "Ver meu ingresso",
+    "Ya estás registrado con ese email. Pedí que te reenviemos tu entrada si no la encontrás.": "Você já está inscrito com esse e-mail. Peça o reenvio do seu ingresso se não o encontrar."
 }

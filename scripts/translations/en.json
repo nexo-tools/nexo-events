@@ -41,7 +41,6 @@
     "Validar": "Validate",
     "Ver registrados": "View registrations",
     "Volver": "Back",
-    "Ya estás registrado con ese email; revisa tu correo para tu entrada.": "You are already registered with that email; check your inbox for your ticket.",
     "Ya ingresaste a este evento.": "You have already checked in to this event.",
     "Continuar con Nexo ID": "Continue with Nexo ID",
     "El inicio de sesión con Nexo ID no está disponible por ahora. Inténtalo de nuevo más tarde.": "Sign-in with Nexo ID is temporarily unavailable. Please try again later.",
@@ -87,5 +86,12 @@
     "Saltar al contenido": "Skip to content",
     "Si el email existe, te enviamos un enlace para restablecer la contraseña.": "If the email exists, we've sent a link to reset the password.",
     "Tu nombre": "Your name",
-    "Preguntas frecuentes: crear eventos, entradas con QR y registro de asistentes por email.": "Frequently asked questions: creating events, QR tickets, and attendee registration by email."
+    "Preguntas frecuentes: crear eventos, entradas con QR y registro de asistentes por email.": "Frequently asked questions: creating events, QR tickets, and attendee registration by email.",
+    "A nombre de :name": "Issued to :name",
+    "Código QR de tu entrada": "Your ticket QR code",
+    "Guardá este correo: es tu entrada. No la compartas — quien tenga el código puede ingresar en tu lugar.": "Keep this email — it is your ticket. Don't share it: whoever has the code can get in instead of you.",
+    "Si no ves el código, abrí tu entrada desde este enlace:": "If you can't see the code, open your ticket from this link:",
+    "Tu entrada para :event": "Your ticket for :event",
+    "Ver mi entrada": "View my ticket",
+    "Ya estás registrado con ese email. Pedí que te reenviemos tu entrada si no la encontrás.": "You are already registered with that email. Ask us to resend your ticket if you cannot find it."
 }

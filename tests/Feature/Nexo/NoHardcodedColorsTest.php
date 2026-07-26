@@ -13,11 +13,14 @@ it('has no hardcoded hex colors in blade views or app css (use --nexo-* tokens)'
 
     // Relative paths (from resource_path) allowed to contain literal hex:
     //  - the generated brand tokens (the one place raw palette hex lives);
-    //  - head: the <meta name="theme-color"> content can't be a CSS var.
+    //  - head: the <meta name="theme-color"> content can't be a CSS var;
+    //  - emails: mail clients strip <style> and know nothing about our CSS
+    //    variables, so transactional templates must inline literal hex.
     $allowed = [
         'css/nexo-tokens.css',
         'css/nexo-ui.css',
         'views/partials/head.blade.php',
+        'views/emails/ticket.blade.php',
     ];
 
     $base = resource_path().DIRECTORY_SEPARATOR;
