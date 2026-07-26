@@ -49,3 +49,18 @@ it('AC-DEPLOY-5: the deploy script consults the guard before taking the app down
         ->and($downAt)->not->toBeFalse()
         ->and($guardAt)->toBeLessThan($downAt);
 });
+
+it('AC-DEPLOY-6: a failed deploy brings the app back up instead of leaving it dark', function (): void {
+    $script = (string) file_get_contents(base_path('scripts/deploy.sh'));
+
+    // `set -e` plus `artisan down` is a trap: any failing step between them and
+    // `artisan up` leaves the site in maintenance mode for as long as nobody
+    // notices. For this app that is the worst possible end state.
+    expect($script)->toContain('trap cleanup EXIT')
+        ->and($script)->toContain('php artisan up');
+
+    $trapAt = strpos($script, 'trap cleanup EXIT');
+    $downAt = strpos($script, 'php artisan down');
+
+    expect($trapAt)->toBeLessThan($downAt); // armed before the app goes dark
+});

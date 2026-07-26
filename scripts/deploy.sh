@@ -19,6 +19,21 @@ else
     echo "⚠ DEPLOY_FORCE=1 — door guard bypassed deliberately."
 fi
 
+# From here on the app is dark, so ANY failure must bring it back. Without this,
+# `set -e` aborting on a bad migration (or a wrong password, or a full disk) exits
+# before `artisan up` and leaves the site in maintenance mode indefinitely — the
+# exact state this app exists to avoid, reached by the deploy meant to improve it.
+cleanup() {
+    code=$?
+    if [ "$code" -ne 0 ]; then
+        echo
+        echo "✗ Deploy failed (exit $code). Bringing the app back up rather than leaving it dark."
+        php artisan up || true
+    fi
+    exit "$code"
+}
+trap cleanup EXIT
+
 php artisan down --retry=30 || true
 
 git pull origin main
