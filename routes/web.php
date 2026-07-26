@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\CheckinController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\EventReportController;
 use App\Http\Controllers\HelpController;
 use App\Http\Controllers\PublicEventController;
 use App\Http\Controllers\TicketController;
@@ -83,6 +84,11 @@ Route::post('e/{event:slug}/registro', [PublicEventController::class, 'register'
 // is the one public write that can degrade something an attendee already holds.
 Route::post('e/{event:slug}/reenviar', [PublicEventController::class, 'resend'])
     ->middleware('throttle:3,10')->name('public.resend');
+// Abuse reports: unauthenticated by design (ADR-007 §3), so tightly throttled and
+// honeypot-protected like every other public write.
+Route::post('e/{event:slug}/reportar', [EventReportController::class, 'store'])
+    ->middleware('throttle:5,10')->name('public.report');
+
 // Throttled per IP, but loosely: attendees at a venue all share one NAT address,
 // so a tight limit would lock a queue out of their own tickets. Guessing a token
 // is not the threat this defends against (40 random chars) — absorbing scan-spam is.

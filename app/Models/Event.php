@@ -37,7 +37,14 @@ class Event extends Model
             'starts_at' => 'datetime',
             'capacity' => 'integer',
             'status' => EventStatus::class,
+            'killed_at' => 'datetime',
         ];
+    }
+
+    /** @return HasMany<EventReport, $this> */
+    public function reports(): HasMany
+    {
+        return $this->hasMany(EventReport::class);
     }
 
     /** @return BelongsTo<User, $this> */

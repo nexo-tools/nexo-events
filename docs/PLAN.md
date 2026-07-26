@@ -78,9 +78,9 @@ Defects & drift: `routes/console.php` schedules `nexo:send-reminders`, which **d
 
 **Objective:** the remaining MVP promises (SCOPE/ADR-007) and the whole `nexo-ui/STANDARD.md` + `seo-audit` checklists hold with evidence. After this phase the tool is launch-ready except production itself.
 
-- [ ] 7.1 `docs/specs/SPEC-abuse.md` — ACs for report flow + kill-switch + minimal operator surface (ADR-007 consequence resolved here: **CLI-first** — artisan commands; an admin UI is post-v1). Reconcile task list.
-- [ ] 7.2 Report flow: public "report this event" (no login; optional reporter email) → `event_reports` migration + notification to the instance admin (support email); rate-limited + honeypot; tests incl. violation.
-- [ ] 7.3 Kill-switch: `events:kill` / `events:restore` artisan commands with audit trail (who/when/why in logs or a column per SPEC); public page returns unavailable, registration closes, door scans go red with reason (already honored — now reachable); tests.
+- [x] 7.1 `docs/specs/SPEC-abuse.md` — ACs for report flow + kill-switch + minimal operator surface (ADR-007 consequence resolved here: **CLI-first** — artisan commands; an admin UI is post-v1). Reconcile task list.
+- [x] 7.2 Report flow: public "report this event" (no login; optional reporter email) → `event_reports` migration + notification to the instance admin (support email); rate-limited + honeypot; tests incl. violation.
+- [x] 7.3 Kill-switch: `events:kill` / `events:restore` artisan commands with audit trail (who/when/why in logs or a column per SPEC); public page returns unavailable, registration closes, door scans go red with reason (already honored — now reachable); tests.
 - [ ] 7.4 VisitorHash counters (copy canonical from nexo-links, CATALOG): deduped event-page views/day + registration counts on the organizer dashboard; cookieless, no raw IPs; tests.
 - [ ] 7.5 SEO layer: adopt `<x-nexo-seo>` (canonical component from `templates/nexo-ui`) across pages — per-page translated title/description, canonical, hreflang, per-event OG overrides; JSON-LD `Event` on the public page (status-aware, e.g. cancelled); `robots.txt` (Sitemap line; disallow `/app`, auth, `/t/`) + `sitemap.xml` (home/help + published events, hreflang alternates); `noindex` on private/auth/ticket pages; `SeoBaseTest` guardian; close every `seo-audit` checklist item.
 - [ ] 7.6 Legal pages: privacy + terms (attendee PII: names/emails; what's stored, retention, self-host framing), translated, linked from the footer; owner reviews wording at the gate.

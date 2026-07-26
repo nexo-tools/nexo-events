@@ -118,5 +118,10 @@
     "Escanear con la cámara": "Escanear com a câmera",
     "No pudimos usar la cámara. Dale permiso, o abrí esta página en Safari o Chrome y no dentro de otra app.": "Não conseguimos usar a câmera. Conceda a permissão, ou abra esta página no Safari ou Chrome em vez de dentro de outro app.",
     "No pudimos validar la entrada. Intentá de nuevo.": "Não conseguimos validar o ingresso. Tente de novo.",
-    "Sin conexión. Revisá la señal e intentá de nuevo.": "Sem conexão. Verifique o sinal e tente de novo."
+    "Sin conexión. Revisá la señal e intentá de nuevo.": "Sem conexão. Verifique o sinal e tente de novo.",
+    "Gracias. Revisamos los reportes y actuamos si corresponde.": "Obrigado. Analisamos os relatos e agimos quando necessário.",
+    "Reportar este evento": "Denunciar este evento",
+    "¿Qué problema tiene este evento?": "Qual é o problema com este evento?",
+    "Tu email (opcional)": "Seu e-mail (opcional)",
+    "Enviar reporte": "Enviar denúncia"
 }

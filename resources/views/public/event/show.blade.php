@@ -54,6 +54,31 @@
                 <x-button>{{ __('Reenviarme mi entrada') }}</x-button>
             </form>
         </details>
+
+        {{-- Abuse report (ADR-007 §3). No account needed: requiring one to flag
+             an obvious phishing event would defeat the purpose. --}}
+        <details class="mt-2">
+            <summary class="cursor-pointer text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
+                {{ __('Reportar este evento') }}
+            </summary>
+
+            <form method="POST" action="{{ route('public.report', $event) }}" class="mt-3 space-y-3">
+                @csrf
+                <input type="text" name="website" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true">
+                <div>
+                    <label for="report-reason" class="block text-sm font-medium">{{ __('¿Qué problema tiene este evento?') }}</label>
+                    <textarea id="report-reason" name="reason" rows="3" required minlength="10"
+                        class="mt-1 block w-full rounded-lg border-slate-300 dark:border-slate-600 dark:bg-slate-800">{{ old('reason') }}</textarea>
+                    @error('reason')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <label for="report-email" class="block text-sm font-medium">{{ __('Tu email (opcional)') }}</label>
+                    <input id="report-email" type="email" name="reporter_email" value="{{ old('reporter_email') }}"
+                        class="mt-1 block w-full rounded-lg border-slate-300 dark:border-slate-600 dark:bg-slate-800">
+                </div>
+                <x-button>{{ __('Enviar reporte') }}</x-button>
+            </form>
+        </details>
     @elseif ($event->status->value === 'cancelled')
         <p class="rounded-lg bg-red-100 px-4 py-3 text-sm text-red-900">{{ __('Este evento fue cancelado.') }}</p>
     @else

@@ -118,5 +118,10 @@
     "Escanear con la cámara": "Scan with the camera",
     "No pudimos usar la cámara. Dale permiso, o abrí esta página en Safari o Chrome y no dentro de otra app.": "We could not use the camera. Grant permission, or open this page in Safari or Chrome rather than inside another app.",
     "No pudimos validar la entrada. Intentá de nuevo.": "We could not validate the ticket. Try again.",
-    "Sin conexión. Revisá la señal e intentá de nuevo.": "No connection. Check the signal and try again."
+    "Sin conexión. Revisá la señal e intentá de nuevo.": "No connection. Check the signal and try again.",
+    "Gracias. Revisamos los reportes y actuamos si corresponde.": "Thank you. We review reports and act when needed.",
+    "Reportar este evento": "Report this event",
+    "¿Qué problema tiene este evento?": "What is wrong with this event?",
+    "Tu email (opcional)": "Your email (optional)",
+    "Enviar reporte": "Send report"
 }
