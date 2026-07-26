@@ -66,8 +66,8 @@ Defects & drift: `routes/console.php` schedules `nexo:send-reminders`, which **d
 
 - [x] 6.1 `docs/specs/SPEC-scanner.md` — numbered ACs (`AC-SCAN-n`): on-device decode, **zero external requests** (static asset, CSP-strict; note any `wasm-unsafe-eval` trade-off for the spike to resolve), works on real iOS Safari + Android Chrome, continuous scan loop with duplicate-read damping, submits to the **same atomic endpoint**, green/red UX with reasons (used/revoked/killed/unknown), manual fallback intact, `Permissions-Policy` changes from `camera=()` to allowing self **with the guardian test updated in the same commit**, throttle on both check-in endpoints (ADR-007 §2). Reconcile task list.
 - [x] 6.2 Spike — decode library as a bundled static asset: evaluate native `BarcodeDetector` with a JS fallback (jsQR-class) vs. wasm options; pick by real-device support, CSP impact, license, and size; record the decision in the SPEC (dated note).
-- [ ] 6.3 Scanner page: `getUserMedia` (rear camera) + decode loop + auto-submit token → existing `TicketCheckin` path; result UI with reason + re-arm; camera-permission-denied and no-camera fallbacks keep manual entry usable; `SecurityHeaders` + guardian updated in sync.
-- [ ] 6.4 Hot-path hardening: named rate limits on `events.checkin`, `tickets.checkin` and `t/{token}` with deliberate-violation tests.
+- [x] 6.3 Scanner page: `getUserMedia` (rear camera) + decode loop + auto-submit token → existing `TicketCheckin` path; result UI with reason + re-arm; camera-permission-denied and no-camera fallbacks keep manual entry usable; `SecurityHeaders` + guardian updated in sync.
+- [x] 6.4 Hot-path hardening: named rate limits on `events.checkin`, `tickets.checkin` and `t/{token}` with deliberate-violation tests.
 - [ ] 6.5 Real-device pass over HTTPS (tunnel or LAN cert — technique documented in the SPEC): full door flow on one iOS and one Android phone; evidence captured.
 - [ ] 6.6 Gate 6 audit pass + sign-off.
 

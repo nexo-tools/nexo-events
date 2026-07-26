@@ -109,5 +109,14 @@
     "Confirmá tu dirección para poder publicar eventos. Mientras tanto podés crear y editar borradores.": "Confirme o seu endereço para poder publicar eventos. Enquanto isso você pode criar e editar rascunhos.",
     "Si el botón no funciona, copiá y pegá este enlace:": "Se o botão não funcionar, copie e cole este link:",
     "Si no creaste una cuenta, podés ignorar este correo.": "Se você não criou uma conta, pode ignorar este e-mail.",
-    "Verificar mi email": "Verificar meu e-mail"
+    "Verificar mi email": "Verificar meu e-mail",
+    "Abriendo la cámara…": "Abrindo a câmera…",
+    "Apagar la cámara": "Desligar a câmera",
+    "Apuntá al QR de la entrada.": "Aponte para o QR do ingresso.",
+    "Cámara apagada.": "Câmera desligada.",
+    "Demasiados intentos seguidos. Esperá unos segundos.": "Tentativas demais seguidas. Aguarde alguns segundos.",
+    "Escanear con la cámara": "Escanear com a câmera",
+    "No pudimos usar la cámara. Dale permiso, o abrí esta página en Safari o Chrome y no dentro de otra app.": "Não conseguimos usar a câmera. Conceda a permissão, ou abra esta página no Safari ou Chrome em vez de dentro de outro app.",
+    "No pudimos validar la entrada. Intentá de nuevo.": "Não conseguimos validar o ingresso. Tente de novo.",
+    "Sin conexión. Revisá la señal e intentá de nuevo.": "Sem conexão. Verifique o sinal e tente de novo."
 }

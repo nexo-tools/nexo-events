@@ -32,7 +32,10 @@ class SecurityHeaders
             'X-Content-Type-Options' => 'nosniff',
             'X-Frame-Options' => 'DENY',
             'Referrer-Policy' => 'strict-origin-when-cross-origin',
-            'Permissions-Policy' => 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
+            // camera=(self): the door scanner decodes ticket QRs on the organizer's
+            // own phone (SPEC-scanner). Same-origin only — never delegated to a
+            // frame — and microphone/geolocation stay denied outright.
+            'Permissions-Policy' => 'camera=(self), microphone=(), geolocation=(), interest-cohort=()',
             'Cross-Origin-Opener-Policy' => 'same-origin',
             'X-XSS-Protection' => '0',
         ];

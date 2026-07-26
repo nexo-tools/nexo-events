@@ -109,5 +109,14 @@
     "Confirmá tu dirección para poder publicar eventos. Mientras tanto podés crear y editar borradores.": "Confirm your address so you can publish events. In the meantime you can create and edit drafts.",
     "Si el botón no funciona, copiá y pegá este enlace:": "If the button does not work, copy and paste this link:",
     "Si no creaste una cuenta, podés ignorar este correo.": "If you did not create an account, you can ignore this email.",
-    "Verificar mi email": "Verify my email"
+    "Verificar mi email": "Verify my email",
+    "Abriendo la cámara…": "Opening the camera…",
+    "Apagar la cámara": "Turn the camera off",
+    "Apuntá al QR de la entrada.": "Point at the ticket QR.",
+    "Cámara apagada.": "Camera off.",
+    "Demasiados intentos seguidos. Esperá unos segundos.": "Too many attempts in a row. Wait a few seconds.",
+    "Escanear con la cámara": "Scan with the camera",
+    "No pudimos usar la cámara. Dale permiso, o abrí esta página en Safari o Chrome y no dentro de otra app.": "We could not use the camera. Grant permission, or open this page in Safari or Chrome rather than inside another app.",
+    "No pudimos validar la entrada. Intentá de nuevo.": "We could not validate the ticket. Try again.",
+    "Sin conexión. Revisá la señal e intentá de nuevo.": "No connection. Check the signal and try again."
 }

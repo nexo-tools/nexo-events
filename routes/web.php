@@ -61,8 +61,14 @@ Route::middleware('auth')->group(function () {
         Route::get('eventos/{event}/registrados', [EventController::class, 'registrations'])->name('events.registrations');
 
         Route::get('eventos/{event}/escanear', [CheckinController::class, 'scanner'])->name('events.scan');
-        Route::post('eventos/{event}/checkin', [CheckinController::class, 'checkin'])->name('events.checkin');
-        Route::post('tickets/{ticket}/checkin', [CheckinController::class, 'manual'])->name('tickets.checkin');
+        // Generous on purpose: a busy door legitimately scans once every couple
+        // of seconds, and a limit that fires mid-event is worse than the abuse
+        // it prevents. Authenticated requests throttle per user, so one
+        // organizer's rush never affects another's door (ADR-007 §2).
+        Route::post('eventos/{event}/checkin', [CheckinController::class, 'checkin'])
+            ->middleware('throttle:120,1')->name('events.checkin');
+        Route::post('tickets/{ticket}/checkin', [CheckinController::class, 'manual'])
+            ->middleware('throttle:60,1')->name('tickets.checkin');
     });
 });
 
@@ -77,4 +83,8 @@ Route::post('e/{event:slug}/registro', [PublicEventController::class, 'register'
 // is the one public write that can degrade something an attendee already holds.
 Route::post('e/{event:slug}/reenviar', [PublicEventController::class, 'resend'])
     ->middleware('throttle:3,10')->name('public.resend');
-Route::get('t/{token}', [TicketController::class, 'show'])->name('ticket.show');
+// Throttled per IP, but loosely: attendees at a venue all share one NAT address,
+// so a tight limit would lock a queue out of their own tickets. Guessing a token
+// is not the threat this defends against (40 random chars) — absorbing scan-spam is.
+Route::get('t/{token}', [TicketController::class, 'show'])
+    ->middleware('throttle:60,1')->name('ticket.show');

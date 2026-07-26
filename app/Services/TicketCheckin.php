@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\EventStatus;
 use App\Enums\TicketStatus;
 use App\Models\Checkin;
+use App\Models\Event;
 use App\Models\Ticket;
 use App\Models\User;
 use Illuminate\Database\QueryException;
@@ -25,11 +26,25 @@ class TicketCheckin
     /**
      * Resolve a ticket by its opaque token and check it in.
      *
+     * $atEvent scopes the scan to one door. Pass it whenever the caller knows
+     * which event is being scanned: without it, a ticket belonging to a
+     * DIFFERENT event would be consumed here — marked used and given a checkin
+     * row — before the caller could notice and reject it. The attendee would
+     * then be turned away at the event they actually registered for, and any
+     * organizer could burn another organizer's tickets by scanning them at
+     * their own door. The check has to happen before the mutation, not after.
+     *
      * @return array{result: string, ticket: ?Ticket}
      */
-    public function checkInByToken(string $token, ?User $by = null): array
+    public function checkInByToken(string $token, ?User $by = null, ?Event $atEvent = null): array
     {
         $ticket = Ticket::query()->where('token_hash', hash('sha256', $token))->with('event')->first();
+
+        if ($ticket !== null && $atEvent !== null && $ticket->event_id !== $atEvent->getKey()) {
+            // Indistinguishable from an unknown token on purpose: this door has
+            // no business confirming that a ticket exists for another event.
+            return ['result' => self::UNKNOWN, 'ticket' => null];
+        }
 
         return $this->check($ticket, $by);
     }
