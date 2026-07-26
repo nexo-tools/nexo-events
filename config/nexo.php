@@ -24,4 +24,12 @@ return [
         'enabled' => (bool) env('NEXO_BEACON_ENABLED', false),
         'endpoint' => (string) env('NEXO_BEACON_ENDPOINT', 'https://nexotools.alvarocdev.com/beacon'),
     ],
+
+    // Deploy freeze window around an event's start (see events:door-guard).
+    // There is no `ends_at` column, so the window is inferred: long enough
+    // before for doors opening, long enough after to cover the event itself.
+    'door_guard' => [
+        'minutes_before' => (int) env('NEXO_DOOR_GUARD_BEFORE', 120),
+        'minutes_after' => (int) env('NEXO_DOOR_GUARD_AFTER', 360),
+    ],
 ];

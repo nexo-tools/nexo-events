@@ -1,0 +1,62 @@
+name: Deploy
+
+# Manual only — deliberately NOT on push, unlike the sibling tools.
+# This app has door windows: an automatic deploy triggered by a merge could take
+# the instance down exactly while people are being scanned into a venue. The
+# server-side script also refuses to run inside a door window (events:door-guard),
+# so this is belt and braces.
+on:
+  workflow_dispatch:
+
+concurrency: production
+
+jobs:
+  deploy:
+    name: Build & deploy to production
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Build frontend assets
+        run: |
+          npm ci
+          npm run build
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          # Retry ssh-keyscan: a transient network blip must not fail the deploy.
+          for i in 1 2 3; do
+            if ssh-keyscan -p "${{ secrets.DEPLOY_PORT }}" "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts; then
+              break
+            fi
+            echo "ssh-keyscan attempt $i failed; retrying in 5s"
+            sleep 5
+          done
+
+      - name: Check the door guard before touching anything
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "${{ secrets.DEPLOY_PORT }}" \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "cd ${{ secrets.DEPLOY_PATH }} && php artisan events:door-guard"
+
+      - name: Upload built assets
+        run: |
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/deploy_key -p ${{ secrets.DEPLOY_PORT }}" \
+            public/build/ \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/public/build/"
+
+      - name: Run server-side deploy script
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "${{ secrets.DEPLOY_PORT }}" \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "cd ${{ secrets.DEPLOY_PATH }} && { [ -f scripts/deploy.sh ] || git pull origin main; } && bash scripts/deploy.sh"
