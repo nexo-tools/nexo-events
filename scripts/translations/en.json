@@ -93,5 +93,9 @@
     "Si no ves el código, abrí tu entrada desde este enlace:": "If you can't see the code, open your ticket from this link:",
     "Tu entrada para :event": "Your ticket for :event",
     "Ver mi entrada": "View my ticket",
-    "Ya estás registrado con ese email. Pedí que te reenviemos tu entrada si no la encontrás.": "You are already registered with that email. Ask us to resend your ticket if you cannot find it."
+    "Ya estás registrado con ese email. Pedí que te reenviemos tu entrada si no la encontrás.": "You are already registered with that email. Ask us to resend your ticket if you cannot find it.",
+    "¿Ya te registraste y no encontrás tu entrada?": "Already registered and can't find your ticket?",
+    "Reenviarme mi entrada": "Resend my ticket",
+    "Si ese email tiene una entrada para este evento, te la reenviamos. Revisá tu correo.": "If that email has a ticket for this event, we have resent it. Check your inbox.",
+    "Te enviamos una entrada nueva y la anterior deja de funcionar.": "We send you a new ticket and the previous one stops working."
 }

@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\RegisterAttendeeRequest;
+use App\Http\Requests\ResendTicketRequest;
 use App\Mail\TicketIssued;
 use App\Models\Event;
 use App\Services\EventRegistrar;
+use App\Services\TicketResender;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
@@ -45,5 +47,25 @@ class PublicEventController extends Controller
             EventRegistrar::SOLD_OUT => back()->withErrors(['email' => __('El evento está agotado.')]),
             default => back()->withErrors(['email' => __('El registro para este evento está cerrado.')]),
         };
+    }
+
+    /**
+     * Re-deliver a lost ticket. Mints a new token and retires the old QR
+     * (ADR-008) — the original is unrecoverable because only its hash is kept.
+     */
+    public function resend(ResendTicketRequest $request, Event $event, TicketResender $resender): RedirectResponse
+    {
+        abort_unless($event->status->isPublic(), 404);
+
+        $resender->resend(
+            $event,
+            $request->string('email')->toString(),
+            app()->getLocale(),
+        );
+
+        // Deliberately the same answer whether or not that address holds a
+        // ticket: branching here would turn the page into an attendee-list
+        // oracle for anyone with a browser (AC-RESEND-2).
+        return back()->with('status', __('Si ese email tiene una entrada para este evento, te la reenviamos. Revisá tu correo.'));
     }
 }

@@ -15,6 +15,8 @@ The brief's hard technical requirements (§4, non-negotiable at the *what* level
 2. The DB stores a **hash of the token** (SHA-256), not the raw token — a leaked DB must not allow forging valid QR entries. The raw token exists only in the QR/ticket link delivered to the attendee. Same pattern as password-reset tokens.
 3. The same token backs the attendee's "view my ticket" URL. Revocation = ticket status change; the token never needs rotating in v1.
 
+   > **Superseded by [ADR-008](ADR-008-ticket-token-rotation-on-resend.md) (2026-07-26)** as to the last clause. Building the resend flow promised by ADR-005 §6 proved rotation *is* needed: a token stored only as a hash cannot be re-sent, so a resend mints a new one and the previous QR stops working. Everything else in this section stands.
+
 ### Atomicity (mandatory race-condition ACs)
 
 4. **Check-in**: single conditional statement + unique constraint, inside one transaction —

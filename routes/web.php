@@ -63,4 +63,8 @@ require __DIR__.'/nexo-sso.php';
 Route::get('e/{event:slug}', [PublicEventController::class, 'show'])->name('public.event');
 Route::post('e/{event:slug}/registro', [PublicEventController::class, 'register'])
     ->middleware('throttle:10,1')->name('public.register');
+// Tighter than registration: each call rotates a ticket token (ADR-008), so it
+// is the one public write that can degrade something an attendee already holds.
+Route::post('e/{event:slug}/reenviar', [PublicEventController::class, 'resend'])
+    ->middleware('throttle:3,10')->name('public.resend');
 Route::get('t/{token}', [TicketController::class, 'show'])->name('ticket.show');

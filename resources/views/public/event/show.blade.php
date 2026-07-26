@@ -32,6 +32,28 @@
                 <x-button>{{ __('Registrarme') }}</x-button>
             </form>
         @endif
+
+        {{-- Lost-ticket recovery. Collapsed by default so it never competes with
+             the registration form, which is what most visitors came for. --}}
+        <details class="mt-6 border-t border-slate-200 pt-4 dark:border-slate-700">
+            <summary class="cursor-pointer text-sm text-slate-600 hover:text-brand-700 dark:text-slate-400">
+                {{ __('¿Ya te registraste y no encontrás tu entrada?') }}
+            </summary>
+
+            <form method="POST" action="{{ route('public.resend', $event) }}" class="mt-3 space-y-3">
+                @csrf
+                <input type="text" name="website" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true">
+                <div>
+                    <label for="resend-email" class="block text-sm font-medium">{{ __('Email') }}</label>
+                    <input id="resend-email" type="email" name="email" required
+                        class="mt-1 block w-full rounded-lg border-slate-300 dark:border-slate-600 dark:bg-slate-800">
+                </div>
+                <p class="text-xs text-slate-500 dark:text-slate-400">
+                    {{ __('Te enviamos una entrada nueva y la anterior deja de funcionar.') }}
+                </p>
+                <x-button>{{ __('Reenviarme mi entrada') }}</x-button>
+            </form>
+        </details>
     @elseif ($event->status->value === 'cancelled')
         <p class="rounded-lg bg-red-100 px-4 py-3 text-sm text-red-900">{{ __('Este evento fue cancelado.') }}</p>
     @else
