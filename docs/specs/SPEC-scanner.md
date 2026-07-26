@@ -63,6 +63,24 @@ Automated ACs green with name-traced tests · Pint + Larastan + Pest + i18n `--c
 
 - **2026-07-26 (spike, task 6.2)** — `jsQR@1.4.0` confirmed: pure JS, no wasm, no worker, bundles from our own origin, and **decodes this app's own generated tickets** — a QR produced by `QrPng` reads back as the exact token. That round trip is now a permanent guardian (`QrRoundTripTest`, AC-SCAN-1) rather than one-off spike evidence, because "valid image, unreadable code" is a failure that would otherwise appear for the first time at a venue door. PNG decoding in that script uses **pngjs, not sharp**: sharp ships a platform-specific native binary and the suite runs inside the Linux container against a `node_modules` installed on the macOS host, which fails to load. Pure JS keeps host, container and CI interchangeable.
 
+## Device pass (task 6.5) — owner-gated, still outstanding
+
+`AC-SCAN-4` and `AC-SCAN-5` cannot be proven by any automated test in this repo: they are about a real camera in a real hand. Everything else is covered by the suite. Run this once on **one iOS and one Android phone**, over **HTTPS** (a tunnel to the dev machine, or the deployed instance after Phase 8 — `getUserMedia` refuses plain HTTP on anything but `localhost`):
+
+- [ ] Sign in as the organizer, open an event → **Check-in en puerta**.
+- [ ] The **Escanear con la cámara** button is visible (it is hidden until JS confirms a camera API).
+- [ ] Tap it → the browser asks for camera permission → the rear camera opens inline (not fullscreen).
+- [ ] Point at a valid ticket QR → **green**, with the attendee's name. *(AC-SCAN-1)*
+- [ ] Keep the same QR in frame for ~5s → it is **not** submitted over and over. *(AC-SCAN-5)*
+- [ ] Scan a second, different ticket without touching anything → it works. *(AC-SCAN-4)*
+- [ ] Scan the first ticket again → **red**, "Entrada ya usada".
+- [ ] Scan a QR from another event → **red**, "Entrada no válida"; then confirm on that other event that the ticket is **still valid** (this is the bug fixed in 6.3 — worth re-checking on real hardware).
+- [ ] Deny camera permission (or open the link inside Instagram/Gmail on iOS) → the message points at Safari/Chrome and the **manual form still works**.
+- [ ] Turn airplane mode on mid-scan → "Sin conexión", not a false rejection.
+- [ ] Tap **Apagar la cámara** → the camera indicator light goes out.
+
+Record the outcome here with a date when it runs.
+
 ## Known limitations
 
 - **Online-only** (ADR-002): the door needs connectivity. A venue with no signal falls back to nothing — offline check-in with sync is backlog, and the organizer should know before choosing the venue.

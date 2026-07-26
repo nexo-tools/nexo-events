@@ -68,10 +68,11 @@ Defects & drift: `routes/console.php` schedules `nexo:send-reminders`, which **d
 - [x] 6.2 Spike — decode library as a bundled static asset: evaluate native `BarcodeDetector` with a JS fallback (jsQR-class) vs. wasm options; pick by real-device support, CSP impact, license, and size; record the decision in the SPEC (dated note).
 - [x] 6.3 Scanner page: `getUserMedia` (rear camera) + decode loop + auto-submit token → existing `TicketCheckin` path; result UI with reason + re-arm; camera-permission-denied and no-camera fallbacks keep manual entry usable; `SecurityHeaders` + guardian updated in sync.
 - [x] 6.4 Hot-path hardening: named rate limits on `events.checkin`, `tickets.checkin` and `t/{token}` with deliberate-violation tests.
-- [ ] 6.5 Real-device pass over HTTPS (tunnel or LAN cert — technique documented in the SPEC): full door flow on one iOS and one Android phone; evidence captured.
-- [ ] 6.6 Gate 6 audit pass + sign-off.
+- [~] 6.5 Real-device pass **(owner-gated — checklist in `docs/specs/SPEC-scanner.md`, not yet run)**: original scope kept: over HTTPS (tunnel or LAN cert — technique documented in the SPEC): full door flow on one iOS and one Android phone; evidence captured.
+- [x] 6.6 Gate 6 audit pass (owner sign-off + device pass pending — see gate below).
 
-**Gate 6:** AC↔test grep pass · double-scan atomicity tests still green · real-device evidence (scan → green; rescan → red with reason; revoked/killed rejected) · CSP still strict + `.htaccess` sync guardian green · throttle violations caught · checkpoint · owner sign-off.
+**Gate 6 — 2026-07-26:** ✅ AC↔test grep pass (9 of 11 ACs automated; `AC-SCAN-4`/`AC-SCAN-5` are camera-in-hand behaviours, marked *device* in the SPEC from the start rather than claimed green) · ✅ suite green, 128 tests · ✅ double-scan atomicity still proven, now through the JSON path too · ✅ CSP unchanged and `.htaccess` sync guardian green; the only header delta is `camera=(self)`, asserted by `AC-SCAN-8` · ✅ throttle violations caught on both door endpoints and the ticket page · ✅ **security fix**: a ticket from another event was being consumed before being rejected (see `TicketCheckin::checkInByToken`) · ✅ `QrRoundTripTest` proves the generated QR is readable by the shipped decoder · ✅ checkpoint in AGENTS.md.
+⏳ **Owner-gated, still open:** the real-device pass (iOS + Android over HTTPS) — checklist in [SPEC-scanner.md](specs/SPEC-scanner.md). **Sign-off: pending.**
 
 ## Phase 7 — Operable anti-abuse, analytics & the full Nexo standard
 

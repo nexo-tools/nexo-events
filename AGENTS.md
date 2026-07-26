@@ -53,6 +53,27 @@ Not deployed yet. Target `nexoevents.alvarocdev.com` (subdomain already created)
 
 ## Accumulated context
 
+- **2026-07-26** — **Phase 6 done: the door scanner uses the camera** (128 tests green). Native
+  `BarcodeDetector` where available, `jsQR` otherwise, loaded by dynamic import so its 130 KB is a
+  separate chunk only the scanning page fetches. Things that will bite again:
+  - **A ticket from another event used to be consumed before being rejected.** `checkInByToken()`
+    checked in first and the controller rewrote the answer to "unknown" afterwards — so the
+    attendee lost their entry at the event they had actually registered for, and any organizer
+    could burn a competitor's tickets by scanning them. The event scope now goes **into** the
+    service, before any write. Found by writing `AC-SCAN-2`, not by review.
+  - **Never mix Blade's inline `@php(...)` with a `@php ... @endphp` block in one view.** Blade's
+    raw-block regex matches from the *first* `@php` to the block's `@endphp` and swallows every
+    directive in between; the page 500s with a confusing "unclosed @if". Four views here still use
+    the inline form. Arrays for the front end belong in the controller anyway.
+  - **The scanner is progressive enhancement, deliberately.** The manual form is server-rendered
+    and works with JS off; camera controls stay `hidden` until `scanner.js` confirms a camera API
+    exists. An event is a fixed moment — a blank scanner at 8pm cannot be fixed by a deploy, which
+    the freeze rule forbids anyway. Do not "simplify" this into a JS-rendered page.
+  - `Permissions-Policy` is now `camera=(self)`; `SecurityHeadersTest` asserts it. jsQR was chosen
+    over wasm/worker decoders precisely so the CSP needed no `wasm-unsafe-eval` or `worker-src`.
+  - **Owner-gated and still open:** the real-device pass (iOS + Android over HTTPS). `AC-SCAN-4`
+    (re-arm) and `AC-SCAN-5` (duplicate damping) are camera-in-hand behaviours no PHP test can
+    reach; checklist in [docs/specs/SPEC-scanner.md](docs/specs/SPEC-scanner.md).
 - **2026-07-26** — **Phase 5 done: the ticket now arrives by email** (117 tests green; Pint +
   Larastan + i18n `--check` clean). Registration queues a `TicketIssued` mail (event summary +
   QR + link); a resend flow recovers a lost ticket; organizers must verify their email before
