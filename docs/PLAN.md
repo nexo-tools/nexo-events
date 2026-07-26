@@ -1,71 +1,126 @@
 # PLAN — Nexo Events
 
-> Execution follows the `planning-by-stages` skill (alvaro standards repo): one numbered task at a time, checklist marked at the moment, SPEC before code, AC ↔ test traceability by name, one commit per task (`"N,M description"`), CI green before the next task, gate per phase with owner sign-off.
+> Execution follows the `planning-by-stages` skill (alvaro standards repo): one numbered task at a time, checklist marked at the moment, SPEC before code, AC ↔ test traceability by name, one commit per task (`"N.M description"`), CI green before the next task, gate per phase with owner sign-off, checkpoint persisted to `AGENTS.md` at every gate.
 >
-> Phase 1 is broken into numbered tasks now by explicit planning directive; its task list gets reconciled against the Phase 1 SPEC's ACs when the phase opens (task 1.1). Later phases list objective, key work, and gate criteria only.
+> **Reconciled 2026-07-26 against the real codebase.** The original Phases 0–3 were executed in consolidated form by the 2026-07-23 ecosystem run (`fase-3-build`) plus the brand-unification M4 pass (merged to `main` 2026-07-24); their deferrals become Phases 5–7 below. The original Phase 4 (production, hardening & launch) is **superseded** by Phases 8–9; the original Phase 5 (ecosystem integrations) is now **Phase 10**. Ground truth below comes from a full code audit (routes, migrations, tests, views) on 2026-07-26. **Signed off by Alvaro 2026-07-26** — owner flags D1–D7 resolved (see the decisions table).
+>
+> Each remaining phase opens with its SPEC (task N.1); the task list of that phase is reconciled against the SPEC's numbered ACs at that moment (just-in-time breakdown). Task lists below are the planned shape, not a substitute for that reconciliation.
 
-## Phase 0 — Planning & foundations (current)
+## Where we are (executed history)
 
-**Objective:** decisions made and recorded, scope fixed, project formalized. Zero product code.
+### Phase 0 — Planning & foundations ✅ (2026-07-19)
 
-- [x] 0.1 Read the standards system + evaluation brief (`nexoevents.md`); separate closed product decisions, hard technical requirements, and inputs to re-evaluate.
-- [x] 0.2 Resolve Alvaro's decisions: stack (Laravel + Hostinger), attendee model (email-only v1), nexoid coordination path, open source multi-instance confirmed.
-- [x] 0.3 `docs/SCOPE.md` — value proposition, MVP in/out with whys, product principles, backlog.
-- [x] 0.4 Foundational ADRs 001–007, status Proposed; accounts ADR coordinated with nexoid ADR-004 (cross-note in their AGENTS.md).
-- [x] 0.5 `docs/PLAN.md` (this file) with phases and gates.
-- [x] 0.6 Formalization: `AGENTS.md` (EN), `CLAUDE.md` → AGENTS, `CLAUDE.local.md` (gitignored) with standards briefing, `README.md` with Status line, `.gitignore`, git init, private GitHub repo in `nexo-tools`.
-- [ ] 0.7 Present plan + decisions to Alvaro; resolve gate flags; stamp sign-off.
+- [x] SCOPE, ADRs 001–007, PLAN, `AGENTS.md`, repo formalized (private, later migrated to the `nexo-tools` org).
+- [x] Gate 0: Alvaro authorized proceeding at the 2026-07-23 ecosystem-run kickoff. Resolved by reality since: repo slug is `nexo-events` in `nexo-tools`; manual check-in fallback stayed in MVP; staff scanning stayed v2. Both closed at the 2026-07-26 sign-off: ADRs Accepted (**D6**), subdomain already created (**D2**).
 
-**Gate 0 (owner sign-off required):**
-- [ ] ADRs 001–007 reviewed and accepted (or amended).
-- [ ] Gate flags resolved: manual check-in fallback in MVP (SCOPE), staff scanning deferred to v2 (ADR-004 §7), naming — repo slug `nexo-events` / subdomain `nexoevents.alvarocdev.com` (ADR-001 §5).
-- [ ] SCOPE MVP in/out approved.
-- [ ] Sign-off: **pending**.
+### Phases 1–3 (consolidated) ✅ — MVP core, ecosystem run `fase-3-build` (2026-07-23)
 
-## Phase 1 — Foundation & organizer core
+- [x] Organizer standalone auth (register/login/reset, rate-limited); event model + `EventStatus` lifecycle (draft/published/closed/cancelled/killed) + slug + ownership guards + CRUD + publish/close/cancel.
+- [x] Public event page (`e/{slug}`); email-only attendee registration (`EventRegistrar`) with **atomic capacity** (row lock + `UNIQUE(event_id, attendee_email)`), honeypot, rate limit.
+- [x] QR ticket = opaque token stored only as SHA-256 (`token_hash`), on-screen SVG QR (`QrSvg`); ticket URL `t/{token}`.
+- [x] **Atomic door check-in** (`TicketCheckin`, `UNIQUE(checkins.ticket_id)` — double scan proven to resolve to one entry) + manual fallback from the registered list; organizer-only guards.
+- [x] Nexo SSO client scaffolded, env-gated **off** (`NEXO_SSO_ENABLED=false`), standalone intact.
 
-**Objective:** scaffolded, CI-guarded app where an organizer can register, verify email, and manage events with public pages. No tickets yet.
+### Phase 4 — Brand & ecosystem standard pass ✅ (brand-unification M4 + follow-ups, 2026-07-23 → 2026-07-26; not in the original plan)
 
-- [ ] 1.1 `SPEC.md` for this phase (numbered ACs: organizer auth, event lifecycle, public page, i18n/SEO/CSP baselines); reconcile this task list against it.
-- [ ] 1.2 Scaffold: Laravel + Sail per `laravel-bootstrap-docker-only` (SQLite `:memory:` tests restored), Pest + Pint + Larastan.
-- [ ] 1.3 CI from nexo-agenda canonical workflow: Pint + Larastan + translations check + build + Pest + `composer audit`.
-- [ ] 1.4 Canonical ecosystem pieces (CATALOG.md): translations generator (es/en/pt) + guard test, SecurityHeaders + strict CSP + `.htaccess` sync test, brand assets, `NEXO_ATTRIBUTION_*` footer.
-- [ ] 1.5 Organizer auth (local): register, login, logout, email verification, password reset — rate-limited, with deliberate-violation tests (ADR-003, ADR-007).
-- [ ] 1.6 Event model + migrations: schema per ADR-004 (events with slug, status lifecycle incl. `killed`, nullable capacity/short_url), factories, status transition rules.
-- [ ] 1.7 Organizer dashboard: event create/edit/cancel, registration close, registered list (empty for now).
-- [ ] 1.8 Public event page: slug URL, SEO base (title/description/OG/canonical/JSON-LD Event/sitemap), i18n, attribution footer, cookieless view counter (VisitorHash).
-- [ ] 1.9 Gate 1 audit pass + sign-off.
+- [x] Nexo brand tokens (violet, light/dark), full chrome (header/app-switcher/footer/locale/theme toggle), FOUC-free theme-init with CSP hash, `/help` center, translated error pages (403/404/419/429/500/503), i18n es/en/pt + generator + sync guardians, `NEXO_ATTRIBUTION_*` canonical, `config/nexo-ecosystem.php` registry (self = `soon`), brand assets + `og-image.png`, site-wide OG/Twitter meta, ecosystem-standard README + MIT LICENSE + issue templates. Suite: **70 tests**, CI (Pint/Larastan/i18n-check/build/Pest) green. All merged to `main` and pushed (repo **private**).
 
-**Gate 1:** all ACs green with name-traced tests (`grep` pass); deliberate violations caught (rate limit blocks, unverified email cannot publish, CSP sync test fails on drift); security audit exercised; ARCHITECTURE matches reality; owner sign-off.
+### Verified gaps register (code audit 2026-07-26 — the input to Phases 5–9)
 
-## Phase 2 — Registration, tickets & email
+Missing features (deferred MVP): transactional **email** (no Mailable/Notification/Job at all; ticket is on-screen only; no resend flow) · **camera** QR scanning (manual token entry; camera denied by `Permissions-Policy: camera=()` + guardian) · organizer **email verification + publish gate** · **report** flow + **kill-switch trigger** (`killed` honored but unsettable — no route/command) · **VisitorHash** counters · SEO layer (no `<x-nexo-seo>`, no meta description/canonical/hreflang/JSON-LD/robots.txt/sitemap; public event page title is generic) · legal pages · beacon emitter (not wired, despite earlier notes) · deploy tooling (`deploy.yml`/`deploy.sh` absent).
 
-**Objective:** attendees register with email only and receive a working QR ticket; capacity is race-proof.
+Defects & drift: `routes/console.php` schedules `nexo:send-reminders`, which **does not exist** (breaks `schedule:run`; reminders are out of scope — remove) · check-in endpoints and `t/{token}` are **unthrottled** (ADR-007 §2) · `composer audit` missing from CI (original task 1.3) · race tests are **sequential simulations** on sqlite (`lockForUpdate` no-op there; real-concurrency proof on MySQL pending, ADR-004 mandate) · `lang/en` missing `passwords.php`/`validation.php` · SSO controller/env comments carry nexo-agenda residue ("EnsureBusiness") · `events` table has **no image column** (SCOPE promises one — flag **D7**) and no `short_url` (ADR-006 §3 — lands with Phase 10) · README overclaims camera + email delivery (becomes true after Phases 5–6; re-verified in 9.2) · `docs/SCOPE.md` links the gitignored `nexoevents.md` (broken once public — fixed in 9.1).
 
-Key work: phase SPEC; **opening spike = deliverability** (Brevo SMTP, SPF/DKIM on alvarocdev.com, real inbox tests, QR embedding — reconcile ADR-005); attendee registration (email-only, honeypot, per-IP/per-event rate limits, `UNIQUE(event_id, attendee_email)`); atomic capacity with concurrent-registration ACs (ADR-004 §5); opaque token generation + hashed storage; ticket screen + "view my ticket" link + re-send flow; queued "Your ticket" email (database queue + cron).
+## Owner decisions — resolved at sign-off (Alvaro, 2026-07-26)
 
-**Gate 2:** race ACs proven by concurrent tests (last spot, duplicate email); token never stored raw (test greps schema/fixtures); real ticket email lands in Gmail/Outlook inbox with scannable QR; rate-limit violations caught; owner sign-off.
+| # | Decision | Resolution |
+|---|---|---|
+| **D1** | Email provider + sender + DNS | **Done** — provider account already created (per the ADR-005 proposal: Brevo, `nexoevents@alvarocdev.com`). Spike 5.3 still validates DNS alignment + inbox placement; owner hands SMTP credentials straight to local/prod `.env` (never the repo). |
+| **D2** | Production host/subdomain | **Done** — `nexoevents.alvarocdev.com` already created. |
+| **D3** | SSO at launch | **Launch-independent** (owner: either way is fine) — nexoid is live and used by every other tool. Activation is config, not a launch gate: Phase 8 if the in-flight ecosystem work is stable by then, else Phase 10. When activating, validate: hardened template propagated (nonce + RP-logout), prod client registered, round-trip against the current nexoid. |
+| **D4** | Beacon at launch | **Activate with validation** — the goal is metrics readable from the nexotools hub. Emitter ships env-gated off (7.7); activation + verifying that nexoevents events show up in nexotools `/admin` happens in 8.6 (same in-flight-work conditioning as D3; needs hub-side origin allowlist). |
+| **D5** | Launch date & form | **Timing resolved**: launch follows the end of development, no calendar date. Only the announcement form remains — confirmed at 9.5. |
+| **D6** | ADRs + this plan | **Accepted** — ADRs 001–007 flipped to Accepted (2026-07-26); this reconciled plan signed off. |
+| **D7** | Event image upload | **Deferred post-v1** — SCOPE amendment lands with 5.1; backups stay DB-only; images move to the Phase 10 backlog. |
 
-## Phase 3 — Check-in at the door
+**Ecosystem caveat (from D3/D4):** nexoid/nexotools are being actively edited right now (a persistence feature in progress; hub-side metrics reading). Nexo Events never blocks on that work (ADR-006): task 7.7 pulls the then-current `nexo-ui` template, and task 8.6 runs the cross-tool validation only once that work is stable — otherwise activation rides Phase 10.
 
-**Objective:** organizer scans tickets with their phone; double scans lose; the door flow works on a real phone.
+## Phase 5 — Ticket email & organizer verification
 
-Key work: phase SPEC; spike — JS QR-decode library as static asset (CSP-compatible, no runtime third parties) on real iOS/Android browsers; scanner page (camera, organizer-only) + atomic check-in endpoint (ADR-004 §4) with race ACs; green/red result UX with reasons (used/revoked/killed/unknown); manual fallback check-in from the registered list; live registered/checked-in counts.
+**Objective:** attendees receive a working ticket email (the registration confirmation *is* the ticket, ADR-005); organizers must verify email to publish (ADR-007 §1). Closes the first MVP deferral.
 
-**Gate 3:** double-scan race AC green (concurrent test); real-device door flow exercised end to end (register → email → scan → green; rescan → red); revoked/killed tickets rejected with reason; owner sign-off.
+- [ ] 5.1 Docs reconciliation (no product code): fix `AGENTS.md` stale intro ("Phase 0, no code yet"), record the 2026-07-26 sign-off + resolved flags there, and amend `docs/SCOPE.md` (status notes + dated amendment: event image upload deferred post-v1 per D7). One commit.
+- [ ] 5.2 `docs/specs/SPEC-email.md` — numbered ACs (`AC-EMAIL-n`) covering: queued "Your ticket" mail (the **only** v1 template) with event summary + embedded QR + ticket-link fallback; resend flow; organizer verification + publish gate; queue wiring via cron (`queue:work --stop-when-empty` on the scheduler, ADR-002/005) **replacing the stale `nexo:send-reminders` schedule entry**; free-tier daily-cap behavior (queue keeps flowing; on-screen QR unaffected); Mailpit for local dev. Reconcile this task list against the ACs.
+- [ ] 5.3 Deliverability spike *(needs **D1**; owner sets up account + DNS)*: SPF/DKIM/DMARC alignment for the chosen provider, real sends to Gmail/Outlook/Yahoo inboxes, settle the QR embedding technique (Gmail blocks data-URIs — CID-attached PNG vs. hosted asset), verify inbox placement. Findings reconcile ADR-005 + the SPEC (dated notes).
+- [ ] 5.4 Queued ticket mail: Mailable + database queue + scheduler wiring; registration UX unchanged (on-screen QR immediate regardless of mail latency); failed-job visibility (log). Tests: queued on registration, content ACs, `Mail::fake` + queue assertions.
+- [ ] 5.5 Resend flow ("resend my ticket" per SPEC): re-sends only to the registered email, never discloses registration state to third parties, rate-limited with a deliberate-violation test.
+- [ ] 5.6 Organizer email verification: `MustVerifyEmail` + verification routes + queued mail; **publish gate** — an unverified organizer cannot publish (deliberate-violation test); SSO mapping — IdP `email_verified: true` claims satisfy the gate (resolver already refuses unverified links).
+- [ ] 5.7 Gate 5 audit pass + sign-off.
 
-## Phase 4 — Production, hardening & launch
+**Gate 5:** AC↔test grep pass · suite green (race + guardians included) · local e2e in Mailpit (register → ticket mail with scannable QR) · **real inbox evidence** in Gmail + Outlook (screenshots; QR renders, SPF/DKIM pass) · publish-while-unverified blocked (violation test) · queue drains via `schedule:run` locally · ADR-005 reconciled · checkpoint in AGENTS.md · owner sign-off.
 
-**Objective:** live at the hosted instance, operable during real events, abuse-ready. Launch = MVP complete.
+## Phase 6 — Camera check-in at the door
 
-Key work: deploy via `deploy-laravel-hostinger` (cron for queue + scheduler); production baseline per standards — **verified backups (restore tested once, DB + uploaded images)**, uptime monitoring with alerting; **event-aware operations**: a down instance during a live event strands people at the door → documented deploy-freeze rule (no deploys while any event is in its door window; `php artisan down` counts as downtime), monitoring checked before event hours; anti-abuse live (report flow, kill-switch drill on a real test event); security/perf audit exercised; `audit-open-source` + publish decision (MIT, English README); coordination notes routed (nexotools "coming soon", Nexo Short API note).
+**Objective:** the organizer points their phone at a QR and gets green/red with a reason; manual entry stays as fallback. Closes the second MVP deferral (ADR-002 §5, ADR-004 §6).
 
-**Gate 4:** production smoke (HTTP + CSP + full real flow with email on the live instance); backup restored for real once; uptime alert fires in a drill; kill-switch drill passed; audit findings closed; owner sign-off.
+- [ ] 6.1 `docs/specs/SPEC-scanner.md` — numbered ACs (`AC-SCAN-n`): on-device decode, **zero external requests** (static asset, CSP-strict; note any `wasm-unsafe-eval` trade-off for the spike to resolve), works on real iOS Safari + Android Chrome, continuous scan loop with duplicate-read damping, submits to the **same atomic endpoint**, green/red UX with reasons (used/revoked/killed/unknown), manual fallback intact, `Permissions-Policy` changes from `camera=()` to allowing self **with the guardian test updated in the same commit**, throttle on both check-in endpoints (ADR-007 §2). Reconcile task list.
+- [ ] 6.2 Spike — decode library as a bundled static asset: evaluate native `BarcodeDetector` with a JS fallback (jsQR-class) vs. wasm options; pick by real-device support, CSP impact, license, and size; record the decision in the SPEC (dated note).
+- [ ] 6.3 Scanner page: `getUserMedia` (rear camera) + decode loop + auto-submit token → existing `TicketCheckin` path; result UI with reason + re-arm; camera-permission-denied and no-camera fallbacks keep manual entry usable; `SecurityHeaders` + guardian updated in sync.
+- [ ] 6.4 Hot-path hardening: named rate limits on `events.checkin`, `tickets.checkin` and `t/{token}` with deliberate-violation tests.
+- [ ] 6.5 Real-device pass over HTTPS (tunnel or LAN cert — technique documented in the SPEC): full door flow on one iOS and one Android phone; evidence captured.
+- [ ] 6.6 Gate 6 audit pass + sign-off.
 
-## Phase 5 — Ecosystem integrations (post-launch)
+**Gate 6:** AC↔test grep pass · double-scan atomicity tests still green · real-device evidence (scan → green; rescan → red with reason; revoked/killed rejected) · CSP still strict + `.htaccess` sync guardian green · throttle violations caught · checkpoint · owner sign-off.
 
-**Objective:** Nexo Events joins the ecosystem, order driven by sibling readiness (ADR-006).
+## Phase 7 — Operable anti-abuse, analytics & the full Nexo standard
 
-Key work (each item its own SPEC when opened): Nexo Short auto short-link per event (when Nexo Short is live); "Sign in with Nexo ID" for organizers via nexoid's Phase 3 client pattern; Nexo Links featured event; attendee accounts / "my tickets" (v2, via Nexo ID). Payments (Mercado Pago, AR/LatAm) remains a separate v2 decision with its own planning round — not a phase here.
+**Objective:** the remaining MVP promises (SCOPE/ADR-007) and the whole `nexo-ui/STANDARD.md` + `seo-audit` checklists hold with evidence. After this phase the tool is launch-ready except production itself.
 
-**Gate 5:** per integration — real cross-tool flow exercised, standalone mode still green (self-host story intact), owner sign-off.
+- [ ] 7.1 `docs/specs/SPEC-abuse.md` — ACs for report flow + kill-switch + minimal operator surface (ADR-007 consequence resolved here: **CLI-first** — artisan commands; an admin UI is post-v1). Reconcile task list.
+- [ ] 7.2 Report flow: public "report this event" (no login; optional reporter email) → `event_reports` migration + notification to the instance admin (support email); rate-limited + honeypot; tests incl. violation.
+- [ ] 7.3 Kill-switch: `events:kill` / `events:restore` artisan commands with audit trail (who/when/why in logs or a column per SPEC); public page returns unavailable, registration closes, door scans go red with reason (already honored — now reachable); tests.
+- [ ] 7.4 VisitorHash counters (copy canonical from nexo-links, CATALOG): deduped event-page views/day + registration counts on the organizer dashboard; cookieless, no raw IPs; tests.
+- [ ] 7.5 SEO layer: adopt `<x-nexo-seo>` (canonical component from `templates/nexo-ui`) across pages — per-page translated title/description, canonical, hreflang, per-event OG overrides; JSON-LD `Event` on the public page (status-aware, e.g. cancelled); `robots.txt` (Sitemap line; disallow `/app`, auth, `/t/`) + `sitemap.xml` (home/help + published events, hreflang alternates); `noindex` on private/auth/ticket pages; `SeoBaseTest` guardian; close every `seo-audit` checklist item.
+- [ ] 7.6 Legal pages: privacy + terms (attendee PII: names/emails; what's stored, retention, self-host framing), translated, linked from the footer; owner reviews wording at the gate.
+- [ ] 7.7 Chrome re-sync with current `nexo-ui` template: theme+lang persisted in **parent-domain cookies** (`nexo-theme`/`nexo-lang`, `encryptCookies` exceptions, recalculated CSP theme-init hash, `.htaccess` in sync), login action in header; wire the **beacon emitter** (`partials/beacon` + `nexo-beacon.js`, `NEXO_BEACON_ENABLED` default **false**, DNT-respecting) — activation stays owner-gated (**D4**).
+- [ ] 7.8 i18n + a11y completeness: add `lang/en` `passwords.php`/`validation.php`; translations `--check` green; a11y pass per STANDARD (landmarks, `:focus-visible` ring, `aria-label` on icon controls, `<html lang>`); mobile light/dark screenshots as evidence.
+- [ ] 7.9 Hardening sweep: `composer audit` step in CI; purge SSO template residue (agenda comments in controller/env); **MySQL race drill** — capacity + double-scan exercised with genuinely concurrent transactions against MySQL (shared dev env or CI MySQL job; documented, repeatable) honoring ADR-004's mandate.
+- [ ] 7.10 Gate 7 audit pass + sign-off.
+
+**Gate 7:** `nexo-ui/STANDARD.md` checklist 100% with evidence (mobile light/dark screenshots, suite + guardians green, i18n in sync) · `seo-audit` with zero gaps · **standalone mode intact** (SSO off + beacon off → full suite green) · MySQL race drill evidence · kill/report ACs proven · checkpoint · owner sign-off.
+
+## Phase 8 — Production (dark) & operations baseline
+
+**Objective:** live at the production subdomain — unannounced — operable during real events, abuse-ready. Ops posture per SCOPE principles: *a downed instance during a live event strands people at the door*.
+
+- [ ] 8.1 Deploy tooling: `deploy.yml` (`workflow_dispatch`) + `scripts/deploy.sh` from the ecosystem canonical (org SSH secrets + `DEPLOY_PATH`); **event-aware deploy guard** — `events:door-guard` command (no `ends_at` column, so window = configurable margin around `starts_at`) wired into `deploy.sh`: abort deploy/maintenance while any event is in its door window unless explicitly overridden; public `DEPLOYMENT.md` + ops runbook section (deploy freeze rule, `artisan down` counts as downtime).
+- [ ] 8.2 Provision + first deploy, dark *(needs **D2**; owner-gated: DNS, DB, prod `.env` incl. mail D1 values, cron `schedule:run`)*: per `deploy-laravel-hostinger` (symlinks, storage link, caches); repo stays private; no announcement.
+- [ ] 8.3 Production smoke: HTTP 200s; **strict CSP survives LiteSpeed** (header inspected); favicons/OG/robots/sitemap 200; **full real flow on the live instance** — register → ticket email in a real inbox → camera scan at the "door" (phone) → green; rescan → red. Recorded in `AGENTS.md` (Production section).
+- [ ] 8.4 Ops baseline (extends the cross-tool T4 standard: nightly off-site MySQL backups + UptimeRobot + heartbeat): confirm backup auto-discovery covers the nexoevents DB (+ uploaded files if D7 built) · **restore drill executed for real once** (evidence) · UptimeRobot on `/up` with alerting + a fired-alert drill · backup heartbeat covers this tool.
+- [ ] 8.5 Anti-abuse drill on a real test event: report it → `events:kill` → public page unavailable + door scan red with reason → `events:restore`; a rate-limit probe against the live instance.
+- [ ] 8.6 Ecosystem activation & validation *(per D3/D4; runs only if the in-flight nexoid/nexotools work — persistence feature, hub metrics — is stable; otherwise record the deferral to Phase 10)*: activate SSO (propagate the hardened template, register the prod client, round-trip against the live nexoid) and the beacon (env on + origin allow-listed in the hub); validate cross-tool theme/lang persistence against a live sibling; verify a nexoevents beacon event is readable in nexotools `/admin`.
+- [ ] 8.7 Security & performance audit: security pass over the deployed surface (headers, auth, token paths, abuse endpoints) + perf sanity on hot paths (public event page, check-in latency at the door); findings closed or explicitly accepted.
+- [ ] 8.8 Gate 8 audit pass + sign-off.
+
+**Gate 8:** production smoke green (incl. email + camera on the live instance) · backup restored for real once · uptime alert fired in a drill · kill-switch drill passed · audit findings closed · **SSO/beacon activation executed + validated per D3/D4, or their deferral to Phase 10 explicitly recorded** · checkpoint · owner sign-off.
+
+## Phase 9 — Publish the repo & launch
+
+**Objective:** repo public in `nexo-tools`, ecosystem coordinated, instance announced. Launch = v1 complete.
+
+- [ ] 9.1 `audit-open-source` — full history (16+ commits), HEAD, Actions logs, GitHub metadata; confirm the gitignored trio (`nexoevents.md`, `planning-prompt.md`, `CLAUDE.local.md`) stays untracked; fix `docs/SCOPE.md` / `AGENTS.md` references to the private brief (no broken public links); findings table with severities; anything grave → stop and report before proceeding.
+- [ ] 9.2 README truth pass with `public-readme`: claims re-verified against reality (camera + email now true), env table current (mail, `NEXO_*`), live-demo links, `Status:` line updated; ecosystem block synced.
+- [ ] 9.3 Repo → **public**; org About/topics/badges verified; CI badge green on `main`.
+- [ ] 9.4 Ecosystem coordination (routed to Alvaro where owner-gated): nexoevents status `soon` → `live` in its own registry, in `nexotools` `config/tools.php` and in the siblings' registries (their deploys ride the next ecosystem batch); alvarocdev "code" links; Search Console — verify the domain property covers the subdomain, submit the sitemap; confirm the Nexo Short programmatic-API coordination note is on their planning (ADR-006).
+- [ ] 9.5 Launch per **D5**: flip visibility/announcement as decided; first-days watch runbook active (uptime, mail daily-cap consumption, abuse reports, error logs).
+- [ ] 9.6 Gate 9 + v1 closing checkpoint.
+
+**Gate 9:** repo public with clean audit · live instance linked from the ecosystem (hub + switchers) · launch executed as decided · docs truthful (`AGENTS.md`, README `Status:`) · owner sign-off — **this closes v1**.
+
+## Phase 10 — Ecosystem integrations & post-launch (ex-Phase 5)
+
+**Objective:** Nexo Events joins the ecosystem; order driven by sibling readiness (ADR-006). Each item opens with its own SPEC.
+
+Key work: SSO and/or beacon activation if deferred at Gate 8 (D3/D4 — propagate hardened `nexo-sso-client` — nonce + RP-logout —, register the prod client, `post_logout_redirect_uri`; beacon env + hub allowlist + metrics check); Nexo Short auto short-link per event when their API is live (adds the `short_url` column, ADR-006 §3); event images (deferred per D7); minimal admin UI if report volume warrants it; Nexo Links featured event; attendee accounts / "my tickets" (v2, via Nexo ID); offline check-in exploration. Payments (Mercado Pago, AR/LatAm) stays a separate v2 planning round — not a phase here.
+
+**Gate 10:** per integration — real cross-tool flow exercised, **standalone mode still green** (self-host story intact), owner sign-off.

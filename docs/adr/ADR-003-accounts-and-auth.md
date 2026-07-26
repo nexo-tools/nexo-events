@@ -1,7 +1,7 @@
 # ADR-003 — Accounts & auth: mandatory local organizer accounts; email-only attendees; Nexo ID as optional SSO later
 
 - **Date:** 2026-07-19
-- **Status:** Proposed (attendee model chosen by Alvaro, 2026-07-19)
+- **Status:** Accepted (2026-07-26; attendee model chosen by Alvaro, 2026-07-19)
 
 ## Context
 

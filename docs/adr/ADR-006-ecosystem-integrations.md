@@ -1,7 +1,7 @@
 # ADR-006 — Ecosystem integrations: post-MVP, via public APIs, never blocking
 
 - **Date:** 2026-07-19
-- **Status:** Proposed
+- **Status:** Accepted (2026-07-26)
 
 ## Context
 

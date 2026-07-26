@@ -1,7 +1,7 @@
 # ADR-004 — Ticket QR & check-in: opaque server-side token, DB-enforced atomicity
 
 - **Date:** 2026-07-19
-- **Status:** Proposed
+- **Status:** Accepted (2026-07-26)
 
 ## Context
 

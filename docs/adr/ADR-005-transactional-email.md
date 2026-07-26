@@ -1,7 +1,7 @@
 # ADR-005 — Transactional email: env-configured SMTP; Brevo free tier for the hosted instance
 
 - **Date:** 2026-07-19
-- **Status:** Proposed
+- **Status:** Accepted (2026-07-26)
 
 ## Context
 

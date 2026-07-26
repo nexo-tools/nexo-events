@@ -1,7 +1,7 @@
 # ADR-001 — Product model: free events v1, public multi-organizer, open source multi-instance
 
 - **Date:** 2026-07-19
-- **Status:** Proposed (records product decisions already closed by Alvaro where noted)
+- **Status:** Accepted (2026-07-26; records product decisions already closed by Alvaro where noted)
 
 ## Context
 

@@ -1,7 +1,7 @@
 # ADR-007 — Anti-abuse & analytics: rate limits, report + kill-switch, cookieless metrics
 
 - **Date:** 2026-07-19
-- **Status:** Proposed
+- **Status:** Accepted (2026-07-26)
 
 ## Context
 

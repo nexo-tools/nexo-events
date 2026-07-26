@@ -1,7 +1,7 @@
 # ADR-002 — Stack & hosting: Laravel + MySQL on Hostinger shared
 
 - **Date:** 2026-07-19
-- **Status:** Proposed (stack chosen by Alvaro, 2026-07-19)
+- **Status:** Accepted (2026-07-26; stack chosen by Alvaro, 2026-07-19)
 
 ## Context
 
