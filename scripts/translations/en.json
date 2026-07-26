@@ -105,5 +105,9 @@
     "Verificá tu email": "Verify your email",
     "Verificá tu email para poder publicar eventos.": "Verify your email to publish events.",
     "Verificá tu email para poder publicar eventos. Te enviamos el enlace al registrarte.": "Verify your email to publish events. We sent you the link when you signed up.",
-    "Volver al panel": "Back to the dashboard"
+    "Volver al panel": "Back to the dashboard",
+    "Confirmá tu dirección para poder publicar eventos. Mientras tanto podés crear y editar borradores.": "Confirm your address so you can publish events. In the meantime you can create and edit drafts.",
+    "Si el botón no funciona, copiá y pegá este enlace:": "If the button does not work, copy and paste this link:",
+    "Si no creaste una cuenta, podés ignorar este correo.": "If you did not create an account, you can ignore this email.",
+    "Verificar mi email": "Verify my email"
 }

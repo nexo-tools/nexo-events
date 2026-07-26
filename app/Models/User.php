@@ -43,9 +43,13 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Event::class, 'organizer_id');
     }
 
-    /** Queued, so a slow SMTP relay never blocks the sign-up response. */
+    /**
+     * Queued, so a slow SMTP relay never blocks the sign-up response, and with
+     * the locale pinned at send time — the queue worker has no idea what
+     * language the organizer was reading when they signed up.
+     */
     public function sendEmailVerificationNotification(): void
     {
-        $this->notify(new VerifyEmailQueued);
+        $this->notify((new VerifyEmailQueued)->locale(app()->getLocale()));
     }
 }

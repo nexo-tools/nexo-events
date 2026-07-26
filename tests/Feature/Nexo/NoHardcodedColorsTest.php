@@ -5,6 +5,7 @@
 // literal colors (the generated tokens file, and <meta>/<input> values that can't
 // reference a CSS var). SVGs under public/ are not scanned.
 
+use Illuminate\Support\Str;
 use RecursiveDirectoryIterator as Dir;
 use RecursiveIteratorIterator as Walk;
 
@@ -20,8 +21,10 @@ it('has no hardcoded hex colors in blade views or app css (use --nexo-* tokens)'
         'css/nexo-tokens.css',
         'css/nexo-ui.css',
         'views/partials/head.blade.php',
-        'views/emails/ticket.blade.php',
     ];
+
+    // Whole directories that legitimately inline literal colors.
+    $allowedPrefixes = ['views/emails/'];
 
     $base = resource_path().DIRECTORY_SEPARATOR;
     $offenders = [];
@@ -34,7 +37,7 @@ it('has no hardcoded hex colors in blade views or app css (use --nexo-* tokens)'
 
             $rel = str_replace([$base, DIRECTORY_SEPARATOR], ['', '/'], $file->getPathname());
 
-            if (in_array($rel, $allowed, true)) {
+            if (in_array($rel, $allowed, true) || Str::startsWith($rel, $allowedPrefixes)) {
                 continue;
             }
 

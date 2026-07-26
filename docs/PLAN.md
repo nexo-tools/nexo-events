@@ -55,9 +55,10 @@ Defects & drift: `routes/console.php` schedules `nexo:send-reminders`, which **d
 - [x] 5.4 Queued ticket mail: Mailable + database queue + scheduler wiring; registration UX unchanged (on-screen QR immediate regardless of mail latency); failed-job visibility (log). Tests: queued on registration, content ACs, `Mail::fake` + queue assertions.
 - [x] 5.5 Resend flow ("resend my ticket" per SPEC): re-sends only to the registered email, never discloses registration state to third parties, rate-limited with a deliberate-violation test.
 - [x] 5.6 Organizer email verification: `MustVerifyEmail` + verification routes + queued mail; **publish gate** — an unverified organizer cannot publish (deliberate-violation test); SSO mapping — IdP `email_verified: true` claims satisfy the gate (resolver already refuses unverified links).
-- [ ] 5.7 Gate 5 audit pass + sign-off.
+- [x] 5.7 Gate 5 audit pass (owner sign-off pending — see gate below).
 
-**Gate 5:** AC↔test grep pass · suite green (race + guardians included) · local e2e in Mailpit (register → ticket mail with scannable QR) · **real inbox evidence** in Gmail + Outlook (screenshots; QR renders, SPF/DKIM pass) · publish-while-unverified blocked (violation test) · queue drains via `schedule:run` locally · ADR-005 reconciled · checkpoint in AGENTS.md · owner sign-off.
+**Gate 5 — 2026-07-26:** ✅ AC↔test grep pass (15/15 ACs traced) · ✅ suite green, 117 tests (Pint + Larastan + i18n `--check` clean) · ✅ local e2e in Mailpit: register → ticket mail (multipart/related, inline `image/png` with Content-ID, **zero** data URIs), resend, and the verification mail, all in the right language · ✅ publish-while-unverified blocked by a deliberate-violation test · ✅ queue drains through a real `schedule:run` · ✅ ADR-005 reconciled and **ADR-008** added (resend rotates the token, superseding ADR-004 §3) · ✅ checkpoint in AGENTS.md.
+⏳ **Owner-gated, still open:** real-inbox evidence in Gmail + Outlook (SPF/DKIM/DMARC alignment, QR renders, images-blocked fallback) — needs the provider credentials, which never enter the repo. Checklist: [docs/DELIVERABILITY.md](../docs/DELIVERABILITY.md). **Sign-off: pending.**
 
 ## Phase 6 — Camera check-in at the door
 

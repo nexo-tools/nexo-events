@@ -53,6 +53,32 @@ Not deployed yet. Target `nexoevents.alvarocdev.com` (subdomain already created)
 
 ## Accumulated context
 
+- **2026-07-26** — **Phase 5 done: the ticket now arrives by email** (117 tests green; Pint +
+  Larastan + i18n `--check` clean). Registration queues a `TicketIssued` mail (event summary +
+  QR + link); a resend flow recovers a lost ticket; organizers must verify their email before
+  publishing. Non-obvious things worth keeping:
+  - **The emailed QR is a PNG drawn with GD**, not through `bacon/bacon-qr-code`'s writer — that
+    only reaches PNG via `ImagickImageBackEnd`, and Imagick is a PECL extension shared hosting
+    may not have. `QrPng` walks the encoder matrix itself; `composer.json` declares `ext-gd`.
+  - **Never assert email content against `Mailable::render()`.** That is the *preview* path and
+    `Mailer::render()` rewrites every `cid:` into a base64 data URI — asserting there would
+    "prove" exactly what ADR-005 §7 forbids (Gmail strips data URIs) while the real mail is
+    fine. Tests assert on the sent message via the array transport.
+  - **A resend rotates the token** (ADR-008, supersedes ADR-004 §3): only the hash is stored, so
+    the original QR is unrecoverable by design. The old QR dies on resend.
+  - **Auth mails do not use Laravel's `MailMessage` markdown wrapper.** Its strings come from the
+    framework's English translations, which this project's i18n cannot reach (Spanish is the
+    source language, the generator translates outward). A Spanish-first product was sending
+    "Verify your email address". They now carry `->view('emails.verify-email')`. Returning a
+    *Mailable* from `toMail()` instead is a trap: the notification channel does not address it,
+    and it fails with "An email must have a To header".
+  - **`routes/console.php` scheduled a command that never existed** (`nexo:send-reminders`), so
+    every `schedule:run` errored. It now drains the queue, and `AC-QUEUE-1` asserts every
+    scheduled command resolves.
+  - Local mail goes to the shared Mailpit (`MAIL_MAILER=smtp`, `host.docker.internal:1025`, UI
+    at :8025). **Real-inbox deliverability is owner-gated** and still pending — checklist in
+    [docs/DELIVERABILITY.md](docs/DELIVERABILITY.md); it needs the provider credentials, which
+    never enter the repo.
 - **2026-07-26** — **Silent SSO adopted** from the hardened `nexo-sso-client` template (nonce,
   RP-initiated central logout, and `prompt=none` auto-login all arrived together — this repo was
   still on the pre-nonce copy). Standalone is untouched: with `NEXO_SSO_ENABLED=false` the routes

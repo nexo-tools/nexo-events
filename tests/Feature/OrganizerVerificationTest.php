@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Notifications\VerifyEmailQueued;
 use App\Services\NexoSso\NexoSsoUserResolver;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 
@@ -112,4 +113,27 @@ it('AC-VERIFY-5: verification gates publishing only — create, edit, close and 
     // Cancel it.
     $this->post(route('events.cancel', $event))->assertSessionHasNoErrors();
     expect($event->fresh()->status)->toBe(EventStatus::Cancelled);
+});
+
+it('AC-VERIFY-1: sends the verification mail from the project template, in the project language', function (): void {
+    $user = User::factory()->unverified()->create();
+
+    // Sent for real through the array transport (the queue is sync in tests),
+    // so this asserts on the message a recipient would actually receive.
+    $user->sendEmailVerificationNotification();
+    $email = Mail::getSymfonyTransport()->messages()->last()->getOriginalMessage();
+    $html = (string) $email->getHtmlBody();
+
+    // Laravel's inherited MailMessage would render its own English wrapper here
+    // ("Verify Email Address", "Regards"), which this project's i18n cannot
+    // reach - Spanish is the source language and the generator translates
+    // outward from it. A Spanish-first product must not send an English email.
+    expect($email->getSubject())->toBe('Verificá tu email')
+        ->and($html)->toContain('Verificar mi email')
+        ->and($html)->not->toContain('Regards')
+        ->and($html)->not->toContain('Verify Email Address');
+
+    // Addressed: a Mailable returned from toMail() would not be (the channel
+    // does not add the recipient), which fails as "must have a To header".
+    expect($email->getTo())->not->toBeEmpty();
 });
