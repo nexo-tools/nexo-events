@@ -53,6 +53,33 @@ Not deployed yet. Target `nexoevents.alvarocdev.com` (subdomain already created)
 
 ## Accumulated context
 
+- **2026-07-26** — **Phase 7 done: the tool now meets the full Nexo standard** (164 tests green).
+  Report flow + kill-switch commands, cookieless view counters, the whole SEO layer, legal pages,
+  cross-tool theme/language, beacon wired off, hardening. Non-obvious things:
+  - **The `soon`→`live` launch flip is four surfaces, not one** — see PLAN 9.4. Only the registry
+    has a guardian.
+  - **Blade components have an isolated scope.** A `$title` or `$noindex` set by a controller does
+    NOT reach `partials.head` through `<x-guest-layout>`; it has to be a declared prop and
+    forwarded. Every page was silently serving generic metadata until `SeoBaseTest` caught it.
+  - **The translation generator skips any all-lowercase key** (`__('entradas')`), treating it as a
+    lang-file lookup rather than literal text — so it is never translated. Use a phrase with a
+    placeholder: `__(':count entradas', [...])`.
+  - **The theme-init CSP hash must be computed from the RENDERED HTML**, not from the Blade file:
+    that file's own comment contains the word `<script>`, so a naive regex hashes the wrong bytes.
+    `CrossToolPersistenceTest` derives it from the response, so drift fails a test instead of
+    blocking the script in production.
+  - **Theme and language cookies are exempt from encryption on purpose** (`bootstrap/app.php`).
+    Encrypted with this app's key, no sibling tool could read them. In tests use
+    `withUnencryptedCookie()` — the plain `withCookie()` helper encrypts, which no sibling could
+    produce.
+  - **`scripts/race-drill.sh` is the real atomicity proof.** The Pest suite runs on SQLite where
+    `lockForUpdate()` is a no-op, so it proves the app logic, not the database guarantee. The
+    drill races genuinely parallel processes against MySQL (6 racers → 1 ticket, 6 scans → 1
+    entry). Re-run it after touching `EventRegistrar` or `TicketCheckin`.
+  - **`lang/en` needs no `passwords.php`/`validation.php`** — English is the framework's own
+    fallback (verified by rendering). A previous audit flagged this as a gap; it was not one.
+  - Legal pages describe what the code actually does and are **not lawyer-reviewed** — flagged for
+    the owner.
 - **2026-07-26** — **Phase 6 done: the door scanner uses the camera** (128 tests green). Native
   `BarcodeDetector` where available, `jsQR` otherwise, loaded by dynamic import so its 130 KB is a
   separate chunk only the scanning page fetches. Things that will bite again:
