@@ -26,7 +26,7 @@
         @endforelse
     </ul>
 
-    <form method="POST" action="{{ route('logout') }}" class="mt-6">
+    <form method="POST" action="{{ config('nexo-sso.enabled') ? route('nexo-sso.logout') : route('logout') }}" class="mt-6">
         @csrf
         <button type="submit" class="text-sm text-slate-500 hover:underline">{{ __('Cerrar sesión') }}</button>
     </form>
