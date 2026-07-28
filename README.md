@@ -110,15 +110,10 @@ Attribution and support settings live in [`config/nexo.php`](config/nexo.php).
 
 ## Status
 
-**Feature-complete, pre-launch — not yet deployed.** Everything described above is
-built and covered by the test suite: organizer accounts (local auth + optional Nexo ID
-SSO with silent sign-in), the full event lifecycle, email-only registration, **ticket
-delivery by email**, **camera check-in**, report + kill-switch, cookieless counters, the
-SEO layer, legal pages and i18n (`es`/`en`/`pt`).
-
-What remains is production itself: first deploy to `nexoevents.alvarocdev.com`, verified
-backups and uptime monitoring, real-inbox deliverability checks, and a camera pass on
-physical iOS/Android handsets. Tracked in [docs/PLAN.md](docs/PLAN.md) — Phases 8–9.
+**Live at [nexoevents.alvarocdev.com](https://nexoevents.alvarocdev.com).** Everything described
+above is built, tested and running in production: organizer accounts (local or Nexo ID SSO),
+events, email-only attendee registration with atomic capacity, ticket emails, camera check-in at
+the door, abuse reporting and the per-event kill switch.
 
 ## Documentation
 
@@ -141,7 +136,7 @@ standards. Every tool runs **fully standalone** — the ecosystem is opt-in.
 | **Nexo Links** | Link-in-bio you host yourself (Linktree alternative) | [nexolinks.alvarocdev.com](https://nexolinks.alvarocdev.com) | [nexo-links](https://github.com/nexo-tools/nexo-links) |
 | **Nexo Agenda** | Bookings for service businesses (AgendaPro / Fresha / Booksy alternative) | [nexoagenda.alvarocdev.com](https://nexoagenda.alvarocdev.com) | [nexo-agenda](https://github.com/nexo-tools/nexo-agenda) |
 | **Nexo Short** | Self-hosted URL shortener | [nxo.li](https://nxo.li) | [nexo-short](https://github.com/nexo-tools/nexo-short) |
-| **Nexo Events** | Event tickets and QR check-in | soon | — you are here |
+| **Nexo Events** | Event tickets and QR check-in | [nexoevents.alvarocdev.com](https://nexoevents.alvarocdev.com) | — you are here |
 | **Nexo ID** | One account for every tool — OAuth 2.0 / OIDC SSO | [nexoid.alvarocdev.com](https://nexoid.alvarocdev.com) | [nexo-id](https://github.com/nexo-tools/nexo-id) |
 
 New to Nexo? Start at **[nexotools.alvarocdev.com](https://nexotools.alvarocdev.com)**.
