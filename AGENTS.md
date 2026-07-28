@@ -53,6 +53,16 @@ Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./ven
 
 ## Accumulated context
 
+- **2026-07-27** — **v1 COMPLETE. Phase 9 closed.** Flipped to `live` across the ecosystem.
+  Worth knowing for the next tool that launches: the five *sibling* registries and alvarocdev had
+  already been flipped, so the only stale one was **this repo's own** — it described every tool
+  correctly except itself, and also still called nexoshort `soon`. A registry is the file nobody
+  re-reads after writing. The README carried the same drift in two places (its own row in the
+  ecosystem table, and a Status section still saying "not yet deployed" three days after launch).
+  Launch form per D5: **no announcement** — being `live` in the hub and every app-switcher is the
+  launch. The smoke event was **unpublished** so a live site does not get "SMOKE — prueba de
+  despliegue" indexed; the organizer account `smoke@alvarocdev.com` has no usable password by
+  design (random, never stored), so it needs a password reset or deletion rather than a login.
 - **2026-07-27** — **Phase 8 closed (8.5–8.7).** Anti-abuse drilled on the live instance
   (report → kill → restore, rate limiter cutting at the 5th attempt) and the **double-scan guard
   proven in production**: the same ticket scanned twice returns `ok` then `already`.
