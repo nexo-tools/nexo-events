@@ -65,7 +65,19 @@ Source input: a pre-planning evaluation brief (2026-07-20), kept out of this rep
   *Suggested order:* Google Wallet first — no annual fee, so it measures whether people actually
   use it. Apple only once that usage justifies the cost.
 - Payments with Mercado Pago (AR/LatAm) — v2 flagship; deferred because it multiplies scope (fees, refunds, legal).
-- Offline check-in with sync — needs conflict resolution design; online-only shipped first.
+- **Offline check-in** — needs conflict-resolution design; online-only shipped first.
+  *Approach sketched 2026-07-27:* pre-download the event's valid tokens to the scanner and
+  validate locally. Two things make this cheaper than it looks. **(1)** The device only ever needs
+  the **SHA-256 hashes** — it hashes what it scans and compares — so no raw token leaves the
+  server and the ADR-004 §2 property (a leaked store cannot forge tickets) survives untouched.
+  **(2)** The expensive part of offline check-in is two devices accepting the same ticket and
+  discovering it at sync, when the person is already inside twice. In v1 **only the organizer
+  scans** (ADR-004 §7), so a single device's local state is authoritative and that conflict does
+  not arise — it only returns alongside staff scanning.
+  *Still to design:* a ticket revoked or killed after the download would keep validating offline;
+  attendees who register during the event are not in the cached set; and the local check-ins need
+  an idempotent push on reconnect. Pairs with the Wallet passes above — that covers the attendee
+  side of a venue with no signal, this covers the organizer side.
 - Staff scanning roles — needs invitations/permissions model.
 - Attendee accounts + "my tickets" — via Nexo ID once its client pattern exists (nexoid ADR-004 / Phase 3).
 - Ticket types, quotas per type, discount codes; waitlist; ticket transfer; email reminders — brief §7.
