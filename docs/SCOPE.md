@@ -48,6 +48,22 @@ Source input: a pre-planning evaluation brief (2026-07-20), kept out of this rep
 
 <!-- Each item with the why it was postponed. -->
 
+- **Apple Wallet / Google Wallet passes** (idea 2026-07-27) — the ticket as a `.pkpass` /
+  Google Wallet object instead of only an email and a web page.
+  *Why it is worth doing:* the pass is **stored on the device**. Today an attendee arriving with
+  no signal cannot open `/t/{token}` and cannot reach the email — if they did not screenshot it,
+  they are stuck at the door. This solves the attendee half of the online-only limitation in
+  ADR-004 (the organizer's scanner still needs connectivity; that half does not change). Passes
+  also support push updates, which maps onto the existing `cancelled` / `killed` statuses: a
+  killed event can change on someone's lock screen.
+  *Why it is not v1:* Apple requires a paid developer account (~US$99/year) and a Pass Type ID
+  signing certificate; Google requires a Cloud project and issuer account. Both are credentials
+  **per organisation**, so neither can ship packaged — a self-hoster would need their own. That
+  collides with the multi-instance story, so it must follow the ADR-006 shape: **env-gated, off
+  by default**, with the on-screen QR and the email unchanged when unset (same pattern as SSO and
+  the beacon).
+  *Suggested order:* Google Wallet first — no annual fee, so it measures whether people actually
+  use it. Apple only once that usage justifies the cost.
 - Payments with Mercado Pago (AR/LatAm) — v2 flagship; deferred because it multiplies scope (fees, refunds, legal).
 - Offline check-in with sync — needs conflict resolution design; online-only shipped first.
 - Staff scanning roles — needs invitations/permissions model.
