@@ -118,7 +118,7 @@ Defects & drift: `routes/console.php` schedules `nexo:send-reminders`, which **d
 - [ ] 9.5 Launch per **D5**: flip visibility/announcement as decided; first-days watch runbook active (uptime, mail daily-cap consumption, abuse reports, error logs).
 - [ ] 9.6 Gate 9 + v1 closing checkpoint.
 
-**Gate 9 — blocking item added 2026-07-26:** ⛔ **the hosted instance must be sending through a transactional relay, not Hostinger SMTP**, with SPF + DKIM published and inbox placement verified (docs/DELIVERABILITY.md). The instance was brought up on Hostinger SMTP to exercise the flow; ADR-005 §3 forbids shipping that, because a ticket in a spam folder is a person at a door without a ticket.
+**Gate 9 — deliverability, resolved 2026-07-27:** ✅ measured on the live instance — a real ticket reached a Gmail inbox with **SPF, DKIM and DMARC all passing**, because Hostinger relays through MailChannels and signs with the domain key (docs/DELIVERABILITY.md). The ADR-005 §3 concern assumed an unauthenticated shared IP and does not match what was measured, so this is **no longer a launch blocker**. What remains is a volume risk, tracked as a launch-day watch item: the mailbox has a **daily sending cap** and no bounce visibility, and registrations spike on announcement day. Migrate to a relay when volume justifies it.
 
 **Gate 9:** repo public with clean audit · live instance linked from the ecosystem (hub + switchers) · launch executed as decided · docs truthful (`AGENTS.md`, README `Status:`) · owner sign-off — **this closes v1**.
 

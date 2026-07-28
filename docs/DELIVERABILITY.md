@@ -27,25 +27,38 @@ Without that cron **no ticket email ever leaves**, while the app looks perfectly
 
 Locally, Mailpit catches everything: `MAIL_HOST=host.docker.internal`, `MAIL_PORT=1025`, inbox at <http://localhost:8025>.
 
-## Current state of the hosted instance — a known, temporary deviation
+## Measured on the live instance (2026-07-27) — the deviation is milder than assumed
 
-**2026-07-26.** The production instance is configured against **Hostinger's own SMTP**
-(`smtp.hostinger.com:465`, `MAIL_SCHEME=smtps`) using a mailbox on the domain, **not** a
-transactional relay. This contradicts **ADR-005 §3** ("Never the Hostinger SMTP for ticket
-mail") and is recorded here rather than left implicit.
+A real ticket was sent from the production instance to a Gmail address and **landed in the
+inbox**. Full authentication results from Gmail:
 
-Why it is acceptable *for now*: it lets the instance come up and the whole flow be exercised
-end to end — register, receive a ticket, scan it at the door — without waiting on a relay
-account and DNS propagation.
+```
+dkim=pass   header.i=@alvarocdev.com header.s=hostingermail-a
+spf=pass    designates 23.83.223.164 as permitted sender
+dmarc=pass  (p=NONE sp=NONE dis=NONE) header.from=alvarocdev.com
+```
 
-Why it **cannot be what is live at launch**: the entire reason ADR-005 exists is that
-shared-host SMTP lands in spam, and in this product the ticket *is* the email. A ticket in
-someone's spam folder is a person at a door without a ticket. DNS today confirms the gap —
-`alvarocdev.com` publishes only `include:_spf.mail.hostinger.com`, with no DKIM for any
-relay.
+**The finding that matters:** Hostinger does not send from a raw shared IP. It routes outbound
+mail through **MailChannels** (`relay.mailchannels.net`, the `Received:` chain confirms it) — a
+commercial relay with its own reputation management — and signs DKIM with the domain's own key.
+That is substantially closer to what ADR-005 asked for than "the shared host's SMTP" implies.
 
-**This is a launch blocker, tracked in PLAN Gate 9.** Migrating is env-only (§ How the app
-sends) plus the DNS records below; no code changes.
+**Revised position.** ADR-005 §3 was written on the assumption that shared-host SMTP means
+unauthenticated mail from a contended IP. The measurement says otherwise: all three checks pass
+and placement is clean. This is good enough to launch on.
+
+What genuinely remains, and it is about **volume**, not authentication:
+
+- **A daily sending cap** applies to the hosting mailbox (plan-dependent, order of a few hundred).
+  Registrations for an event spike on announcement day rather than spreading evenly — the exact
+  shape that hits a daily cap. Queued mail is not lost, it is delayed, and the on-screen QR still
+  works; but a delayed ticket is a support ticket.
+- **No bounce handling, no suppression list, no delivery dashboard.** With a relay you can see a
+  bounce; here a wrong address fails quietly.
+- `p=NONE` in DMARC means no policy is enforced against spoofing the domain.
+
+So: migrate when volume justifies it, not as a precondition to launch. Re-measure with this same
+test after any change to sending.
 
 ## Why not the hosting provider's SMTP
 
