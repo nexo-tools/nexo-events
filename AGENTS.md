@@ -5,7 +5,7 @@
 
 ## What this project is
 
-Free event registration and QR ticketing of the Nexo ecosystem: anyone creates an event, people register with just an email, receive a QR ticket, and the organizer validates entry at the door by scanning with their phone. Open source, multi-instance, self-hostable, cookieless — like its siblings (Nexo Links, Nexo Agenda, Nexo Short, Nexo ID). **Current state: MVP built + branded, pre-launch, not deployed** — working through the launch phases. Start at [docs/PLAN.md](docs/PLAN.md), which carries the executed history, the verified gap register and the phase in progress.
+Free event registration and QR ticketing of the Nexo ecosystem: anyone creates an event, people register with just an email, receive a QR ticket, and the organizer validates entry at the door by scanning with their phone. Open source, multi-instance, self-hostable, cookieless — like its siblings (Nexo Links, Nexo Agenda, Nexo Short, Nexo ID). **Current state: LIVE at https://nexoevents.alvarocdev.com, feature-complete, not yet announced.** Phases 5–8 are closed (email, camera check-in, anti-abuse, SEO, legal pages, production, ops); what remains is the ecosystem `soon`→`live` flip and the announcement itself. Start at [docs/PLAN.md](docs/PLAN.md), which carries the executed history, the verified gap register and the phase in progress.
 
 ## Stack
 
