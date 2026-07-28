@@ -53,6 +53,20 @@ Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./ven
 
 ## Accumulated context
 
+- **2026-07-27** — **Phase 8 closed (8.5–8.7).** Anti-abuse drilled on the live instance
+  (report → kill → restore, rate limiter cutting at the 5th attempt) and the **double-scan guard
+  proven in production**: the same ticket scanned twice returns `ok` then `already`.
+  **SSO + beacon activated.** nexoid's prod `issuer` confirmed **https** first — the precondition
+  open since planning. Two things future activations must not miss: the client needs **both**
+  redirect URIs registered (callback *and* post-logout, or the provider refuses the return), and
+  **routes must be re-cached** or the env flag does nothing. Silent SSO verified to fire on normal
+  pages while **every attendee surface stays untouched** — `/e/*` and `/t/*` never bounce, which is
+  the whole point: an attendee at the door has no account to sign into.
+  Security/perf audit clean. Sibling fixes made along the way: the nightly backup now handles
+  **SQLite** apps (nexo-tools had failed every night since deploy and had never been backed up —
+  the bug was in the script, not the app, and its rotation only ever deleted `*.sql.gz`), and
+  `SESSION_SECURE_COOKIE` was added to **nexo-tools** and **nexo-links**, which were serving
+  session cookies without it over HTTPS.
 - **2026-07-26** — **Backups verified + restore drilled.** The cross-tool `~/backups/bin/nexo-backup.sh`
   auto-discovers apps by scanning `~/domains/*/*/.env`, so this app was picked up with no change.
   A **real restore** was run against the production database and row counts matched — done at the
