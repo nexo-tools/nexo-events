@@ -94,9 +94,14 @@ Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./ven
   including the door guard's window.
   Also fixed on the way: `deploy.sh` could leave the site in maintenance mode forever (`set -e`
   after `artisan down`, exiting before `artisan up`) — now trapped.
-  **Deviation on record:** the instance sends through **Hostinger SMTP**, which ADR-005 §3
-  forbids. Acceptable to bring the instance up; blocking for launch (Gate 9), because a ticket
-  in a spam folder is a person at a door without a ticket. The whole ecosystem shares this.
+  **Deviation on record — RESOLVED 2026-07-27, do not re-open:** the instance sends through
+  **Hostinger SMTP**, which ADR-005 §3 forbids. It was a launch blocker until it was measured on
+  the live instance: a real ticket reached a Gmail inbox with **SPF, DKIM and DMARC all passing**,
+  because Hostinger relays through MailChannels and signs with the domain key
+  ([docs/DELIVERABILITY.md](docs/DELIVERABILITY.md)). ADR-005 §3 assumed an unauthenticated shared
+  IP, which is not what this host does — so the deviation stands, accepted, and Gate 9 closed on
+  the measurement. What remains is a **volume** risk, not a deliverability one: the mailbox has a
+  daily sending cap and no bounce visibility. Migrate to a relay when volume justifies it.
 - **2026-07-26** — **Production-mode dry run (pre-deploy).** With `config:cache` +
   `route:cache` + `view:cache` applied, every public surface still answers 200. One trap found
   and documented in `DEPLOYMENT.md`: **`routes/nexo-sso.php` returns early when SSO is off, so
