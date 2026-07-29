@@ -2,7 +2,10 @@
     <h1 class="mb-1 text-xl font-bold">{{ __('Tu entrada') }}</h1>
     <p class="mb-4 text-sm text-slate-500">{{ $ticket->event->title }} · {{ $ticket->event->starts_at->format('d/m/Y H:i') }}</p>
 
-    <div class="mb-4 flex justify-center rounded-lg bg-white p-4">
+    {{-- The QR keeps its white quiet zone in dark mode too (`dark:bg-white`):
+         QrSvg paints black modules, and scanners need that contrast — a QR on a
+         dark surface is unreadable at the door. --}}
+    <div class="mb-4 flex justify-center rounded-lg bg-white p-4 dark:bg-white">
         {!! app(\App\Services\QrSvg::class)->forUrl($token) !!}
     </div>
 

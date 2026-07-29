@@ -53,6 +53,27 @@ Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./ven
 
 ## Accumulated context
 
+- **2026-07-28** — **Three nexo-ui guardians adopted** (`BrandAssetsPresentTest`, `DarkModeCoverageTest`,
+  `StaticPagesTest` in `tests/Feature/Nexo/`; 184 tests green). The error pages and the legal pages
+  already satisfied them — this repo is the ecosystem's reference for both — but the guardians
+  themselves needed three fixes, all of which belong upstream in
+  `alvaro/templates/nexo-ui/guardians/`:
+  - **`expect(...)->toContain($needle, $message)` is a silent trap.** Pest's `toContain()` is
+    *variadic*: the second argument is another needle, so the "message" is asserted as page
+    content. It fails on healthy code and, under `->not->`, it weakens the check instead.
+    Messages go through `toBeTrue()`/`toBeFalse()`/`toBe()`, which do take one.
+  - **`$this->get('/favicon.svg')` can never pass.** `public/` is served by the web server, not by
+    the router, so static assets 404 inside the test kernel. That test now asserts the *wiring*:
+    the head links `/favicon.svg` and `og:image` points at `/og-image.png`.
+  - **The dark-mode regex flagged the fix it asks for.** `bg-white … dark:bg-white` matched on the
+    `dark:` variant itself (nothing follows it before the closing quote), so a deliberate
+    always-light surface could not be expressed. A `(?<!dark:)` lookbehind fixes it.
+  Also: the template scans a hand-picked `$keyViews` list (welcome + components + errors), which
+  passes vacuously — here it scans **all** of `resources/views` except `emails/` (mail clients
+  strip `<style>`, so transactional mail is light-only by design, same carve-out as
+  `NoHardcodedColorsTest`). That widened scan found one real offender: the **ticket QR quiet zone**,
+  which is `bg-white dark:bg-white` on purpose — `QrSvg` paints black modules and a QR on a dark
+  surface does not scan at the door.
 - **2026-07-27** — **v1 COMPLETE. Phase 9 closed.** Flipped to `live` across the ecosystem.
   Worth knowing for the next tool that launches: the five *sibling* registries and alvarocdev had
   already been flipped, so the only stale one was **this repo's own** — it described every tool
