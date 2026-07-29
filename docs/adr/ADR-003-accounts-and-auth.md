@@ -10,7 +10,7 @@ Two distinct populations (brief §5):
 - **Organizers** create public content → accounts are mandatory, no discussion (anti-abuse + management).
 - **Attendees** register for a free event → every ounce of friction kills conversion; nobody wants to create an account for one free ticket.
 
-Nexo ID exists and has passed its own Gate 0 (`/Users/alvarocarrizales/nexoid`). Its **ADR-004** (accepted) settles how tools relate to it: *every tool keeps standalone local auth; Nexo ID is an optional, env-configured OIDC SSO provider* (OAuth 2.0 + PKCE, nexoid ADR-003). Its PLAN builds the reusable Laravel client pattern in its Phase 3 and explicitly notes "Nexo Events integrates whenever it's born (needs only the Phase 3 pattern)".
+Nexo ID exists and has passed its own Gate 0 ([nexo-id](https://github.com/nexo-tools/nexo-id)). Its **ADR-004** (accepted) settles how tools relate to it: *every tool keeps standalone local auth; Nexo ID is an optional, env-configured OIDC SSO provider* (OAuth 2.0 + PKCE, nexoid ADR-003). Its PLAN builds the reusable Laravel client pattern in its Phase 3 and explicitly notes "Nexo Events integrates whenever it's born (needs only the Phase 3 pattern)".
 
 ## Decision
 

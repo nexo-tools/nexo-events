@@ -2,7 +2,10 @@
 
 Nexo Events runs on shared hosting (Hostinger, LiteSpeed) like its sibling tools. This document is the runbook; the host-specific gotchas live in the `deploy-laravel-hostinger` skill of the standards repo.
 
-> **Not yet deployed.** Target instance: `nexoevents.alvarocdev.com`. First provisioning is PLAN task 8.2.
+> **Live** at `nexoevents.alvarocdev.com` since 2026-07-26. Deploys are **manual on purpose** — see
+> [ADR-009](docs/adr/ADR-009-manual-deploy-during-door-windows.md): an automatic deploy could take the
+> instance down while people are being scanned in at a door.
+> Trigger with `gh workflow run deploy.yml --repo nexo-tools/nexo-events`.
 
 ## Running it locally
 
