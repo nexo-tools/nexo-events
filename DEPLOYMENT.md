@@ -4,6 +4,44 @@ Nexo Events runs on shared hosting (Hostinger, LiteSpeed) like its sibling tools
 
 > **Not yet deployed.** Target instance: `nexoevents.alvarocdev.com`. First provisioning is PLAN task 8.2.
 
+## Running it locally
+
+Before deploying anywhere, this is how to get Nexo Events up on your own machine. The README
+points here on purpose: keeping the steps in one place is why they stopped drifting.
+
+### Option A — everything in Docker (recommended if you just want it running)
+
+`compose.yaml` in this repo runs the **app only**: the author's machine keeps a single
+MySQL/Mailpit shared by every Nexo tool, so shipping another database per repo would be
+waste. `compose.selfhost.yaml` is the overlay that fills the gap for everyone else.
+
+```sh
+cp .env.example .env
+# in .env: DB_HOST=mysql  DB_PORT=3306  MAIL_HOST=mailpit  MAIL_PORT=1025
+docker compose -f compose.yaml -f compose.selfhost.yaml up -d
+docker compose exec laravel.test composer install
+docker compose exec laravel.test php artisan key:generate
+docker compose exec laravel.test php artisan migrate
+npm install && npm run build
+```
+
+The app answers on **http://localhost:8103** and outgoing mail lands in Mailpit at
+http://localhost:8025.
+
+### Option B — your own MySQL
+
+Keep `compose.yaml` alone (or no Docker at all) and point `.env` at your database:
+`DB_HOST` / `DB_PORT` / `DB_DATABASE` (`nexo_events`) / `DB_USERNAME` / `DB_PASSWORD`. Everything
+else is a stock Laravel app: `composer install`, `php artisan key:generate`,
+`php artisan migrate`, `npm run build`, `php artisan serve`.
+
+> The values committed in `.env.example` target the author's shared local stack
+> (`host.docker.internal:3307`). Override them — they are a default, not a requirement.
+
+Run the suite with `vendor/bin/pest` (SQLite in memory — it never touches your database).
+
+---
+
 ## The rule that makes this app different
 
 **Never deploy while an event is at its door.**
