@@ -6,6 +6,13 @@
 return [
     'updated' => 'Last updated: 26 July 2026',
 
+    // Rendered only when NEXO_LEGAL_OPERATOR / NEXO_LEGAL_CONTACT are set.
+    'operator' => [
+        'h' => 'Who runs this instance',
+        'p' => 'This instance is run by :operator.',
+        'contact' => 'For anything about your data you can write to :contact.',
+    ],
+
     'privacy' => [
         'title' => 'Privacy',
         'intro' => 'This Nexo Events instance is open source and self-hosted. We collect the minimum an event needs, and nothing else. No tracking cookies, no third-party analytics, and nothing sent to advertising networks.',

@@ -6,6 +6,13 @@
 return [
     'updated' => 'Última atualização: 26 de julho de 2026',
 
+    // Rendered only when NEXO_LEGAL_OPERATOR / NEXO_LEGAL_CONTACT are set.
+    'operator' => [
+        'h' => 'Quem opera esta instância',
+        'p' => 'Esta instância é operada por :operator.',
+        'contact' => 'Para qualquer questão sobre seus dados, escreva para :contact.',
+    ],
+
     'privacy' => [
         'title' => 'Privacidade',
         'intro' => 'Esta instância do Nexo Events é open source e self-hosted. Coletamos o mínimo necessário para um evento funcionar, e nada além disso. Sem cookies de rastreamento, sem análise de terceiros e sem envio de dados a redes de publicidade.',

@@ -33,6 +33,8 @@ class LegalController extends Controller
             'description' => $content['intro'],
             'content' => $content,
             'updated' => __('legal.updated'),
+            'operator' => config('nexo.legal.operator'),
+            'contact' => config('nexo.legal.contact'),
         ]);
     }
 }
