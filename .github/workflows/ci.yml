@@ -14,7 +14,10 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.5'
-          extensions: mbstring, intl, pdo_sqlite
+          # gd is required by composer.json (QR rendering). It happens to be in
+          # setup-php's default build, so leaving it implicit means the suite
+          # depends on a default nobody declared.
+          extensions: mbstring, intl, pdo_sqlite, gd
           coverage: none
 
       - uses: actions/cache@v4

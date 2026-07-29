@@ -56,6 +56,16 @@ single account ([Nexo ID](https://github.com/nexo-tools/nexo-id) SSO).
   switcher, plus a translatable `/help` center.
 - **Self-hostable** — a standard Laravel app; runs on your own infrastructure.
 
+## Screenshots
+
+Captured from the live instance.
+
+| Light | Dark |
+| --- | --- |
+| <img src="docs/screenshots/home-light.png" alt="Nexo Events in light theme"> | <img src="docs/screenshots/home-dark.png" alt="Nexo Events in dark theme"> |
+
+See it for real at the [live demo](https://nexoevents.alvarocdev.com).
+
 ## Tech stack
 
 PHP 8.3+ · Laravel 13 · Blade + Alpine.js + Tailwind CSS (Vite) · MySQL
@@ -69,51 +79,16 @@ Quality: [Pest](https://pestphp.com) · [Pint](https://laravel.com/docs/pint) ·
 [Larastan](https://github.com/larastan/larastan) · GitHub Actions CI.
 Zero external runtime requests — system font stack, no CDNs.
 
-## Quick start (local)
-
-Requirements: Docker — everything else runs in containers via
-[Laravel Sail](https://laravel.com/docs/sail).
-
-```bash
-git clone https://github.com/nexo-tools/nexo-events.git
-cd nexo-events
-cp .env.example .env
-docker run --rm -v "$(pwd):/app" -w /app composer:latest composer install
-./vendor/bin/sail up -d
-./vendor/bin/sail artisan key:generate
-./vendor/bin/sail artisan migrate
-./vendor/bin/sail npm install && ./vendor/bin/sail npm run build
-```
-
-Open [http://localhost:8103](http://localhost:8103) (`APP_PORT`). Ticket emails land in
-Mailpit at [http://localhost:8025](http://localhost:8025) — set `MAIL_MAILER=smtp` and
-point `MAIL_HOST` at it.
-
 ## Self-hosting
 
-Nexo Events is a standard Laravel app — deploy it on your own domain and
-infrastructure. Key configuration (see `.env.example`):
+A standard Laravel app: PHP 8.3+, MySQL, and anything from cheap shared hosting to a
+VPS. Multi-instance by design — run your own ticketing for your own events, with the
+attendee data staying in your database.
 
-| Env var | Purpose | Default |
-| --- | --- | --- |
-| `NEXO_ATTRIBUTION_LABEL` | "Powered by" label in the shared footer | unset |
-| `NEXO_ATTRIBUTION_URL` | Footer link target | unset |
-| `NEXO_SUPPORT_EMAIL` | Contact address on the `/help` center | `hola@alvarocdev.com` |
-| `NEXO_SUPPORT_URL` | Support URL (wins over the mailto when set) | unset |
-| `NEXO_SSO_ENABLED` | Add "Sign in with Nexo ID" alongside local auth | `false` |
-| `NEXO_SSO_SILENT` | With SSO on, sign in automatically when a Nexo ID session exists | `true` |
-| `NEXO_BEACON_ENABLED` | Report cookieless pageviews to a Nexo hub | `false` |
-| `MAIL_*` | SMTP for ticket delivery — **the ticket is the email**, see [deliverability](docs/DELIVERABILITY.md) | Mailpit |
-| `NEXO_DOOR_GUARD_BEFORE` / `_AFTER` | Minutes around an event start when deploys are refused | `120` / `360` |
-
-Attribution and support settings live in [`config/nexo.php`](config/nexo.php).
-
-## Status
-
-**Live at [nexoevents.alvarocdev.com](https://nexoevents.alvarocdev.com).** Everything described
-above is built, tested and running in production: organizer accounts (local or Nexo ID SSO),
-events, email-only attendee registration with atomic capacity, ticket emails, camera check-in at
-the door, abuse reporting and the per-event kill switch.
+**[DEPLOYMENT.md](DEPLOYMENT.md)** has the real steps: running it locally, the
+environment reference (mail, attribution, optional Nexo ID SSO) and the production
+deploy. Note that deploys are manual here on purpose — see
+[ADR-009](docs/adr/ADR-009-manual-deploy-during-door-windows.md).
 
 ## Documentation
 
@@ -125,19 +100,18 @@ the door, abuse reporting and the per-event kill switch.
 
 ## Nexo ecosystem
 
-Nexo is a family of open-source, self-hostable tools that share one visual identity
-([nexo-brand](https://github.com/nexo-tools)), one optional account
-([Nexo ID](https://github.com/nexo-tools/nexo-id) SSO) and one set of engineering
-standards. Every tool runs **fully standalone** — the ecosystem is opt-in.
+Nexo is a family of open-source, self-hostable tools that share one visual identity,
+one optional account ([Nexo ID](https://github.com/nexo-tools/nexo-id) SSO) and one set of
+engineering standards. Every tool runs **fully standalone** — the ecosystem is opt-in.
 
 | Tool | What it is | Live | Repo |
 | --- | --- | --- | --- |
 | **Nexo Tools** | Ecosystem hub — discover the tools and hop between them with one account | [nexotools.alvarocdev.com](https://nexotools.alvarocdev.com) | [nexo-tools](https://github.com/nexo-tools/nexo-tools) |
-| **Nexo Links** | Link-in-bio you host yourself (Linktree alternative) | [nexolinks.alvarocdev.com](https://nexolinks.alvarocdev.com) | [nexo-links](https://github.com/nexo-tools/nexo-links) |
-| **Nexo Agenda** | Bookings for service businesses (AgendaPro / Fresha / Booksy alternative) | [nexoagenda.alvarocdev.com](https://nexoagenda.alvarocdev.com) | [nexo-agenda](https://github.com/nexo-tools/nexo-agenda) |
-| **Nexo Short** | Self-hosted URL shortener | [nxo.li](https://nxo.li) | [nexo-short](https://github.com/nexo-tools/nexo-short) |
-| **Nexo Events** | Event tickets and QR check-in | [nexoevents.alvarocdev.com](https://nexoevents.alvarocdev.com) | — you are here |
 | **Nexo ID** | One account for every tool — OAuth 2.0 / OIDC SSO | [nexoid.alvarocdev.com](https://nexoid.alvarocdev.com) | [nexo-id](https://github.com/nexo-tools/nexo-id) |
+| **Nexo Links** | Link-in-bio you host yourself (Linktree alternative) | [nexolinks.alvarocdev.com](https://nexolinks.alvarocdev.com) | [nexo-links](https://github.com/nexo-tools/nexo-links) |
+| **Nexo Agenda** | Bookings for service businesses (Fresha / Booksy alternative) | [nexoagenda.alvarocdev.com](https://nexoagenda.alvarocdev.com) | [nexo-agenda](https://github.com/nexo-tools/nexo-agenda) |
+| **Nexo Short** | URL shortener with private, cookieless stats | [nexoshort.alvarocdev.com](https://nexoshort.alvarocdev.com) | [nexo-short](https://github.com/nexo-tools/nexo-short) |
+| **Nexo Events** | Event tickets, passes and QR check-in | [nexoevents.alvarocdev.com](https://nexoevents.alvarocdev.com) | — you are here |
 
 New to Nexo? Start at **[nexotools.alvarocdev.com](https://nexotools.alvarocdev.com)**.
 Built by **[alvarocdev.com](https://alvarocdev.com)** — the tech behind Nexo.
@@ -145,3 +119,8 @@ Built by **[alvarocdev.com](https://alvarocdev.com)** — the tech behind Nexo.
 ## License
 
 [MIT](LICENSE) © [Alvaro Carrizales](https://alvarocdev.com) — the tech behind Nexo.
+
+---
+
+Status: **live** at [nexoevents.alvarocdev.com](https://nexoevents.alvarocdev.com) — v1
+complete: events, email tickets with QR, camera check-in at the door, and anti-abuse.
