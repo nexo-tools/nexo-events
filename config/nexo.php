@@ -6,7 +6,7 @@ return [
     // so self-hosters can credit themselves; both are read by x-nexo-footer, which
     // falls back to alvarocdev.com when the label is unset.
     'attribution' => [
-        'label' => env('NEXO_ATTRIBUTION_LABEL'),
+        'label' => env('NEXO_ATTRIBUTION_LABEL', 'made with Nexo Events'),
         'url' => env('NEXO_ATTRIBUTION_URL'),
     ],
 
