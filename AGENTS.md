@@ -53,6 +53,22 @@ Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./ven
 
 ## Accumulated context
 
+- **2026-07-29** — **Translation keys flipped from Spanish to English** (190 tests green), matching
+  nexoid/nexoshort/nexolinks and the decision recorded in `alvaro/templates/nexo-ui/STANDARD.md`.
+  What this changes for anyone writing a new string:
+  - **Write `__('…')` in English.** `scripts/translations/{es,pt}.json` are English-keyed maps;
+    `lang/{es,pt}.json` are generated from them. There is no `lang/en.json` and there must not be
+    — English is the source, so a missing translation falls back to the literal key, which reads.
+  - **`APP_FALLBACK_LOCALE=en` while `APP_LOCALE=es`.** The product still speaks Spanish by
+    default; the fallback only decides what a *missing* key looks like (English, not raw key).
+  - **The Spanish is tuteo neutro, not voseo** — the whole ecosystem ships one register, so
+    "Restablece tu contraseña", never "Restablecé". This covers `lang/es/*.php` too.
+  - The two login labels that both translated to "Sign in" ("Entrar", "Inicia sesión") were split
+    into `Log in` (submit button) and `Sign in` (heading/link); collapsing them would have made
+    the button inherit the heading's longer Spanish.
+  - The **all-lowercase-key rule is unchanged and now easier to trip**, because English words are
+    short: `__('tickets')` is read as a lang-file lookup, not literal text, and is never
+    translated. Use `trans_choice('app.tickets', …)` or a phrase with a placeholder.
 - **2026-07-28** — **Three nexo-ui guardians adopted** (`BrandAssetsPresentTest`, `DarkModeCoverageTest`,
   `StaticPagesTest` in `tests/Feature/Nexo/`; 184 tests green). The error pages and the legal pages
   already satisfied them — this repo is the ecosystem's reference for both — but the guardians
