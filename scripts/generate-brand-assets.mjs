@@ -17,7 +17,7 @@ import { readFileSync, writeFileSync, copyFileSync } from 'node:fs';
 const CONFIG = {
   mark: 'resources/brand/isotype.svg', // this tool's Nexo mark (from nexo-brand/marks/nexoevents.svg)
   label: 'Nexo Events',                // wordmark shown on the OG card
-  tagline: 'Creá eventos gratis y validá entradas con QR.',
+  tagline: 'Crea eventos gratis y valida entradas con QR.',
   publicDir: 'public',
 };
 // Brand constants (do not edit — from the Nexo palette).
