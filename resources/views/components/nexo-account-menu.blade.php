@@ -27,7 +27,7 @@
 
             <form method="POST" action="{{ config('nexo-sso.enabled') ? route('nexo-sso.logout') : route('logout') }}">
                 @csrf
-                <button type="submit" class="nexo-menu__item" role="menuitem">{{ __('Log out') }}</button>
+                <button type="submit" class="nexo-menu__item" role="menuitem">{{ __('Sign out') }}</button>
             </form>
         </div>
     </div>
