@@ -56,8 +56,34 @@
     --color-bg: var(--nexo-bg);
     --color-surface: var(--nexo-surface);
     --color-surface-raised: var(--nexo-surface-raised);
+    --color-surface-sunken: var(--nexo-surface-sunken);
     --color-ink: var(--nexo-text);
     --color-muted: var(--nexo-text-muted);
+    /* text-subtle is the LARGE-text token (3:1 contract). Body copy and any
+       text-xs metadata belongs on text-muted, never here. */
     --color-subtle: var(--nexo-text-subtle);
     --color-line: var(--nexo-border);
+    /* An input/button outline is a UI component: it owes 3:1 (WCAG 1.4.11),
+       which --nexo-border (a decorative divider) does not clear. */
+    --color-control: var(--nexo-border-control);
+
+    /* Brand roles and status pairs. The `-subtle` / `-subtle-fg` pairs already
+       flip with the theme, so a chip written with them needs no dark: variant. */
+    --color-primary: var(--nexo-primary);
+    --color-primary-hover: var(--nexo-primary-hover);
+    --color-primary-fg: var(--nexo-primary-fg);
+    --color-primary-subtle: var(--nexo-primary-subtle);
+    --color-primary-subtle-fg: var(--nexo-primary-subtle-fg);
+    --color-ring: var(--nexo-ring);
+    --color-link: var(--nexo-link);
+    --color-success-subtle: var(--nexo-success-subtle);
+    --color-success-subtle-fg: var(--nexo-success-subtle-fg);
+    --color-warning-subtle: var(--nexo-warning-subtle);
+    --color-warning-subtle-fg: var(--nexo-warning-subtle-fg);
+    --color-danger: var(--nexo-danger);
+    --color-danger-fg: var(--nexo-danger-fg);
+    --color-danger-subtle: var(--nexo-danger-subtle);
+    --color-danger-subtle-fg: var(--nexo-danger-subtle-fg);
+    --color-info-subtle: var(--nexo-info-subtle);
+    --color-info-subtle-fg: var(--nexo-info-subtle-fg);
 }

@@ -7,5 +7,5 @@
         <x-button>{{ __('Crear evento') }}</x-button>
     </form>
 
-    <a href="{{ route('dashboard') }}" class="mt-4 block text-sm text-slate-500 hover:underline">{{ __('Volver') }}</a>
+    <a href="{{ route('dashboard') }}" class="mt-4 block text-sm text-muted hover:underline">{{ __('Volver') }}</a>
 </x-guest-layout>

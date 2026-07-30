@@ -1,7 +1,7 @@
 {
     ":count entradas": ":count ingressos",
     ":count visitas": ":count visitas",
-    "¿Cancelar el evento?": "Cancelar o evento?",
+    "¿Cancelar «:title»? El registro se cierra y quien ya tiene entrada no podrá ingresar.": "Cancelar “:title”? As inscrições são encerradas e quem já tem ingresso não poderá entrar.",
     "¿No tienes cuenta?": "Não tem conta?",
     "¿Olvidaste tu contraseña?": "Esqueceu sua senha?",
     "¿Qué problema tiene este evento?": "Qual é o problema com este evento?",

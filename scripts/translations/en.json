@@ -1,6 +1,6 @@
 {
     "Cerrar sesión": "Log out",
-    "¿Cancelar el evento?": "Cancel the event?",
+    "¿Cancelar «:title»? El registro se cierra y quien ya tiene entrada no podrá ingresar.": "Cancel “:title”? Registration closes and anyone already holding a ticket will not get in.",
     "Cancelar evento": "Cancel event",
     "Cerrar registro": "Close registration",
     "Check-in en puerta": "Door check-in",

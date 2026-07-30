@@ -1,6 +1,6 @@
 {
     "Cerrar sesión": "Sair",
-    "¿Cancelar el evento?": "Cancelar o evento?",
+    "¿Cancelar «:title»? El registro se cierra y quien ya tiene entrada no podrá ingresar.": "Cancelar “:title”? As inscrições são encerradas e quem já tem ingresso não poderá entrar.",
     "Cancelar evento": "Cancelar evento",
     "Cerrar registro": "Encerrar inscrições",
     "Check-in en puerta": "Check-in na porta",

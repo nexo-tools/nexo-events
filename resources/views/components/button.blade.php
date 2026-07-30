@@ -1,7 +1,14 @@
-@props(['type' => 'submit'])
+{{-- One button shape for every verb in the app. The .nexo-btn layer (nexo-ui.css)
+     carries the 44px touch target, the focus ring and the disabled/busy
+     treatment, so a variant only has to pick a role. --}}
+@props(['type' => 'submit', 'variant' => 'primary', 'block' => true])
 
 <button type="{{ $type }}" {{ $attributes->class([
-    'inline-flex w-full items-center justify-center rounded-lg bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
+    'nexo-btn',
+    'nexo-btn--primary' => $variant === 'primary',
+    'nexo-btn--ghost' => $variant === 'secondary',
+    'nexo-btn--danger' => $variant === 'danger',
+    'w-full' => $block,
 ]) }}>
     {{ $slot }}
 </button>

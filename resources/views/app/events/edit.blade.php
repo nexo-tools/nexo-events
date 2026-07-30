@@ -1,15 +1,17 @@
 <x-guest-layout :noindex="true">
     <h1 class="mb-1 text-xl font-bold">{{ $event->title }}</h1>
-    <p class="mb-4 text-sm text-slate-500">{{ __('Estado') }}: {{ $event->status->value }}</p>
+    <p class="mb-4 text-sm text-muted">{{ __('Estado') }}: {{ $event->status->value }}</p>
 
     @if (session('status'))
-        <p class="mb-4 rounded-lg bg-brand-100 px-4 py-3 text-sm text-brand-900" role="status">{{ session('status') }}</p>
+        <p class="nexo-flash mb-4" role="status">{{ session('status') }}</p>
     @endif
 
     @error('publish')
-        <p class="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100" role="alert">
-            {{ $message }}
-            <a href="{{ route('verification.notice') }}" class="font-medium underline">{{ __('Reenviar el enlace') }}</a>
+        <p class="nexo-flash nexo-flash--warning mb-4" role="alert">
+            <span>
+                {{ $message }}
+                <a href="{{ route('verification.notice') }}" class="font-medium underline">{{ __('Reenviar el enlace') }}</a>
+            </span>
         </p>
     @enderror
 
@@ -19,21 +21,33 @@
         <x-button>{{ __('Guardar cambios') }}</x-button>
     </form>
 
-    <div class="mt-6 space-y-2 border-t border-slate-200 pt-4 dark:border-slate-700">
+    <div class="mt-6 space-y-2 border-t border-line pt-4">
         <p class="text-sm">
             {{ __('Página pública') }}:
-            <a href="{{ route('public.event', $event) }}" class="text-brand-700 hover:underline dark:text-brand-400">{{ route('public.event', $event) }}</a>
+            <a href="{{ route('public.event', $event) }}" class="break-all text-link hover:underline">{{ route('public.event', $event) }}</a>
         </p>
         <div class="flex flex-wrap gap-2">
             @if (in_array($event->status->value, ['draft', 'closed']))
-                <form method="POST" action="{{ route('events.publish', $event) }}">@csrf<x-button>{{ __('Publicar') }}</x-button></form>
+                <form method="POST" action="{{ route('events.publish', $event) }}">@csrf<x-button :block="false">{{ __('Publicar') }}</x-button></form>
             @endif
             @if ($event->status->value === 'published')
-                <form method="POST" action="{{ route('events.close', $event) }}">@csrf<x-button>{{ __('Cerrar registro') }}</x-button></form>
+                <form method="POST" action="{{ route('events.close', $event) }}">@csrf<x-button variant="secondary" :block="false">{{ __('Cerrar registro') }}</x-button></form>
             @endif
-            <form method="POST" action="{{ route('events.cancel', $event) }}" onsubmit="return confirm('{{ __('¿Cancelar el evento?') }}')">@csrf<x-button>{{ __('Cancelar evento') }}</x-button></form>
-            <a href="{{ route('events.registrations', $event) }}" class="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2 text-sm dark:border-slate-600">{{ __('Registrados') }}</a>
-            <a href="{{ route('events.scan', $event) }}" class="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2 text-sm dark:border-slate-600">{{ __('Check-in') }}</a>
+            <a href="{{ route('events.registrations', $event) }}" class="nexo-btn nexo-btn--ghost">{{ __('Registrados') }}</a>
+            <a href="{{ route('events.scan', $event) }}" class="nexo-btn nexo-btn--ghost">{{ __('Check-in') }}</a>
         </div>
+
+        {{-- Cancelling is irreversible from the UI: Publicar only renders for a
+             draft or closed event, so a cancelled one can never be republished.
+             Hence its own row, the danger variant, and a prompt that names the
+             event instead of asking "¿Cancelar el evento?" next to four
+             identical violet buttons. --}}
+        <form method="POST" action="{{ route('events.cancel', $event) }}" class="pt-2"
+              onsubmit="return confirm(@js(__('¿Cancelar «:title»? El registro se cierra y quien ya tiene entrada no podrá ingresar.', ['title' => $event->title])))">
+            @csrf
+            <x-button variant="danger" :block="false">{{ __('Cancelar evento') }}</x-button>
+        </form>
     </div>
+
+    <a href="{{ route('dashboard') }}" class="mt-4 block text-sm text-muted hover:underline">{{ __('Volver al panel') }}</a>
 </x-guest-layout>
