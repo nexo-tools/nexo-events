@@ -22,7 +22,7 @@ return [
         'sections' => [
             [
                 'h' => 'Qué guardamos de los organizadores',
-                'p' => 'Nombre, email y una versión cifrada (hash) de la contraseña. El email se usa para verificar la cuenta, recuperar el acceso y avisarte de cosas de tus propios eventos. Si iniciás sesión con Nexo ID, guardamos además el identificador que ese servicio nos da para reconocerte.',
+                'p' => 'Nombre, email y una versión cifrada (hash) de la contraseña. El email se usa para verificar la cuenta, recuperar el acceso y avisarte de cosas de tus propios eventos. Si inicias sesión con Nexo ID, guardamos además el identificador que ese servicio nos da para reconocerte.',
             ],
             [
                 'h' => 'Qué guardamos de los asistentes',
@@ -30,11 +30,11 @@ return [
             ],
             [
                 'h' => 'Las entradas y su código QR',
-                'p' => 'El código de tu entrada es un valor aleatorio sin ningún dato tuyo adentro. En la base de datos guardamos solo su huella (hash), no el código en sí: aunque alguien accediera a la base, no podría fabricar entradas válidas. Si pedís que te reenviemos la entrada, se genera un código nuevo y el anterior deja de servir.',
+                'p' => 'El código de tu entrada es un valor aleatorio sin ningún dato tuyo adentro. En la base de datos guardamos solo su huella (hash), no el código en sí: aunque alguien accediera a la base, no podría fabricar entradas válidas. Si pides que te reenviemos la entrada, se genera un código nuevo y el anterior deja de servir.',
             ],
             [
                 'h' => 'Métricas sin cookies',
-                'p' => 'Contamos cuántas personas distintas vieron la página de un evento usando una huella que se calcula con la fecha del día y se descarta: no guardamos tu IP ni tu navegador, y la huella de hoy no se puede comparar con la de mañana. No sabemos quién sos ni podemos seguirte entre sitios.',
+                'p' => 'Contamos cuántas personas distintas vieron la página de un evento usando una huella que se calcula con la fecha del día y se descarta: no guardamos tu IP ni tu navegador, y la huella de hoy no se puede comparar con la de mañana. No sabemos quién eres ni podemos seguirte entre sitios.',
             ],
             [
                 'h' => 'Cookies',
@@ -50,7 +50,7 @@ return [
             ],
             [
                 'h' => 'Tus derechos',
-                'p' => 'Podés pedir acceso a tus datos, su corrección o su borrado escribiendo a quien opera esta instancia (el contacto está en la página de ayuda). Si te registraste a un evento, el organizador de ese evento también puede darte de baja de su lista.',
+                'p' => 'Puedes pedir acceso a tus datos, su corrección o su borrado escribiendo a quien opera esta instancia (el contacto está en la página de ayuda). Si te registraste a un evento, el organizador de ese evento también puede darte de baja de su lista.',
             ],
             [
                 'h' => 'Otras instancias',
@@ -61,7 +61,7 @@ return [
 
     'terms' => [
         'title' => 'Términos de uso',
-        'intro' => 'Al usar esta instancia de Nexo Events aceptás lo que sigue. Es un servicio gratuito, ofrecido tal cual está.',
+        'intro' => 'Al usar esta instancia de Nexo Events aceptas lo que sigue. Es un servicio gratuito, ofrecido tal cual está.',
         'sections' => [
             [
                 'h' => 'Qué es el servicio',
@@ -69,7 +69,7 @@ return [
             ],
             [
                 'h' => 'Tu cuenta',
-                'p' => 'Necesitás una cuenta para crear eventos, y verificar tu email para publicarlos. Sos responsable de lo que pase con tu cuenta y de mantener tu contraseña a salvo.',
+                'p' => 'Necesitas una cuenta para crear eventos, y verificar tu email para publicarlos. Eres responsable de lo que pase con tu cuenta y de mantener tu contraseña a salvo.',
             ],
             [
                 'h' => 'Responsabilidad sobre tus eventos',

@@ -57,7 +57,7 @@ it('AC-HARDEN-1: queues the reset mail and renders it in the project language, n
     $html = (string) $email->getHtmlBody();
 
     expect(new ResetPasswordQueued('t'))->toBeInstanceOf(ShouldQueue::class)
-        ->and($email->getSubject())->toBe('Restablecé tu contraseña')
+        ->and($email->getSubject())->toBe('Restablece tu contraseña')
         ->and($html)->toContain('Cambiar mi contraseña')
         ->and($html)->not->toContain('Reset Password')
         ->and($html)->not->toContain('Regards');

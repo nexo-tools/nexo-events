@@ -17,15 +17,15 @@ return [
         ],
         [
             'q' => '¿Cómo valido las entradas en la puerta?',
-            'a' => 'Desde el panel del evento escaneás o ingresás el código de la entrada. El check-in es atómico: cada entrada se marca ingresada una sola vez.',
+            'a' => 'Desde el panel del evento escaneas o ingresas el código de la entrada. El check-in es atómico: cada entrada se marca ingresada una sola vez.',
         ],
         [
             'q' => '¿Puedo alojarlo en mi propio servidor?',
-            'a' => 'Sí. Cloná el repositorio y desplegalo donde quieras; tus datos quedan en tu propia instancia.',
+            'a' => 'Sí. Clona el repositorio y despliégalo donde quieras; tus datos quedan en tu propia instancia.',
         ],
         [
             'q' => 'No me llegó mi entrada por email.',
-            'a' => 'Revisá las carpetas de spam o promociones. Si no aparece, contactá al organizador del evento.',
+            'a' => 'Revisa las carpetas de spam o promociones. Si no aparece, contacta al organizador del evento.',
         ],
     ],
 ];
