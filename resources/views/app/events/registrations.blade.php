@@ -3,7 +3,7 @@
     <p class="mb-4 text-sm text-muted">{{ $event->title }} · {{ $tickets->count() }} {{ __('entradas') }}</p>
 
     @if (session('checkin'))
-        <p class="nexo-flash mb-4" role="status">{{ __('Check-in') }}: {{ session('checkin') }}</p>
+        @include('app._checkin-flash', ['result' => session('checkin')])
     @endif
 
     <ul class="space-y-2">
@@ -11,7 +11,7 @@
             <li class="flex items-center justify-between gap-3 rounded-lg border border-line p-3">
                 <span>
                     <span class="font-medium">{{ $ticket->attendee_name }}</span>
-                    <span class="block text-xs text-muted">{{ $ticket->attendee_email }} · {{ $ticket->status->value }}</span>
+                    <span class="block text-xs text-muted">{{ $ticket->attendee_email }} · {{ $ticket->status->label() }}</span>
                 </span>
                 @if ($ticket->checkin === null && $ticket->status->value === 'valid')
                     <form method="POST" action="{{ route('tickets.checkin', $ticket) }}">@csrf

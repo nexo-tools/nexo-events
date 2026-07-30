@@ -3,19 +3,7 @@
     <p class="mb-4 text-sm text-muted">{{ $event->title }}</p>
 
     @if (session('checkin'))
-        @php($r = session('checkin'))
-        <div @class(['nexo-flash mb-4', 'nexo-flash--danger' => $r !== 'ok'])
-             role="{{ $r === 'ok' ? 'status' : 'alert' }}">
-            <span>
-                @switch($r)
-                    @case('ok') ✓ {{ __('Ingreso válido') }} @if(session('ticketName')) — {{ session('ticketName') }} @endif @break
-                    @case('already') ✗ {{ __('Entrada ya usada') }} @break
-                    @case('revoked') ✗ {{ __('Entrada revocada') }} @break
-                    @case('event_inactive') ✗ {{ __('Evento cancelado') }} @break
-                    @default ✗ {{ __('Entrada no válida') }}
-                @endswitch
-            </span>
-        </div>
+        @include('app._checkin-flash', ['result' => session('checkin')])
     @endif
 
     {{--

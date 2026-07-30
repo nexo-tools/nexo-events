@@ -10,6 +10,18 @@ enum EventStatus: string
     case Cancelled = 'cancelled'; // organizer cancelled the event
     case Killed = 'killed';       // admin kill-switch (abuse)
 
+    /** What a human is shown. The backing value is storage, never UI copy. */
+    public function label(): string
+    {
+        return match ($this) {
+            self::Draft => __('Borrador'),
+            self::Published => __('Publicado'),
+            self::Closed => __('Registro cerrado'),
+            self::Cancelled => __('Cancelado'),
+            self::Killed => __('Bloqueado'),
+        };
+    }
+
     /** Can attendees register right now? */
     public function acceptsRegistrations(): bool
     {

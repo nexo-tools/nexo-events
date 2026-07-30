@@ -132,5 +132,12 @@
     "Cambiar mi contraseña": "Alterar minha senha",
     "Pediste restablecer tu contraseña. El enlace vence en :minutes minutos.": "Você pediu para redefinir a sua senha. O link expira em :minutes minutos.",
     "Restablecé tu contraseña": "Redefina a sua senha",
-    "Si no pediste esto, podés ignorar este correo: tu contraseña no cambia.": "Se você não pediu isso, pode ignorar este e-mail — a sua senha continua a mesma."
+    "Si no pediste esto, podés ignorar este correo: tu contraseña no cambia.": "Se você não pediu isso, pode ignorar este e-mail — a sua senha continua a mesma.",
+    "Bloqueado": "Bloqueado",
+    "Borrador": "Rascunho",
+    "Cancelado": "Cancelado",
+    "Publicado": "Publicado",
+    "Registro cerrado": "Inscrições encerradas",
+    "Revocada": "Revogado",
+    "Válida": "Válido"
 }

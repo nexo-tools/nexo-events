@@ -132,5 +132,12 @@
     "Cambiar mi contraseña": "Change my password",
     "Pediste restablecer tu contraseña. El enlace vence en :minutes minutos.": "You asked to reset your password. The link expires in :minutes minutes.",
     "Restablecé tu contraseña": "Reset your password",
-    "Si no pediste esto, podés ignorar este correo: tu contraseña no cambia.": "If you did not ask for this, you can ignore this email — your password stays the same."
+    "Si no pediste esto, podés ignorar este correo: tu contraseña no cambia.": "If you did not ask for this, you can ignore this email — your password stays the same.",
+    "Bloqueado": "Blocked",
+    "Borrador": "Draft",
+    "Cancelado": "Cancelled",
+    "Publicado": "Published",
+    "Registro cerrado": "Registration closed",
+    "Revocada": "Revoked",
+    "Válida": "Valid"
 }

@@ -21,7 +21,7 @@
         @forelse ($events as $event)
             <li class="rounded-lg border border-line p-3">
                 <a href="{{ route('events.edit', $event) }}" class="font-medium hover:underline">{{ $event->title }}</a>
-                <div class="text-xs text-muted">{{ $event->starts_at->format('d/m/Y H:i') }} · {{ $event->status->value }} · {{ __(':count entradas', ['count' => $event->tickets_count]) }} · {{ __(':count visitas', ['count' => $event->views_count]) }}</div>
+                <div class="text-xs text-muted">{{ $event->starts_at->format('d/m/Y H:i') }} · {{ $event->status->label() }} · {{ __(':count entradas', ['count' => $event->tickets_count]) }} · {{ __(':count visitas', ['count' => $event->views_count]) }}</div>
             </li>
         @empty
             <li class="text-sm text-muted">{{ __('Aún no creaste ningún evento.') }}</li>

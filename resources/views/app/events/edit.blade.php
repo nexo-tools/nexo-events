@@ -1,6 +1,6 @@
 <x-guest-layout :noindex="true">
     <h1 class="mb-1 text-xl font-bold">{{ $event->title }}</h1>
-    <p class="mb-4 text-sm text-muted">{{ __('Estado') }}: {{ $event->status->value }}</p>
+    <p class="mb-4 text-sm text-muted">{{ __('Estado') }}: {{ $event->status->label() }}</p>
 
     @if (session('status'))
         <p class="nexo-flash mb-4" role="status">{{ session('status') }}</p>
