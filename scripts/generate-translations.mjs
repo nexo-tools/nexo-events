@@ -1,12 +1,12 @@
-// Extracts every __('…') / trans_choice('…') Spanish source string from the
-// codebase and builds lang/en.json and lang/pt.json from the maps kept in
+// Extracts every __('…') / trans_choice('…') English source string from the
+// codebase and builds lang/es.json and lang/pt.json from the maps kept in
 // scripts/translations/. Fails loudly if a string has no translation.
 // Usage: node scripts/generate-translations.mjs [--check]
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const ROOTS = ['app', 'resources/views'];
-const LOCALES = ['en', 'pt'];
+const LOCALES = ['es', 'pt'];
 
 function phpFiles(dir) {
     return readdirSync(dir).flatMap((entry) => {
@@ -28,7 +28,7 @@ for (const root of ROOTS) {
     }
 }
 
-const sorted = [...keys].sort((a, b) => a.localeCompare(b, 'es'));
+const sorted = [...keys].sort((a, b) => a.localeCompare(b, 'en'));
 let failed = false;
 
 for (const locale of LOCALES) {
@@ -38,19 +38,19 @@ for (const locale of LOCALES) {
 
     if (missing.length > 0) {
         failed = true;
-        console.error(`\n[${locale}] Falta traducir ${missing.length} strings:`);
+        console.error(`\n[${locale}] Missing translation for ${missing.length} string(s):`);
         missing.forEach((key) => console.error(`  - ${key}`));
     }
 
     if (stale.length > 0) {
-        console.warn(`\n[${locale}] ${stale.length} strings del mapa ya no se usan (limpiar cuando quieras):`);
+        console.warn(`\n[${locale}] ${stale.length} unused string(s) in the map (clean up when convenient):`);
         stale.forEach((key) => console.warn(`  - ${key}`));
     }
 
     if (!process.argv.includes('--check') && missing.length === 0) {
         const output = Object.fromEntries(sorted.map((key) => [key, map[key]]));
         writeFileSync(`lang/${locale}.json`, JSON.stringify(output, null, 4) + '\n');
-        console.log(`[${locale}] lang/${locale}.json generado con ${sorted.length} strings.`);
+        console.log(`[${locale}] lang/${locale}.json generated with ${sorted.length} string(s).`);
     }
 }
 

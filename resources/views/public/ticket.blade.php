@@ -1,5 +1,5 @@
 <x-guest-layout :noindex="true">
-    <h1 class="mb-1 text-xl font-bold">{{ __('Tu entrada') }}</h1>
+    <h1 class="mb-1 text-xl font-bold">{{ __('Your ticket') }}</h1>
     <p class="mb-4 text-sm text-muted">{{ $ticket->event->title }} · {{ $ticket->event->starts_at->translatedFormat(__('app.datetime')) }}</p>
 
     {{-- The QR keeps its white quiet zone in dark mode too (`dark:bg-white`):
@@ -10,9 +10,9 @@
     </div>
 
     <p class="text-center text-sm text-muted">{{ $ticket->attendee_name }}</p>
-    <p class="text-center text-xs text-muted">{{ __('Muestra este QR en la puerta.') }}</p>
+    <p class="text-center text-xs text-muted">{{ __('Show this QR at the door.') }}</p>
 
     @if ($ticket->status->value === 'checked_in')
-        <p class="nexo-flash mt-4 justify-center" role="status">{{ __('Ya ingresaste a este evento.') }}</p>
+        <p class="nexo-flash mt-4 justify-center" role="status">{{ __('You have already checked in to this event.') }}</p>
     @endif
 </x-guest-layout>

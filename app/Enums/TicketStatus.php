@@ -12,9 +12,9 @@ enum TicketStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::Valid => __('Válida'),
-            self::CheckedIn => __('Ingresó'),
-            self::Revoked => __('Revocada'),
+            self::Valid => __('Valid'),
+            self::CheckedIn => __('Checked in'),
+            self::Revoked => __('Revoked'),
         };
     }
 }

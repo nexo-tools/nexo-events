@@ -25,18 +25,18 @@ class CheckinController extends Controller
             // `@endphp`, swallowing every directive in between (it renders as a
             // 500). Keeping arrays out of the template avoids the collision.
             'scannerLabels' => [
-                'ok' => '✓ '.__('Ingreso válido'),
-                'already' => '✗ '.__('Entrada ya usada'),
-                'revoked' => '✗ '.__('Entrada revocada'),
-                'event_inactive' => '✗ '.__('Evento cancelado'),
-                'unknown' => '✗ '.__('Entrada no válida'),
-                'starting' => __('Abriendo la cámara…'),
-                'ready' => __('Apuntá al QR de la entrada.'),
-                'stopped' => __('Cámara apagada.'),
-                'noCamera' => __('No pudimos usar la cámara. Dale permiso, o abrí esta página en Safari o Chrome y no dentro de otra app.'),
-                'offline' => __('Sin conexión. Revisá la señal e intentá de nuevo.'),
-                'throttled' => __('Demasiados intentos seguidos. Esperá unos segundos.'),
-                'failed' => __('No pudimos validar la entrada. Intentá de nuevo.'),
+                'ok' => '✓ '.__('Valid entry'),
+                'already' => '✗ '.__('Ticket already used'),
+                'revoked' => '✗ '.__('Ticket revoked'),
+                'event_inactive' => '✗ '.__('Event cancelled'),
+                'unknown' => '✗ '.__('Invalid ticket'),
+                'starting' => __('Opening the camera…'),
+                'ready' => __('Point at the ticket QR.'),
+                'stopped' => __('Camera off.'),
+                'noCamera' => __('We could not use the camera. Grant permission, or open this page in Safari or Chrome rather than inside another app.'),
+                'offline' => __('No connection. Check the signal and try again.'),
+                'throttled' => __('Too many attempts in a row. Wait a few seconds.'),
+                'failed' => __('We could not validate the ticket. Try again.'),
             ],
         ]);
     }

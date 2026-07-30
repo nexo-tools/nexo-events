@@ -29,6 +29,6 @@ class EventReportController extends Controller
 
         // Same answer regardless of how many reports this event already has —
         // otherwise the form becomes a way to probe what is under moderation.
-        return back()->with('status', __('Gracias. Revisamos los reportes y actuamos si corresponde.'));
+        return back()->with('status', __('Thank you. We review reports and act when needed.'));
     }
 }

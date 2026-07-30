@@ -14,14 +14,14 @@
         @endif
 
         @if ($event->isSoldOut())
-            <p class="nexo-flash nexo-flash--info" role="status">{{ __('El evento está agotado.') }}</p>
+            <p class="nexo-flash nexo-flash--info" role="status">{{ __('This event is sold out.') }}</p>
         @else
             <form method="POST" action="{{ route('public.register', $event) }}" class="space-y-3">
                 @csrf
                 <input type="text" name="website" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true">
-                <x-field :label="__('Tu nombre')" name="name" required autocomplete="name" />
+                <x-field :label="__('Your name')" name="name" required autocomplete="name" />
                 <x-field :label="__('Email')" name="email" type="email" required autocomplete="email" />
-                <x-button>{{ __('Registrarme') }}</x-button>
+                <x-button>{{ __('Register') }}</x-button>
             </form>
         @endif
 
@@ -29,7 +29,7 @@
              the registration form, which is what most visitors came for. --}}
         <details class="mt-6 border-t border-line pt-4">
             <summary class="cursor-pointer text-sm text-muted hover:text-link">
-                {{ __('¿Ya te registraste y no encuentras tu entrada?') }}
+                {{ __('Already registered and can\'t find your ticket?') }}
             </summary>
 
             <form method="POST" action="{{ route('public.resend', $event) }}" class="mt-3 space-y-3">
@@ -43,9 +43,9 @@
                         class="block w-full rounded-lg border-control bg-surface text-ink focus:border-ring focus:ring-ring">
                 </div>
                 <p class="text-xs text-muted">
-                    {{ __('Te enviamos una entrada nueva y la anterior deja de funcionar.') }}
+                    {{ __('We send you a new ticket and the previous one stops working.') }}
                 </p>
-                <x-button>{{ __('Reenviarme mi entrada') }}</x-button>
+                <x-button>{{ __('Resend my ticket') }}</x-button>
             </form>
         </details>
 
@@ -53,30 +53,30 @@
              an obvious phishing event would defeat the purpose. --}}
         <details class="mt-2">
             <summary class="cursor-pointer text-xs text-muted hover:text-ink">
-                {{ __('Reportar este evento') }}
+                {{ __('Report this event') }}
             </summary>
 
             <form method="POST" action="{{ route('public.report', $event) }}" class="mt-3 space-y-3">
                 @csrf
                 <input type="text" name="website" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true">
                 <div>
-                    <label for="report-reason" class="mb-1 block text-sm font-medium">{{ __('¿Qué problema tiene este evento?') }}</label>
+                    <label for="report-reason" class="mb-1 block text-sm font-medium">{{ __('What is wrong with this event?') }}</label>
                     <textarea id="report-reason" name="reason" rows="3" required minlength="10"
                         @error('reason') aria-invalid="true" aria-describedby="report-reason-error" @enderror
                         class="block w-full rounded-lg border-control bg-surface text-ink focus:border-ring focus:ring-ring">{{ old('reason') }}</textarea>
                     @error('reason')<p id="report-reason-error" class="mt-1 text-sm text-danger-subtle-fg">{{ $message }}</p>@enderror
                 </div>
                 <div>
-                    <label for="report-email" class="mb-1 block text-sm font-medium">{{ __('Tu email (opcional)') }}</label>
+                    <label for="report-email" class="mb-1 block text-sm font-medium">{{ __('Your email (optional)') }}</label>
                     <input id="report-email" type="email" name="reporter_email" value="{{ old('reporter_email') }}"
                         class="block w-full rounded-lg border-control bg-surface text-ink focus:border-ring focus:ring-ring">
                 </div>
-                <x-button>{{ __('Enviar reporte') }}</x-button>
+                <x-button>{{ __('Send report') }}</x-button>
             </form>
         </details>
     @elseif ($event->status->value === 'cancelled')
-        <p class="nexo-flash nexo-flash--danger" role="status">{{ __('Este evento fue cancelado.') }}</p>
+        <p class="nexo-flash nexo-flash--danger" role="status">{{ __('This event was cancelled.') }}</p>
     @else
-        <p class="nexo-flash nexo-flash--info" role="status">{{ __('El registro para este evento está cerrado.') }}</p>
+        <p class="nexo-flash nexo-flash--info" role="status">{{ __('Registration for this event is closed.') }}</p>
     @endif
 </x-guest-layout>

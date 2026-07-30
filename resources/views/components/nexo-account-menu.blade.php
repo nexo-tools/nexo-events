@@ -10,7 +10,7 @@
             @click="toggle()"
             :aria-expanded="open"
             aria-haspopup="true"
-            aria-label="{{ __('Tu cuenta') }}"
+            aria-label="{{ __('Your account') }}"
         >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" />
@@ -20,14 +20,14 @@
         <div class="nexo-menu__panel" x-show="open" x-cloak x-transition role="menu">
             <p class="nexo-menu__label">{{ auth()->user()->email }}</p>
 
-            <a href="{{ route('dashboard') }}" class="nexo-menu__item" role="menuitem">{{ __('Tus eventos') }}</a>
+            <a href="{{ route('dashboard') }}" class="nexo-menu__item" role="menuitem">{{ __('Your events') }}</a>
             <a href="{{ route('help') }}" class="nexo-menu__item" role="menuitem">{{ __('nexo.help.title') }}</a>
 
             <div class="nexo-menu__sep"></div>
 
             <form method="POST" action="{{ config('nexo-sso.enabled') ? route('nexo-sso.logout') : route('logout') }}">
                 @csrf
-                <button type="submit" class="nexo-menu__item" role="menuitem">{{ __('Cerrar sesión') }}</button>
+                <button type="submit" class="nexo-menu__item" role="menuitem">{{ __('Log out') }}</button>
             </form>
         </div>
     </div>

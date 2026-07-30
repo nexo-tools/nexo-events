@@ -17,7 +17,7 @@
             <p class="mt-2 max-w-sm text-muted">{{ $message }}</p>
 
             <a href="{{ url('/') }}" class="nexo-btn nexo-btn--primary mt-8">
-                {{ __('Volver al inicio') }}
+                {{ __('Back to home') }}
             </a>
         </main>
     </body>

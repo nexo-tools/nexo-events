@@ -35,7 +35,7 @@ class TicketIssued extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: __('Tu entrada para :event', ['event' => $this->ticket->event->title]),
+            subject: __('Your ticket for :event', ['event' => $this->ticket->event->title]),
         );
     }
 

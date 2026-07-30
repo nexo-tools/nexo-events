@@ -2,8 +2,8 @@
     @unless (auth()->user()->hasVerifiedEmail())
         <div class="nexo-flash nexo-flash--warning mb-4" role="status">
             <span>
-                {{ __('Verifica tu email para poder publicar eventos.') }}
-                <a href="{{ route('verification.notice') }}" class="font-medium underline">{{ __('Reenviar el enlace') }}</a>
+                {{ __('Verify your email to publish events.') }}
+                <a href="{{ route('verification.notice') }}" class="font-medium underline">{{ __('Resend the link') }}</a>
             </span>
         </div>
     @endunless
@@ -13,8 +13,8 @@
     @endif
 
     <div class="flex items-center justify-between gap-3">
-        <h1 class="text-xl font-bold">{{ __('Tus eventos') }}</h1>
-        <a href="{{ route('events.create') }}" class="nexo-btn nexo-btn--primary nexo-btn--sm">{{ __('Nuevo evento') }}</a>
+        <h1 class="text-xl font-bold">{{ __('Your events') }}</h1>
+        <a href="{{ route('events.create') }}" class="nexo-btn nexo-btn--primary nexo-btn--sm">{{ __('New event') }}</a>
     </div>
 
     <ul class="mt-4 space-y-2">
@@ -25,8 +25,8 @@
             </li>
         @empty
             <li class="rounded-lg border border-dashed border-line p-6 text-center">
-                <p class="text-sm font-medium">{{ __('Aún no creaste ningún evento.') }}</p>
-                <p class="mt-1 text-sm text-muted">{{ __('Creas el evento, compartes su página pública y validas las entradas con QR en la puerta.') }}</p>
+                <p class="text-sm font-medium">{{ __('You haven\'t created any events yet.') }}</p>
+                <p class="mt-1 text-sm text-muted">{{ __('You create the event, share its public page and validate tickets with a QR code at the door.') }}</p>
             </li>
         @endforelse
     </ul>

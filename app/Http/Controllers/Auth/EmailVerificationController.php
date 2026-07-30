@@ -37,7 +37,7 @@ class EmailVerificationController extends Controller
         }
 
         return redirect()->route('dashboard')
-            ->with('status', __('Tu email quedó verificado. Ya puedes publicar eventos.'));
+            ->with('status', __('Your email is verified. You can publish events now.'));
     }
 
     public function send(Request $request): RedirectResponse
@@ -48,6 +48,6 @@ class EmailVerificationController extends Controller
 
         $request->user()->sendEmailVerificationNotification();
 
-        return back()->with('status', __('Te reenviamos el enlace de verificación.'));
+        return back()->with('status', __('We have resent the verification link.'));
     }
 }

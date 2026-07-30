@@ -1,5 +1,5 @@
 <x-app-layout>
-    <h1 class="mb-1 text-xl font-bold">{{ __('Check-in en puerta') }}</h1>
+    <h1 class="mb-1 text-xl font-bold">{{ __('Door check-in') }}</h1>
     <p class="mb-4 text-sm text-muted">{{ $event->title }}</p>
 
     @if (session('checkin'))
@@ -22,10 +22,10 @@
     >
         <div data-scanner-controls class="hidden">
             <button type="button" data-scanner-start class="nexo-btn nexo-btn--primary">
-                {{ __('Escanear con la cámara') }}
+                {{ __('Scan with the camera') }}
             </button>
             <button type="button" data-scanner-stop hidden class="nexo-btn nexo-btn--ghost">
-                {{ __('Apagar la cámara') }}
+                {{ __('Turn the camera off') }}
             </button>
 
             {{-- bg-black, not a surface token: this is the camera viewport, and it
@@ -40,11 +40,11 @@
     {{-- The fallback that always works: broken QR, dead battery, denied camera. --}}
     <form method="POST" action="{{ route('events.checkin', $event) }}" class="mt-6 space-y-3" data-checkin-form>
         @csrf
-        <label for="checkin-token" class="block text-sm font-medium">{{ __('Código de la entrada') }}</label>
+        <label for="checkin-token" class="block text-sm font-medium">{{ __('Ticket code') }}</label>
         <input id="checkin-token" name="token" autocomplete="off"
                class="block w-full rounded-lg border-control bg-surface text-ink focus:border-ring focus:ring-ring">
-        <x-button>{{ __('Validar') }}</x-button>
+        <x-button>{{ __('Validate') }}</x-button>
     </form>
 
-    <a href="{{ route('events.registrations', $event) }}" class="mt-4 block text-sm text-muted hover:underline">{{ __('Ver registrados') }}</a>
+    <a href="{{ route('events.registrations', $event) }}" class="mt-4 block text-sm text-muted hover:underline">{{ __('View registrations') }}</a>
 </x-app-layout>

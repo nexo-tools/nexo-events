@@ -57,9 +57,9 @@ class PublicEventController extends Controller
 
         return match ($outcome['result']) {
             EventRegistrar::OK => redirect()->route('ticket.show', ['token' => $outcome['token']]),
-            EventRegistrar::DUPLICATE => back()->with('status', __('Ya estás registrado con ese email. Pide que te reenviemos tu entrada si no la encuentras.')),
-            EventRegistrar::SOLD_OUT => back()->withErrors(['email' => __('El evento está agotado.')]),
-            default => back()->withErrors(['email' => __('El registro para este evento está cerrado.')]),
+            EventRegistrar::DUPLICATE => back()->with('status', __('You are already registered with that email. Ask us to resend your ticket if you cannot find it.')),
+            EventRegistrar::SOLD_OUT => back()->withErrors(['email' => __('This event is sold out.')]),
+            default => back()->withErrors(['email' => __('Registration for this event is closed.')]),
         };
     }
 
@@ -136,6 +136,6 @@ class PublicEventController extends Controller
         // Deliberately the same answer whether or not that address holds a
         // ticket: branching here would turn the page into an attendee-list
         // oracle for anyone with a browser (AC-RESEND-2).
-        return back()->with('status', __('Si ese email tiene una entrada para este evento, te la reenviamos. Revisá tu correo.'));
+        return back()->with('status', __('If that email has a ticket for this event, we have resent it. Check your inbox.'));
     }
 }

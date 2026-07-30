@@ -6,11 +6,11 @@
      role="{{ $result === 'ok' ? 'status' : 'alert' }}">
     <span>
         @switch($result)
-            @case('ok') ✓ {{ __('Ingreso válido') }} @if(session('ticketName')) — {{ session('ticketName') }} @endif @break
-            @case('already') ✗ {{ __('Entrada ya usada') }} @break
-            @case('revoked') ✗ {{ __('Entrada revocada') }} @break
-            @case('event_inactive') ✗ {{ __('Evento cancelado') }} @break
-            @default ✗ {{ __('Entrada no válida') }}
+            @case('ok') ✓ {{ __('Valid entry') }} @if(session('ticketName')) — {{ session('ticketName') }} @endif @break
+            @case('already') ✗ {{ __('Ticket already used') }} @break
+            @case('revoked') ✗ {{ __('Ticket revoked') }} @break
+            @case('event_inactive') ✗ {{ __('Event cancelled') }} @break
+            @default ✗ {{ __('Invalid ticket') }}
         @endswitch
     </span>
 </div>

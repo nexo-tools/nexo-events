@@ -1,5 +1,5 @@
 <x-app-layout>
-    <h1 class="mb-1 text-xl font-bold">{{ __('Registrados') }}</h1>
+    <h1 class="mb-1 text-xl font-bold">{{ __('Registrations') }}</h1>
     <p class="mb-4 text-sm text-muted">{{ $event->title }} · {{ trans_choice('app.tickets', $tickets->count()) }}</p>
 
     @if (session('checkin'))
@@ -15,16 +15,16 @@
                 </span>
                 @if ($ticket->checkin === null && $ticket->status->value === 'valid')
                     <form method="POST" action="{{ route('tickets.checkin', $ticket) }}">@csrf
-                        <x-button variant="secondary" class="nexo-btn--sm" :block="false">{{ __('Marcar ingreso') }}</x-button>
+                        <x-button variant="secondary" class="nexo-btn--sm" :block="false">{{ __('Check in') }}</x-button>
                     </form>
                 @else
-                    <span class="text-xs font-medium text-success-subtle-fg">{{ __('Ingresó') }}</span>
+                    <span class="text-xs font-medium text-success-subtle-fg">{{ __('Checked in') }}</span>
                 @endif
             </li>
         @empty
             <li class="rounded-lg border border-dashed border-line p-6 text-center">
-                <p class="text-sm font-medium">{{ __('Nadie se registró todavía.') }}</p>
-                <p class="mt-1 text-sm text-muted">{{ __('Comparte la página pública del evento para que empiecen a registrarse.') }}</p>
+                <p class="text-sm font-medium">{{ __('No one has registered yet.') }}</p>
+                <p class="mt-1 text-sm text-muted">{{ __('Share the event\'s public page so people can start registering.') }}</p>
                 <p class="mt-2 text-sm">
                     <a href="{{ route('public.event', $event) }}" class="break-all text-link hover:underline">{{ route('public.event', $event) }}</a>
                 </p>
@@ -32,5 +32,5 @@
         @endforelse
     </ul>
 
-    <a href="{{ route('events.edit', $event) }}" class="mt-4 block text-sm text-muted hover:underline">{{ __('Volver') }}</a>
+    <a href="{{ route('events.edit', $event) }}" class="mt-4 block text-sm text-muted hover:underline">{{ __('Back') }}</a>
 </x-app-layout>

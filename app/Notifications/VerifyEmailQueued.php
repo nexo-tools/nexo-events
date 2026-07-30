@@ -37,7 +37,7 @@ class VerifyEmailQueued extends VerifyEmail implements ShouldQueue
     public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject(__('Verifica tu email'))
+            ->subject(__('Verify your email'))
             ->view('emails.verify-email', ['url' => $this->verificationUrl($notifiable)]);
     }
 }

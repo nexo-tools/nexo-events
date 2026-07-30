@@ -14,34 +14,34 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ __('Restablecé tu contraseña') }}</title>
+    <title>{{ __('Reset your password') }}</title>
 </head>
 <body style="margin:0; padding:0; background-color:#f4f4f5; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#18181b;">
     <div style="max-width:560px; margin:0 auto; padding:24px 16px;">
         <div style="background-color:#ffffff; border-radius:12px; padding:32px 24px; border:1px solid #e4e4e7;">
 
             <h1 style="margin:0 0 16px; font-size:20px; line-height:1.3; font-weight:700; color:#18181b;">
-                {{ __('Restablecé tu contraseña') }}
+                {{ __('Reset your password') }}
             </h1>
 
             <p style="margin:0 0 24px; font-size:15px; line-height:1.6; color:#3f3f46;">
-                {{ __('Pediste restablecer tu contraseña. El enlace vence en :minutes minutos.', ['minutes' => $expiresIn]) }}
+                {{ __('You asked to reset your password. The link expires in :minutes minutes.', ['minutes' => $expiresIn]) }}
             </p>
 
             <div style="text-align:center; margin:0 0 24px;">
                 <a href="{{ $url }}"
                    style="display:inline-block; background-color:#7c3aed; color:#ffffff; text-decoration:none; font-size:15px; font-weight:600; padding:12px 24px; border-radius:8px;">
-                    {{ __('Cambiar mi contraseña') }}
+                    {{ __('Change my password') }}
                 </a>
             </div>
 
             <p style="margin:0 0 16px; font-size:13px; line-height:1.6; color:#71717a;">
-                {{ __('Si el botón no funciona, copiá y pegá este enlace:') }}<br>
+                {{ __('If the button does not work, copy and paste this link:') }}<br>
                 <a href="{{ $url }}" style="color:#7c3aed; word-break:break-all;">{{ $url }}</a>
             </p>
 
             <p style="margin:24px 0 0; padding-top:16px; border-top:1px solid #e4e4e7; font-size:12px; line-height:1.6; color:#a1a1aa;">
-                {{ __('Si no pediste esto, puedes ignorar este correo: tu contraseña no cambia.') }}
+                {{ __('If you did not ask for this, you can ignore this email — your password stays the same.') }}
             </p>
         </div>
 

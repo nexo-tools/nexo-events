@@ -23,7 +23,7 @@ class EventController extends Controller
         $event->status = EventStatus::Draft;
         $request->user()->events()->save($event);
 
-        return redirect()->route('events.edit', $event)->with('status', __('Evento creado.'));
+        return redirect()->route('events.edit', $event)->with('status', __('Event created.'));
     }
 
     public function edit(Request $request, Event $event): View
@@ -38,7 +38,7 @@ class EventController extends Controller
         $this->owned($request, $event);
         $event->update($request->validated());
 
-        return redirect()->route('events.edit', $event)->with('status', __('Evento actualizado.'));
+        return redirect()->route('events.edit', $event)->with('status', __('Event updated.'));
     }
 
     public function publish(Request $request, Event $event): RedirectResponse
@@ -50,7 +50,7 @@ class EventController extends Controller
         // cheapest effective brake on drive-by spam events (ADR-007 §1).
         if (! $request->user()->hasVerifiedEmail()) {
             return back()->withErrors([
-                'publish' => __('Verifica tu email para poder publicar eventos. Te enviamos el enlace al registrarte.'),
+                'publish' => __('Verify your email to publish events. We sent you the link when you signed up.'),
             ]);
         }
 
@@ -58,7 +58,7 @@ class EventController extends Controller
             $event->update(['status' => EventStatus::Published]);
         }
 
-        return back()->with('status', __('Evento publicado.'));
+        return back()->with('status', __('Event published.'));
     }
 
     public function close(Request $request, Event $event): RedirectResponse
@@ -69,7 +69,7 @@ class EventController extends Controller
             $event->update(['status' => EventStatus::Closed]);
         }
 
-        return back()->with('status', __('Registro cerrado.'));
+        return back()->with('status', __('Registration closed.'));
     }
 
     public function cancel(Request $request, Event $event): RedirectResponse
@@ -77,7 +77,7 @@ class EventController extends Controller
         $this->owned($request, $event);
         $event->update(['status' => EventStatus::Cancelled]);
 
-        return back()->with('status', __('Evento cancelado.'));
+        return back()->with('status', __('Event cancelled.'));
     }
 
     public function registrations(Request $request, Event $event): View

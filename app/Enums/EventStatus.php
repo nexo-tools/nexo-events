@@ -14,11 +14,11 @@ enum EventStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::Draft => __('Borrador'),
-            self::Published => __('Publicado'),
-            self::Closed => __('Registro cerrado'),
-            self::Cancelled => __('Cancelado'),
-            self::Killed => __('Bloqueado'),
+            self::Draft => __('Draft'),
+            self::Published => __('Published'),
+            self::Closed => __('Registration closed'),
+            self::Cancelled => __('Cancelled'),
+            self::Killed => __('Blocked'),
         };
     }
 
