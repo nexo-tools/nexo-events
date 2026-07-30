@@ -1,4 +1,4 @@
-<x-guest-layout :noindex="true">
+<x-app-layout>
     <h1 class="mb-1 text-xl font-bold">{{ __('Registrados') }}</h1>
     <p class="mb-4 text-sm text-muted">{{ $event->title }} · {{ $tickets->count() }} {{ __('entradas') }}</p>
 
@@ -27,4 +27,4 @@
     </ul>
 
     <a href="{{ route('events.edit', $event) }}" class="mt-4 block text-sm text-muted hover:underline">{{ __('Volver') }}</a>
-</x-guest-layout>
+</x-app-layout>

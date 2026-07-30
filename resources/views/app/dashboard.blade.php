@@ -1,4 +1,4 @@
-<x-guest-layout :noindex="true">
+<x-app-layout>
     @unless (auth()->user()->hasVerifiedEmail())
         <div class="nexo-flash nexo-flash--warning mb-4" role="status">
             <span>
@@ -28,8 +28,4 @@
         @endforelse
     </ul>
 
-    <form method="POST" action="{{ config('nexo-sso.enabled') ? route('nexo-sso.logout') : route('logout') }}" class="mt-6">
-        @csrf
-        <button type="submit" class="text-sm text-muted hover:underline">{{ __('Cerrar sesión') }}</button>
-    </form>
-</x-guest-layout>
+</x-app-layout>

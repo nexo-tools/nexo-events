@@ -1,4 +1,4 @@
-<x-guest-layout :noindex="true">
+<x-app-layout>
     <h1 class="mb-1 text-xl font-bold">{{ $event->title }}</h1>
     <p class="mb-4 text-sm text-muted">{{ __('Estado') }}: {{ $event->status->label() }}</p>
 
@@ -50,4 +50,4 @@
     </div>
 
     <a href="{{ route('dashboard') }}" class="mt-4 block text-sm text-muted hover:underline">{{ __('Volver al panel') }}</a>
-</x-guest-layout>
+</x-app-layout>

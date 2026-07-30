@@ -1,4 +1,4 @@
-<x-guest-layout :noindex="true">
+<x-app-layout>
     <h1 class="mb-1 text-xl font-bold">{{ __('Check-in en puerta') }}</h1>
     <p class="mb-4 text-sm text-muted">{{ $event->title }}</p>
 
@@ -47,4 +47,4 @@
     </form>
 
     <a href="{{ route('events.registrations', $event) }}" class="mt-4 block text-sm text-muted hover:underline">{{ __('Ver registrados') }}</a>
-</x-guest-layout>
+</x-app-layout>
