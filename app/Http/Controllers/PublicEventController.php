@@ -57,7 +57,7 @@ class PublicEventController extends Controller
 
         return match ($outcome['result']) {
             EventRegistrar::OK => redirect()->route('ticket.show', ['token' => $outcome['token']]),
-            EventRegistrar::DUPLICATE => back()->with('status', __('Ya estás registrado con ese email. Pedí que te reenviemos tu entrada si no la encontrás.')),
+            EventRegistrar::DUPLICATE => back()->with('status', __('Ya estás registrado con ese email. Pide que te reenviemos tu entrada si no la encuentras.')),
             EventRegistrar::SOLD_OUT => back()->withErrors(['email' => __('El evento está agotado.')]),
             default => back()->withErrors(['email' => __('El registro para este evento está cerrado.')]),
         };

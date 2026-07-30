@@ -7,7 +7,7 @@
      the layout; private pages pass $noindex. --}}
 <x-nexo-seo
     :title="isset($title) ? $title.' — '.config('app.name') : config('app.name')"
-    :description="$description ?? __('Creá eventos gratis, recibí registros por email y validá las entradas con QR en la puerta.')"
+    :description="$description ?? __('Crea eventos gratis, recibe registros por email y valida las entradas con QR en la puerta.')"
     :image="$seoImage ?? '/og-image.png'"
     :type="$seoType ?? 'website'"
     :noindex="$noindex ?? false"

@@ -50,7 +50,7 @@ class EventController extends Controller
         // cheapest effective brake on drive-by spam events (ADR-007 §1).
         if (! $request->user()->hasVerifiedEmail()) {
             return back()->withErrors([
-                'publish' => __('Verificá tu email para poder publicar eventos. Te enviamos el enlace al registrarte.'),
+                'publish' => __('Verifica tu email para poder publicar eventos. Te enviamos el enlace al registrarte.'),
             ]);
         }
 

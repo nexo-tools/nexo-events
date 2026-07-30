@@ -128,7 +128,7 @@ it('AC-VERIFY-1: sends the verification mail from the project template, in the p
     // ("Verify Email Address", "Regards"), which this project's i18n cannot
     // reach - Spanish is the source language and the generator translates
     // outward from it. A Spanish-first product must not send an English email.
-    expect($email->getSubject())->toBe('Verificá tu email')
+    expect($email->getSubject())->toBe('Verifica tu email')
         ->and($html)->toContain('Verificar mi email')
         ->and($html)->not->toContain('Regards')
         ->and($html)->not->toContain('Verify Email Address');

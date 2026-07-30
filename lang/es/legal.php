@@ -13,7 +13,7 @@ return [
     'operator' => [
         'h' => 'Quién opera esta instancia',
         'p' => 'Esta instancia la opera :operator.',
-        'contact' => 'Para cualquier consulta sobre tus datos podés escribir a :contact.',
+        'contact' => 'Para cualquier consulta sobre tus datos puedes escribir a :contact.',
     ],
 
     'privacy' => [
@@ -26,7 +26,7 @@ return [
             ],
             [
                 'h' => 'Qué guardamos de los asistentes',
-                'p' => 'El nombre y el email que escribís al registrarte a un evento, y si entraste o no. No creamos una cuenta ni te pedimos contraseña. Esos datos son visibles para el organizador de ese evento: es quien necesita saber quién va.',
+                'p' => 'El nombre y el email que escribes al registrarte a un evento, y si entraste o no. No creamos una cuenta ni te pedimos contraseña. Esos datos son visibles para el organizador de ese evento: es quien necesita saber quién va.',
             ],
             [
                 'h' => 'Las entradas y su código QR',
@@ -38,7 +38,7 @@ return [
             ],
             [
                 'h' => 'Cookies',
-                'p' => 'Solo las necesarias para que la web funcione: la de sesión (para mantenerte identificado si tenés cuenta) y las que recuerdan el idioma y el tema claro/oscuro que elegiste. Ninguna sirve para publicidad ni para seguimiento.',
+                'p' => 'Solo las necesarias para que la web funcione: la de sesión (para mantenerte identificado si tienes cuenta) y las que recuerdan el idioma y el tema claro/oscuro que elegiste. Ninguna sirve para publicidad ni para seguimiento.',
             ],
             [
                 'h' => 'Correos',
@@ -89,7 +89,7 @@ return [
             ],
             [
                 'h' => 'Software libre',
-                'p' => 'Nexo Events se distribuye con licencia MIT: podés leer el código, modificarlo y alojar tu propia instancia. El software se entrega sin garantías, según indica esa licencia.',
+                'p' => 'Nexo Events se distribuye con licencia MIT: puedes leer el código, modificarlo y alojar tu propia instancia. El software se entrega sin garantías, según indica esa licencia.',
             ],
             [
                 'h' => 'Cambios',

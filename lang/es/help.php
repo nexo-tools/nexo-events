@@ -13,7 +13,7 @@ return [
         ],
         [
             'q' => '¿Necesito una cuenta para asistir a un evento?',
-            'a' => 'No. Te registrás con tu nombre y tu email, y recibís tu entrada con QR por correo.',
+            'a' => 'No. Te registras con tu nombre y tu email, y recibes tu entrada con QR por correo.',
         ],
         [
             'q' => '¿Cómo valido las entradas en la puerta?',

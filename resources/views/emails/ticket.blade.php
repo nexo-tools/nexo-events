@@ -46,7 +46,7 @@
             </div>
 
             <p style="margin:8px 0 24px; text-align:center; font-size:14px; color:#52525b;">
-                {{ __('Mostrá este QR en la puerta.') }}
+                {{ __('Muestra este QR en la puerta.') }}
             </p>
 
             <div style="text-align:center; margin:0 0 24px;">
@@ -64,7 +64,7 @@
             </p>
 
             <p style="margin:24px 0 0; padding-top:16px; border-top:1px solid #e4e4e7; font-size:12px; line-height:1.6; color:#a1a1aa;">
-                {{ __('Guardá este correo: es tu entrada. No la compartas — quien tenga el código puede ingresar en tu lugar.') }}
+                {{ __('Guarda este correo: es tu entrada. No la compartas — quien tenga el código puede ingresar en tu lugar.') }}
             </p>
         </div>
 

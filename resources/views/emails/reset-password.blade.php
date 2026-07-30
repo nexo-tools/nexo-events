@@ -41,7 +41,7 @@
             </p>
 
             <p style="margin:24px 0 0; padding-top:16px; border-top:1px solid #e4e4e7; font-size:12px; line-height:1.6; color:#a1a1aa;">
-                {{ __('Si no pediste esto, podés ignorar este correo: tu contraseña no cambia.') }}
+                {{ __('Si no pediste esto, puedes ignorar este correo: tu contraseña no cambia.') }}
             </p>
         </div>
 

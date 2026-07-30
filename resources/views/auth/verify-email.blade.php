@@ -1,8 +1,8 @@
 <x-guest-layout :noindex="true">
-    <h1 class="mb-2 text-xl font-bold">{{ __('Verificá tu email') }}</h1>
+    <h1 class="mb-2 text-xl font-bold">{{ __('Verifica tu email') }}</h1>
 
     <p class="mb-4 text-sm text-muted">
-        {{ __('Te enviamos un enlace a :email. Abrilo para poder publicar tus eventos; mientras tanto podés crear y editar borradores.', ['email' => auth()->user()->email]) }}
+        {{ __('Te enviamos un enlace a :email. Ábrelo para poder publicar tus eventos; mientras tanto puedes crear y editar borradores.', ['email' => auth()->user()->email]) }}
     </p>
 
     @if (session('status'))

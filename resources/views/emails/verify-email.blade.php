@@ -14,18 +14,18 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ __('Verificá tu email') }}</title>
+    <title>{{ __('Verifica tu email') }}</title>
 </head>
 <body style="margin:0; padding:0; background-color:#f4f4f5; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#18181b;">
     <div style="max-width:560px; margin:0 auto; padding:24px 16px;">
         <div style="background-color:#ffffff; border-radius:12px; padding:32px 24px; border:1px solid #e4e4e7;">
 
             <h1 style="margin:0 0 16px; font-size:20px; line-height:1.3; font-weight:700; color:#18181b;">
-                {{ __('Verificá tu email') }}
+                {{ __('Verifica tu email') }}
             </h1>
 
             <p style="margin:0 0 24px; font-size:15px; line-height:1.6; color:#3f3f46;">
-                {{ __('Confirmá tu dirección para poder publicar eventos. Mientras tanto podés crear y editar borradores.') }}
+                {{ __('Confirma tu dirección para poder publicar eventos. Mientras tanto puedes crear y editar borradores.') }}
             </p>
 
             <div style="text-align:center; margin:0 0 24px;">
@@ -41,7 +41,7 @@
             </p>
 
             <p style="margin:24px 0 0; padding-top:16px; border-top:1px solid #e4e4e7; font-size:12px; line-height:1.6; color:#a1a1aa;">
-                {{ __('Si no creaste una cuenta, podés ignorar este correo.') }}
+                {{ __('Si no creaste una cuenta, puedes ignorar este correo.') }}
             </p>
         </div>
 

@@ -2,7 +2,7 @@
     @unless (auth()->user()->hasVerifiedEmail())
         <div class="nexo-flash nexo-flash--warning mb-4" role="status">
             <span>
-                {{ __('Verificá tu email para poder publicar eventos.') }}
+                {{ __('Verifica tu email para poder publicar eventos.') }}
                 <a href="{{ route('verification.notice') }}" class="font-medium underline">{{ __('Reenviar el enlace') }}</a>
             </span>
         </div>

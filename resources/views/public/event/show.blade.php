@@ -29,7 +29,7 @@
              the registration form, which is what most visitors came for. --}}
         <details class="mt-6 border-t border-line pt-4">
             <summary class="cursor-pointer text-sm text-muted hover:text-link">
-                {{ __('¿Ya te registraste y no encontrás tu entrada?') }}
+                {{ __('¿Ya te registraste y no encuentras tu entrada?') }}
             </summary>
 
             <form method="POST" action="{{ route('public.resend', $event) }}" class="mt-3 space-y-3">

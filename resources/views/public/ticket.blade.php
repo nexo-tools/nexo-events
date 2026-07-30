@@ -10,7 +10,7 @@
     </div>
 
     <p class="text-center text-sm text-muted">{{ $ticket->attendee_name }}</p>
-    <p class="text-center text-xs text-muted">{{ __('Mostrá este QR en la puerta.') }}</p>
+    <p class="text-center text-xs text-muted">{{ __('Muestra este QR en la puerta.') }}</p>
 
     @if ($ticket->status->value === 'checked_in')
         <p class="nexo-flash mt-4 justify-center" role="status">{{ __('Ya ingresaste a este evento.') }}</p>
