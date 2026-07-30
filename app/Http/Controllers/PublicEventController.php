@@ -66,7 +66,7 @@ class PublicEventController extends Controller
     /** A one-line summary for search results and link previews. */
     private function seoDescription(Event $event): string
     {
-        $when = $event->starts_at->format('d/m/Y H:i');
+        $when = $event->starts_at->translatedFormat(__('app.datetime'));
         $where = $event->venue ? ' · '.$event->venue : '';
 
         return Str::limit(

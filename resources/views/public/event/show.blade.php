@@ -1,7 +1,7 @@
 <x-guest-layout :title="$title" :description="$description" :seo-type="$seoType" :seo-json-ld="$seoJsonLd">
     <h1 class="mb-1 text-2xl font-bold">{{ $event->title }}</h1>
     <p class="mb-4 text-sm text-muted">
-        {{ $event->starts_at->format('d/m/Y H:i') }}@if ($event->venue) · {{ $event->venue }}@endif
+        {{ $event->starts_at->translatedFormat(__('app.datetime')) }}@if ($event->venue) · {{ $event->venue }}@endif
     </p>
 
     @if ($event->description)

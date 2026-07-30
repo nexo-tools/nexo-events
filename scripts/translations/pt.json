@@ -127,8 +127,6 @@
     "Privacidad": "Privacidade",
     "Términos": "Termos",
     "Crea eventos gratis, recibe registros por email y valida las entradas con QR en la puerta.": "Crie eventos gratuitos, receba inscrições por e-mail e valide os ingressos com QR na porta.",
-    ":count entradas": ":count ingressos",
-    ":count visitas": ":count visitas",
     "Cambiar mi contraseña": "Alterar minha senha",
     "Pediste restablecer tu contraseña. El enlace vence en :minutes minutos.": "Você pediu para redefinir a sua senha. O link expira em :minutes minutos.",
     "Restablecé tu contraseña": "Redefina a sua senha",
@@ -140,5 +138,7 @@
     "Registro cerrado": "Inscrições encerradas",
     "Revocada": "Revogado",
     "Válida": "Válido",
-    "Tu cuenta": "Sua conta"
+    "Tu cuenta": "Sua conta",
+    "Comparte la página pública del evento para que empiecen a registrarse.": "Compartilhe a página pública do evento para que comecem a se inscrever.",
+    "Creas el evento, compartes su página pública y validas las entradas con QR en la puerta.": "Você cria o evento, compartilha a página pública e valida os ingressos com QR na porta."
 }

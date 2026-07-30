@@ -1,6 +1,6 @@
 <x-guest-layout :noindex="true">
     <h1 class="mb-1 text-xl font-bold">{{ __('Tu entrada') }}</h1>
-    <p class="mb-4 text-sm text-muted">{{ $ticket->event->title }} · {{ $ticket->event->starts_at->format('d/m/Y H:i') }}</p>
+    <p class="mb-4 text-sm text-muted">{{ $ticket->event->title }} · {{ $ticket->event->starts_at->translatedFormat(__('app.datetime')) }}</p>
 
     {{-- The QR keeps its white quiet zone in dark mode too (`dark:bg-white`):
          QrSvg paints black modules, and scanners need that contrast — a QR on a

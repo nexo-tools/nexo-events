@@ -127,8 +127,6 @@
     "Privacidad": "Privacy",
     "Términos": "Terms",
     "Crea eventos gratis, recibe registros por email y valida las entradas con QR en la puerta.": "Create free events, take registrations by email and validate tickets with a QR code at the door.",
-    ":count entradas": ":count tickets",
-    ":count visitas": ":count visits",
     "Cambiar mi contraseña": "Change my password",
     "Pediste restablecer tu contraseña. El enlace vence en :minutes minutos.": "You asked to reset your password. The link expires in :minutes minutes.",
     "Restablecé tu contraseña": "Reset your password",
@@ -140,5 +138,7 @@
     "Registro cerrado": "Registration closed",
     "Revocada": "Revoked",
     "Válida": "Valid",
-    "Tu cuenta": "Your account"
+    "Tu cuenta": "Your account",
+    "Comparte la página pública del evento para que empiecen a registrarse.": "Share the event's public page so people can start registering.",
+    "Creas el evento, compartes su página pública y validas las entradas con QR en la puerta.": "You create the event, share its public page and validate tickets with a QR code at the door."
 }

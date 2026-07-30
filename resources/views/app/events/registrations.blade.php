@@ -1,6 +1,6 @@
 <x-app-layout>
     <h1 class="mb-1 text-xl font-bold">{{ __('Registrados') }}</h1>
-    <p class="mb-4 text-sm text-muted">{{ $event->title }} · {{ $tickets->count() }} {{ __('entradas') }}</p>
+    <p class="mb-4 text-sm text-muted">{{ $event->title }} · {{ trans_choice('app.tickets', $tickets->count()) }}</p>
 
     @if (session('checkin'))
         @include('app._checkin-flash', ['result' => session('checkin')])
@@ -22,7 +22,13 @@
                 @endif
             </li>
         @empty
-            <li class="text-sm text-muted">{{ __('Nadie se registró todavía.') }}</li>
+            <li class="rounded-lg border border-dashed border-line p-6 text-center">
+                <p class="text-sm font-medium">{{ __('Nadie se registró todavía.') }}</p>
+                <p class="mt-1 text-sm text-muted">{{ __('Comparte la página pública del evento para que empiecen a registrarse.') }}</p>
+                <p class="mt-2 text-sm">
+                    <a href="{{ route('public.event', $event) }}" class="break-all text-link hover:underline">{{ route('public.event', $event) }}</a>
+                </p>
+            </li>
         @endforelse
     </ul>
 

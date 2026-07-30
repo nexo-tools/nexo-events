@@ -1,6 +1,4 @@
 {
-    ":count entradas": ":count tickets",
-    ":count visitas": ":count visits",
     "¿Cancelar «:title»? El registro se cierra y quien ya tiene entrada no podrá ingresar.": "Cancel “:title”? Registration closes and anyone already holding a ticket will not get in.",
     "¿No tienes cuenta?": "Don't have an account?",
     "¿Olvidaste tu contraseña?": "Forgot your password?",
@@ -25,6 +23,7 @@
     "Check-in en puerta": "Door check-in",
     "Código de la entrada": "Ticket code",
     "Código QR de tu entrada": "Your ticket QR code",
+    "Comparte la página pública del evento para que empiecen a registrarse.": "Share the event's public page so people can start registering.",
     "Confirma tu dirección para poder publicar eventos. Mientras tanto puedes crear y editar borradores.": "Confirm your address so you can publish events. In the meantime you can create and edit drafts.",
     "Confirmar contraseña": "Confirm password",
     "Continuar con Nexo ID": "Continue with Nexo ID",
@@ -36,6 +35,7 @@
     "Crea y gestiona tus eventos en minutos.": "Create and manage your events in minutes.",
     "Crear cuenta": "Create account",
     "Crear evento": "Create event",
+    "Creas el evento, compartes su página pública y validas las entradas con QR en la puerta.": "You create the event, share its public page and validate tickets with a QR code at the door.",
     "Cupo (opcional)": "Capacity (optional)",
     "Demasiadas solicitudes": "Too many requests",
     "Demasiados intentos seguidos. Esperá unos segundos.": "Too many attempts in a row. Wait a few seconds.",

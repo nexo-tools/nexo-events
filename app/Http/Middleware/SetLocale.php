@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use Carbon\Carbon;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
@@ -35,6 +36,9 @@ class SetLocale
         }
 
         app()->setLocale($locale);
+        // Carbon keeps its own locale: without this, translatedFormat() renders
+        // month names in English no matter what the interface is set to.
+        Carbon::setLocale($locale);
 
         if ($request->query('lang') || ! $request->cookie('nexo-lang')) {
             $host = $request->getHost();

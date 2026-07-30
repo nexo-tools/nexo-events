@@ -1,6 +1,4 @@
 {
-    ":count entradas": ":count ingressos",
-    ":count visitas": ":count visitas",
     "¿Cancelar «:title»? El registro se cierra y quien ya tiene entrada no podrá ingresar.": "Cancelar “:title”? As inscrições são encerradas e quem já tem ingresso não poderá entrar.",
     "¿No tienes cuenta?": "Não tem conta?",
     "¿Olvidaste tu contraseña?": "Esqueceu sua senha?",
@@ -25,6 +23,7 @@
     "Check-in en puerta": "Check-in na porta",
     "Código de la entrada": "Código do ingresso",
     "Código QR de tu entrada": "O código QR do seu ingresso",
+    "Comparte la página pública del evento para que empiecen a registrarse.": "Compartilhe a página pública do evento para que comecem a se inscrever.",
     "Confirma tu dirección para poder publicar eventos. Mientras tanto puedes crear y editar borradores.": "Confirme o seu endereço para poder publicar eventos. Enquanto isso você pode criar e editar rascunhos.",
     "Confirmar contraseña": "Confirmar senha",
     "Continuar con Nexo ID": "Continuar com o Nexo ID",
@@ -36,6 +35,7 @@
     "Crea y gestiona tus eventos en minutos.": "Crie e gerencie seus eventos em minutos.",
     "Crear cuenta": "Criar conta",
     "Crear evento": "Criar evento",
+    "Creas el evento, compartes su página pública y validas las entradas con QR en la puerta.": "Você cria o evento, compartilha a página pública e valida os ingressos com QR na porta.",
     "Cupo (opcional)": "Vagas (opcional)",
     "Demasiadas solicitudes": "Muitas solicitações",
     "Demasiados intentos seguidos. Esperá unos segundos.": "Tentativas demais seguidas. Aguarde alguns segundos.",

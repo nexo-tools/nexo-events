@@ -62,9 +62,12 @@ it('AC-VIEWS-5: shows the organizer unique visits alongside ticket counts', func
 
     $this->get(route('public.event', $event));
 
+    // Singular on purpose: the counter used to render ":count visitas" for
+    // every number, so the very first visit read "1 visitas".
     $this->actingAs($organizer)->get(route('dashboard'))
         ->assertOk()
-        ->assertSee(__(':count visitas', ['count' => 1]), escape: false);
+        ->assertSee(trans_choice('app.views', 1), escape: false)
+        ->assertDontSee('1 visitas');
 });
 
 it('AC-VIEWS-1: a killed or draft event records nothing, because its page is gone', function (): void {

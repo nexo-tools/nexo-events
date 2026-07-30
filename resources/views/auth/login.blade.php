@@ -27,7 +27,7 @@
     @if (config('nexo-sso.enabled'))
         <div class="my-4 flex items-center gap-3 text-xs uppercase text-muted">
             <span class="h-px flex-grow bg-line"></span>
-            {{ __('o') }}
+            {{ __('app.or') }}
             <span class="h-px flex-grow bg-line"></span>
         </div>
 

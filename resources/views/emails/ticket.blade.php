@@ -29,7 +29,7 @@
             </h1>
 
             <p style="margin:0 0 24px; font-size:15px; line-height:1.6; color:#3f3f46;">
-                {{ $event->starts_at->format('d/m/Y H:i') }}<br>
+                {{ $event->starts_at->translatedFormat(__('app.datetime')) }}<br>
                 @if ($event->venue)
                     {{ $event->venue }}<br>
                 @endif
