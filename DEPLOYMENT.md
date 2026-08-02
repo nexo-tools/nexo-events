@@ -82,10 +82,16 @@ The workflow builds the assets in CI (no Node on the shared host), rsyncs `publi
 Follow the `deploy-laravel-hostinger` skill. What this app needs on top of the standard sequence:
 
 1. **`.env`** — `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://nexoevents.alvarocdev.com`, `SESSION_SECURE_COOKIE=true`, DB credentials, and the **mail** block (see [docs/DELIVERABILITY.md](docs/DELIVERABILITY.md) — the ticket *is* the email).
-2. **`QUEUE_CONNECTION=database`** and the scheduler cron. Without it **no ticket email ever leaves**, while the app looks perfectly healthy:
+2. **`QUEUE_CONNECTION=database`** and the scheduler cron. Without it **no ticket email ever leaves**, while the app looks perfectly healthy — and the pre-event reminders never go out either (`events:send-reminders` rides the same schedule):
    ```
    * * * * * cd ~/domains/alvarocdev.com/nexoevents && php artisan schedule:run >> /dev/null 2>&1
    ```
+   The family sender convention (one address per tool) goes in the same `.env`:
+   ```
+   MAIL_FROM_ADDRESS="nexoevents@alvarocdev.com"
+   MAIL_FROM_NAME="Nexo Events"
+   ```
+   No mailable sets its own `from`, so this is the single place that decides who the mail comes from — `MailStandardTest` keeps it that way.
 3. **`php artisan migrate --force`**, then the storage symlink by hand (`exec()` is disabled, so `storage:link` fails).
 4. **Re-assert the CSP in `public/.htaccess`** — LiteSpeed's "Force HTTPS" overwrites the header the middleware sends. The file already contains the policy; `SecurityHeadersTest` keeps it byte-identical to the middleware, so never edit one without the other.
 5. **Verify** with the smoke checks below.

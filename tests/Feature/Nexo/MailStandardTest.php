@@ -24,6 +24,8 @@
 use App\Mail\EventCancelled;
 use App\Mail\EventReminder;
 use App\Mail\EventReported;
+use App\Mail\NexoIdLinked;
+use App\Mail\PasswordChanged;
 use App\Mail\TicketIssued;
 use App\Models\Event;
 use App\Models\EventReport;
@@ -60,6 +62,8 @@ function nexoMails(): array
 
             return new EventReported($report);
         },
+        'password-changed' => fn () => new PasswordChanged(User::factory()->create()),
+        'nexo-id-linked' => fn () => new NexoIdLinked(User::factory()->create()),
         'verify-email' => fn () => [new VerifyEmailQueued, User::factory()->unverified()->create()],
         'reset-password' => fn () => [new ResetPasswordQueued('raw-reset-token'), User::factory()->create()],
     ];

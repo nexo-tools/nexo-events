@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\NexoSso;
 
+use App\Mail\NexoIdLinked;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 /**
@@ -44,10 +46,21 @@ class NexoSsoUserResolver
             // account that never confirmed it is confirmed now — otherwise an
             // SSO organizer would be asked to verify an address Nexo ID already
             // verified, and the publish gate would never open for them.
+            $firstLink = $existing->nexo_id_sub === null;
+
             $existing->forceFill([
                 'nexo_id_sub' => $sub,
                 'email_verified_at' => $existing->email_verified_at ?? now(),
             ])->save();
+
+            // The tool where the link happens is the one that tells the owner,
+            // never nexo-id: this app knows which account was just connected.
+            // Only on the first link — signing in again is not news.
+            if ($firstLink) {
+                Mail::to($existing->email)
+                    ->locale(app()->getLocale())
+                    ->queue(new NexoIdLinked($existing));
+            }
 
             return $existing;
         }
