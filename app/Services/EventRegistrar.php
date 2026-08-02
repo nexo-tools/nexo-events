@@ -55,6 +55,10 @@ class EventRegistrar
             $ticket = new Ticket([
                 'attendee_name' => $name,
                 'attendee_email' => $email,
+                // The language this person registered in. Anything sent later
+                // (a cancellation, days afterwards, from the organizer's
+                // session) has no request to read a locale from.
+                'locale' => app()->getLocale(),
                 'status' => TicketStatus::Valid,
             ]);
             $ticket->event()->associate($locked);

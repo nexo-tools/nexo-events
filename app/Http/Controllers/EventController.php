@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Enums\EventStatus;
+use App\Enums\TicketStatus;
 use App\Http\Requests\EventRequest;
+use App\Mail\EventCancelled;
 use App\Models\Event;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
 class EventController extends Controller
@@ -75,7 +78,24 @@ class EventController extends Controller
     public function cancel(Request $request, Event $event): RedirectResponse
     {
         $this->owned($request, $event);
+
+        // Only on the transition INTO cancelled: cancelling an already
+        // cancelled event must not mail everyone a second time (the button
+        // stays on screen, and a double click is one refresh away).
+        if ($event->status === EventStatus::Cancelled) {
+            return back()->with('status', __('Event cancelled.'));
+        }
+
         $event->update(['status' => EventStatus::Cancelled]);
+
+        // Cancelling used to be silent: the public page said cancelled and the
+        // person holding a ticket found out at the door. Each mail goes in the
+        // language that person registered in, not the organizer's.
+        foreach ($event->tickets()->where('status', '!=', TicketStatus::Revoked->value)->cursor() as $ticket) {
+            Mail::to($ticket->attendee_email)
+                ->locale($ticket->locale ?: config('app.locale'))
+                ->queue(new EventCancelled($ticket));
+        }
 
         return back()->with('status', __('Event cancelled.'));
     }
