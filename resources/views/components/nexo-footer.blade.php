@@ -26,6 +26,12 @@
         {{ __('nexo.footer.source') }}
     </a>
 
+    {{-- Help lives here for the same reason the legal pages do: the footer is the
+         one piece of chrome that renders on every surface. It used to be linked
+         from the landing and from the signed-in account menu only, so a visitor
+         anywhere else had no way to reach it. --}}
+    <a href="{{ route('help') }}">{{ __('nexo.help.title') }}</a>
+
     {{-- Legal pages must be reachable from every page (STANDARD.md). Routes
          come from pages/legal/routes-snippet.php. --}}
     <a href="{{ route('legal.privacy') }}">{{ __('nexo.footer.privacy') }}</a>
