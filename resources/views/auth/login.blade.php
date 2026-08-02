@@ -11,18 +11,19 @@
         <x-field :label="__('Email')" name="email" type="email" required autocomplete="username" />
         <x-field :label="__('Password')" name="password" type="password" required autocomplete="current-password" />
 
-        <div class="flex items-center justify-between">
-            <label class="flex items-center gap-2 text-sm">
-                <input type="checkbox" name="remember" class="rounded border-control text-primary focus:ring-ring">
-                {{ __('Remember me') }}
-            </label>
-            <a href="{{ route('password.request') }}" class="text-sm text-link hover:underline">
-                {{ __('Forgot your password?') }}
-            </a>
-        </div>
+        <label class="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="remember" class="rounded border-control text-primary focus:ring-ring">
+            {{ __('Remember me') }}
+        </label>
 
         <x-button>{{ __('Sign in') }}</x-button>
     </form>
+
+    <p class="mt-4 text-center text-sm">
+        <a href="{{ route('password.request') }}" class="text-link hover:underline">
+            {{ __('Forgot your password?') }}
+        </a>
+    </p>
 
     @if (config('nexo-sso.enabled'))
         <div class="my-4 flex items-center gap-3 text-xs uppercase text-muted">
@@ -42,6 +43,6 @@
 
     <p class="mt-4 text-center text-sm text-muted">
         {{ __('Don\'t have an account?') }}
-        <a href="{{ route('register') }}" class="font-medium text-link hover:underline">{{ __('Sign up') }}</a>
+        <a href="{{ route('register') }}" class="font-medium text-link hover:underline">{{ __('Create account') }}</a>
     </p>
 </x-guest-layout>
