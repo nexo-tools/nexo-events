@@ -26,7 +26,7 @@ return [
             ],
             [
                 'h' => 'Qué guardamos de los asistentes',
-                'p' => 'El nombre y el email que escribes al registrarte a un evento, y si entraste o no. No creamos una cuenta ni te pedimos contraseña. Esos datos son visibles para el organizador de ese evento: es quien necesita saber quién va.',
+                'p' => 'El nombre y el email que escribes al registrarte a un evento, el idioma en el que te registraste —para escribirte en ese idioma y no en otro— y si entraste o no. No creamos una cuenta ni te pedimos contraseña. Esos datos son visibles para el organizador de ese evento: es quien necesita saber quién va.',
             ],
             [
                 'h' => 'Las entradas y su código QR',

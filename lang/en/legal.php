@@ -23,7 +23,7 @@ return [
             ],
             [
                 'h' => 'What we store about attendees',
-                'p' => 'The name and email you type when registering for an event, and whether you checked in. We do not create an account or ask for a password. Those details are visible to that event\'s organizer — they are the ones who need to know who is coming.',
+                'p' => 'The name and email you type when registering for an event, the language you registered in — so we write to you in that one and not another — and whether you checked in. We do not create an account or ask for a password. Those details are visible to that event\'s organizer — they are the ones who need to know who is coming.',
             ],
             [
                 'h' => 'Tickets and their QR code',

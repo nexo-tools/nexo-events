@@ -23,7 +23,7 @@ return [
             ],
             [
                 'h' => 'O que guardamos sobre os participantes',
-                'p' => 'O nome e o e-mail informados ao se inscrever num evento, e se você entrou ou não. Não criamos conta nem pedimos senha. Esses dados ficam visíveis para o organizador do evento: é quem precisa saber quem vai.',
+                'p' => 'O nome e o e-mail informados ao se inscrever num evento, o idioma em que você se inscreveu — para escrevermos nesse idioma e não em outro — e se você entrou ou não. Não criamos conta nem pedimos senha. Esses dados ficam visíveis para o organizador do evento: é quem precisa saber quem vai.',
             ],
             [
                 'h' => 'Os ingressos e o código QR',
