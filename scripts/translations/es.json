@@ -32,7 +32,6 @@
     "Create an event": "Crear un evento",
     "Create and manage your events in minutes.": "Crea y gestiona tus eventos en minutos.",
     "Create event": "Crear evento",
-    "Create free events and validate tickets with QR at the door.": "Crea eventos gratis y valida entradas con QR en la puerta.",
     "Create free events and validate tickets with QR.": "Crea eventos gratis y valida entradas con QR.",
     "Create free events, take registrations by email and validate tickets with a QR code at the door.": "Crea eventos gratis, recibe registros por email y valida las entradas con QR en la puerta.",
     "Create your account": "Crea tu cuenta",
@@ -64,7 +63,6 @@
     "Irreversible daily SHA-256 hash — no IP or cookie stored": "Hash SHA-256 diario e irreversible — ni IP ni cookies almacenadas",
     "Issued to :name": "A nombre de :name",
     "Keep this email — it is your ticket. Don't share it: whoever has the code can get in instead of you.": "Guarda este correo: es tu entrada. No la compartas — quien tenga el código puede ingresar en tu lugar.",
-    "Languages and themes": "Idiomas y temas",
     "New event": "Nuevo evento",
     "New password": "Nueva contraseña",
     "No access": "Sin acceso",
@@ -163,6 +161,5 @@
     "Your name": "Tu nombre",
     "Your ticket": "Tu entrada",
     "Your ticket QR code": "Código QR de tu entrada",
-    "Your ticket for :event": "Tu entrada para :event",
-    "es · en · pt — light and dark": "es · en · pt — claro y oscuro"
+    "Your ticket for :event": "Tu entrada para :event"
 }
