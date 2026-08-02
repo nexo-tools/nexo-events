@@ -23,3 +23,10 @@ use Illuminate\Support\Facades\Schedule;
 Schedule::command('queue:work --stop-when-empty --tries=3 --max-time=55')
     ->everyMinute()
     ->withoutOverlapping();
+
+/*
+ * Pre-event reminders. Hourly rather than daily so the window stays honest for
+ * an event created (or a ticket issued) the same morning; the command is
+ * idempotent per ticket, so a re-run mails nobody twice.
+ */
+Schedule::command('events:send-reminders')->hourly();

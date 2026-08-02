@@ -22,6 +22,7 @@
 // a failure message — so human-readable messages go through toBeTrue()/toBe().
 
 use App\Mail\EventCancelled;
+use App\Mail\EventReminder;
 use App\Mail\EventReported;
 use App\Mail\TicketIssued;
 use App\Models\Event;
@@ -51,6 +52,7 @@ function nexoMails(): array
             return new TicketIssued($ticket, 'raw-token-for-the-qr');
         },
         'event-cancelled' => fn () => new EventCancelled(Ticket::factory()->create()),
+        'event-reminder' => fn () => new EventReminder(Ticket::factory()->create()),
         'event-reported' => function () {
             $report = new EventReport(['reason' => 'Spam', 'reporter_email' => 'someone@example.com']);
             $report->event()->associate(Event::factory()->create());
