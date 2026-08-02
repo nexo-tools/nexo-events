@@ -1,53 +1,29 @@
 {{--
-    Organizer email verification. Hand-written like emails/ticket.blade.php and
-    for the same reason: mail clients strip <style> and know nothing about the
-    design tokens, so the violet is inlined literally here.
-
-    It does NOT use Laravel's MailMessage/markdown notification: that template
-    pulls its wrapper strings ("Regards", the button subcopy) from the
-    framework's own English translations, which this project's i18n cannot
-    reach — Spanish is the source language and the generator translates from it.
-    Going through MailMessage shipped a Spanish-first product an English email.
+    Password reset. Family layout (templates/nexo-mail) + this project\'s own
+    strings, for the same reason as emails/verify-email.blade.php: the
+    framework\'s MailMessage builds its wrapper from English translations this
+    project\'s Spanish-source i18n cannot reach.
 --}}
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ __('Reset your password') }}</title>
-</head>
-<body style="margin:0; padding:0; background-color:#f4f4f5; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#18181b;">
-    <div style="max-width:560px; margin:0 auto; padding:24px 16px;">
-        <div style="background-color:#ffffff; border-radius:12px; padding:32px 24px; border:1px solid #e4e4e7;">
+<x-nexo-mail::layout
+    :title="__('Reset your password')"
+    :preheader="__('You asked to reset your password. The link expires in :minutes minutes.', ['minutes' => $expiresIn])">
 
-            <h1 style="margin:0 0 16px; font-size:20px; line-height:1.3; font-weight:700; color:#18181b;">
-                {{ __('Reset your password') }}
-            </h1>
+    <h1 class="nexo-ink" style="margin:0 0 16px; font-size:20px; line-height:1.3; font-weight:700; color:#18181b;">
+        {{ __('Reset your password') }}
+    </h1>
 
-            <p style="margin:0 0 24px; font-size:15px; line-height:1.6; color:#3f3f46;">
-                {{ __('You asked to reset your password. The link expires in :minutes minutes.', ['minutes' => $expiresIn]) }}
-            </p>
+    <p style="margin:0 0 20px; font-size:15px; line-height:1.6;">
+        {{ __('You asked to reset your password. The link expires in :minutes minutes.', ['minutes' => $expiresIn]) }}
+    </p>
 
-            <div style="text-align:center; margin:0 0 24px;">
-                <a href="{{ $url }}"
-                   style="display:inline-block; background-color:#7c3aed; color:#ffffff; text-decoration:none; font-size:15px; font-weight:600; padding:12px 24px; border-radius:8px;">
-                    {{ __('Change my password') }}
-                </a>
-            </div>
+    <x-nexo-mail::button :url="$url">{{ __('Change my password') }}</x-nexo-mail::button>
 
-            <p style="margin:0 0 16px; font-size:13px; line-height:1.6; color:#71717a;">
-                {{ __('If the button does not work, copy and paste this link:') }}<br>
-                <a href="{{ $url }}" style="color:#7c3aed; word-break:break-all;">{{ $url }}</a>
-            </p>
+    <p class="nexo-muted" style="margin:16px 0 4px; font-size:13px; line-height:1.6; color:#71717a;">
+        {{ __('If the button does not work, copy and paste this link:') }}
+    </p>
+    <x-nexo-mail::code>{{ $url }}</x-nexo-mail::code>
 
-            <p style="margin:24px 0 0; padding-top:16px; border-top:1px solid #e4e4e7; font-size:12px; line-height:1.6; color:#a1a1aa;">
-                {{ __('If you did not ask for this, you can ignore this email — your password stays the same.') }}
-            </p>
-        </div>
-
-        <p style="margin:16px 0 0; text-align:center; font-size:12px; color:#a1a1aa;">
-            {{ config('app.name') }}
-        </p>
-    </div>
-</body>
-</html>
+    <p class="nexo-muted nexo-rule" style="margin:24px 0 0; padding-top:16px; border-top:1px solid #e4e4e7; font-size:12px; line-height:1.6; color:#a1a1aa;">
+        {{ __('If you did not ask for this, you can ignore this email — your password stays the same.') }}
+    </p>
+</x-nexo-mail::layout>
