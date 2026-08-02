@@ -1,5 +1,5 @@
-<x-guest-layout :noindex="true">
-    <h1 class="mb-2 text-xl font-bold">{{ __('Verify your email') }}</h1>
+<x-guest-layout :auth-card="true" :noindex="true">
+    <h1 class="mb-2 text-xl font-semibold">{{ __('Verify your email') }}</h1>
 
     <p class="mb-4 text-sm text-muted">
         {{ __('We sent a link to :email. Open it to publish your events; in the meantime you can create and edit drafts.', ['email' => auth()->user()->email]) }}

@@ -1,5 +1,5 @@
-<x-guest-layout :noindex="true">
-    <h1 class="mb-1 text-xl font-bold">{{ __('Reset password') }}</h1>
+<x-guest-layout :auth-card="true" :noindex="true">
+    <h1 class="mb-1 text-xl font-semibold">{{ __('Reset password') }}</h1>
     <p class="mb-6 text-sm text-muted">
         {{ __('Enter your email and we\'ll send you a link to create a new password.') }}
     </p>

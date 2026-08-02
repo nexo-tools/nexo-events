@@ -1,5 +1,5 @@
-<x-guest-layout :noindex="true">
-    <h1 class="mb-6 text-xl font-bold">{{ __('Sign in to your account') }}</h1>
+<x-guest-layout :auth-card="true" :noindex="true">
+    <h1 class="mb-6 text-xl font-semibold">{{ __('Sign in to your account') }}</h1>
 
     @if (session('status'))
         <p class="nexo-flash mb-4" role="status">{{ session('status') }}</p>

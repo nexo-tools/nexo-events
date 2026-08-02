@@ -12,6 +12,11 @@
     'seoType' => null,
     'seoImage' => null,
     'seoJsonLd' => null,
+    // Auth screens sit in the canonical x-nexo-auth-card (border + surface-raised,
+    // the family shape). e/* and t/* keep this layout's own card: the public event
+    // page and the ticket are a settled surface and this pass does not redesign
+    // them — isolate, don't repaint.
+    'authCard' => false,
 ])
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -33,9 +38,15 @@
         <x-nexo-header brand="Nexo Events" mark="/ecosystem/nexoevents.svg" :home="route('home')" />
 
         <main id="contenido" class="flex flex-1 flex-col items-center justify-center px-4 py-10">
-            <div class="w-full max-w-md rounded-2xl bg-surface p-6 shadow-sm sm:p-8">
-                {{ $slot }}
-            </div>
+            @if ($authCard)
+                <x-nexo-auth-card>
+                    {{ $slot }}
+                </x-nexo-auth-card>
+            @else
+                <div class="w-full max-w-md rounded-2xl bg-surface p-6 shadow-sm sm:p-8">
+                    {{ $slot }}
+                </div>
+            @endif
         </main>
 
         <x-nexo-footer />
