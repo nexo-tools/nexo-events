@@ -25,6 +25,7 @@ use App\Mail\EventCancelled;
 use App\Mail\EventReminder;
 use App\Mail\EventReported;
 use App\Mail\NexoIdLinked;
+use App\Mail\OperatorAlert;
 use App\Mail\PasswordChanged;
 use App\Mail\TicketIssued;
 use App\Models\Event;
@@ -48,6 +49,9 @@ use Illuminate\Mail\Mailable;
 function nexoMails(): array
 {
     return [
+        // The operator alert renders like any other mail: it is here because the
+        // one mail nobody declared was the one that shipped broken.
+        'operator-alert' => fn () => OperatorAlert::fromThrowable(new RuntimeException('something broke'), 'https://example.test/x'),
         'ticket' => function () {
             $ticket = Ticket::factory()->create();
 
@@ -80,7 +84,7 @@ function nexoOperatorMails(): array
 {
     // Goes to whoever runs the instance with the artisan command they will want
     // next, not to a user. Deliberately English (ADR-007 §3).
-    return ['event-reported'];
+    return ['event-reported', 'operator-alert'];
 }
 
 /**
