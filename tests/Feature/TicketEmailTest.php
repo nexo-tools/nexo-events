@@ -131,20 +131,23 @@ it('AC-EMAIL-6: pins the locale of the registration so the queue worker renders 
     Mail::assertQueued(TicketIssued::class, fn (TicketIssued $mail): bool => $mail->locale === 'en');
 });
 
-it('AC-QUEUE-1: every scheduled command resolves, and the queue is drained by the scheduler', function (): void {
+it('AC-QUEUE-1: every scheduled task resolves, and the queue is drained by the scheduler', function (): void {
     $schedule = app(Schedule::class);
-    $commands = collect($schedule->events())->map(fn ($event): string => (string) $event->command);
+    $events = collect($schedule->events());
 
-    expect($commands)->not->toBeEmpty()
-        ->and($commands->filter(fn (string $c): bool => str_contains($c, 'queue:work'))->count())->toBe(1);
+    // The tasks are inline callbacks (Schedule::call + Artisan::call) because
+    // production disables proc_open: a Schedule::command subprocess dies before
+    // it starts. Callbacks carry no command string, so they are identified by
+    // the name each one is required to declare.
+    $drain = $events->filter(fn ($event): bool => $event->description === 'queue-drain');
+    expect($drain)->toHaveCount(1)
+        ->and($drain->first()->expression)->toBe('* * * * *');
 
     // The previous schedule pointed at nexo:send-reminders, which does not exist
-    // and made every schedule:run error. Nothing scheduled may be unresolvable.
+    // and made every schedule:run error. Everything the scheduler calls inline
+    // must resolve to a registered artisan command.
     $registered = array_keys(Artisan::all());
-    foreach ($commands as $command) {
-        preg_match("/artisan'? (\S+)/", $command, $m);
-        if (isset($m[1])) {
-            expect($registered)->toContain($m[1]);
-        }
-    }
+    expect($registered)->toContain('queue:work')
+        ->toContain('events:send-reminders')
+        ->and($events->filter(fn ($event): bool => $event->description === 'send-reminders'))->toHaveCount(1);
 });
