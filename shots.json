@@ -1,0 +1,91 @@
+{
+  "_comment": "Screenshot manifest for `node ~/alvaro/scripts/nexo-shots.mjs .`. Underscore-prefixed keys are comments (JSON has none) — the script ignores them.",
+  "_rules": "LOCAL instance only, seeded with DemoSeeder (design.md, Family): `docker compose up -d` then `artisan migrate:fresh --seed --seeder=DemoSeeder`. Never production — this app is live with real events and real door windows, and the landing's proof cannot be somebody's real attendees.",
+  "_bindings": "/e/{event:slug} binds by slug (the one DemoSeeder assigns); /app/eventos/{event} binds by id, and the first seeded event is id 1 after migrate:fresh.",
+  "_views": "Capturing /e/{slug} inserts one event_view per context — same day, same hash, one row. Expected, not a leak.",
+  "baseUrl": "http://localhost:8103",
+  "login": {
+    "path": "/login?lang=es",
+    "email": "demo@example.com",
+    "password": "password"
+  },
+  "shots": [
+    {
+      "_comment": "producto step 1 — the New event form: what an organizer does first.",
+      "name": "crear",
+      "path": "/app/eventos/nuevo?lang=es",
+      "viewport": { "width": 1280, "height": 800 },
+      "themes": ["light", "dark"],
+      "out": "public/landing/shot-1",
+      "fullPage": false,
+      "auth": true
+    },
+    {
+      "_comment": "producto step 1, on the phone.",
+      "name": "crear-mobile",
+      "path": "/app/eventos/nuevo?lang=es",
+      "viewport": { "width": 390, "height": 844 },
+      "themes": ["light", "dark"],
+      "out": "public/landing/shot-1-mobile",
+      "fullPage": false,
+      "auth": true
+    },
+    {
+      "_comment": "producto step 2 — the public event page with the email-only registration (no account, ADR-003).",
+      "name": "publica",
+      "path": "/e/meetup-de-producto?lang=es",
+      "viewport": { "width": 1280, "height": 800 },
+      "themes": ["light", "dark"],
+      "out": "public/landing/shot-2",
+      "fullPage": false
+    },
+    {
+      "_comment": "producto step 2, on the phone — which is where an event link is actually opened.",
+      "name": "publica-mobile",
+      "path": "/e/meetup-de-producto?lang=es",
+      "viewport": { "width": 390, "height": 844 },
+      "themes": ["light", "dark"],
+      "out": "public/landing/shot-2-mobile",
+      "fullPage": false
+    },
+    {
+      "_comment": "producto step 3 — the door: checked-in attendees next to the ones still pending.",
+      "name": "puerta",
+      "path": "/app/eventos/1/registrados?lang=es",
+      "viewport": { "width": 1280, "height": 800 },
+      "themes": ["light", "dark"],
+      "out": "public/landing/shot-3",
+      "fullPage": false,
+      "auth": true
+    },
+    {
+      "_comment": "producto step 3, on the phone — the door is worked from a phone, so this is the honest viewport for it.",
+      "name": "puerta-mobile",
+      "path": "/app/eventos/1/registrados?lang=es",
+      "viewport": { "width": 390, "height": 844 },
+      "themes": ["light", "dark"],
+      "out": "public/landing/shot-3-mobile",
+      "fullPage": false,
+      "auth": true
+    },
+    {
+      "_comment": "Mobile-first: the gate's evidence is the landing at 375px, light and dark (STANDARD.md).",
+      "name": "landing-mobile",
+      "path": "/?lang=es",
+      "viewport": { "width": 375, "height": 812 },
+      "themes": ["light", "dark"],
+      "out": "public/landing/shot-mobile",
+      "fullPage": false
+    },
+    {
+      "_comment": "The README's home shot (public-readme requires docs/screenshots/home-{light,dark}.png): PNG, fullPage.",
+      "name": "home",
+      "path": "/?lang=es",
+      "viewport": { "width": 1280, "height": 800 },
+      "themes": ["light", "dark"],
+      "out": "docs/screenshots/home",
+      "fullPage": true,
+      "format": "png"
+    }
+  ]
+}
