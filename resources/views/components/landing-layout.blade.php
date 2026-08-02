@@ -35,7 +35,7 @@
                 @auth
                     <x-nexo-account-menu />
                 @else
-                    <a href="{{ route('login') }}" class="nexo-btn nexo-btn--ghost">{{ __('Sign in') }}</a>
+                    <a href="{{ route('login') }}" class="nexo-btn nexo-btn--ghost nexo-header__auth">{{ __('Sign in') }}</a>
                 @endauth
             </x-slot:actions>
         </x-nexo-header>
