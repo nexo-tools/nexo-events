@@ -53,6 +53,7 @@ Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./ven
 
 ## Accumulated context
 
+- **2026-08-02** — **Ola de estandarización transversal (correo, DB, ops, UI).** El correo pasó a la plantilla de familia (`templates/nexo-mail`, registrada con `Blade::anonymousComponentPath` en `AppServiceProvider`): los cuatro mails que había más tres nuevos — cancelación de evento a quien tenga entrada, recordatorio previo (`events:send-reminders`, horario, idempotente por `tickets.reminded_at`, **sin QR a propósito**: solo se guarda el hash del token, así que meterlo obligaría a rotarlo y matar la entrada que la persona ya tiene) y los dos avisos de seguridad de la familia. `tickets.locale` guarda el idioma del registro porque el mail sale desde una cola o desde la sesión del organizador, donde no hay request. Guardianes nuevos: `MailStandardTest`, `DatabaseStandardTest`, `OperatorAlertTest`, `RateLimitTest`, `AuthChromeTest`, y `HelpAndThemeTest`/`StaticPagesTest` endurecidos. Un 500 ahora le manda mail al operador (dedupe 15 min, `NEXO_OPS_MAIL`). 197 → 239 tests.
 - **2026-07-29** — **Translation keys flipped from Spanish to English** (190 tests green), matching
   nexoid/nexoshort/nexolinks and the decision recorded in `alvaro/templates/nexo-ui/STANDARD.md`.
   What this changes for anyone writing a new string:
