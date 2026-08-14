@@ -31,4 +31,11 @@
         @endforelse
     </ul>
 
+    {{-- Only where the API is on: an instance that never turns it on has no
+         reason to show a door to it (AC-API-15b). --}}
+    @if (config('nexo.api.enabled'))
+        <p class="mt-6 text-sm">
+            <a href="{{ route('integrations.index') }}" class="text-muted hover:underline">{{ __('Connect another site to this account') }}</a>
+        </p>
+    @endif
 </x-app-layout>

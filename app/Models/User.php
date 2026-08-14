@@ -44,6 +44,16 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Event::class, 'organizer_id');
     }
 
+    /**
+     * Integration API tokens this organizer has issued (ADR-010).
+     *
+     * @return HasMany<ApiToken, $this>
+     */
+    public function apiTokens(): HasMany
+    {
+        return $this->hasMany(ApiToken::class);
+    }
+
     /** Queued for the same reason as the verification mail, and translated. */
     public function sendPasswordResetNotification($token): void
     {

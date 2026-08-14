@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ApiTokenController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\NewPasswordController;
@@ -71,6 +72,14 @@ Route::middleware('auth')->group(function () {
         Route::post('eventos/{event}/cerrar', [EventController::class, 'close'])->name('events.close');
         Route::post('eventos/{event}/cancelar', [EventController::class, 'cancel'])->name('events.cancel');
         Route::get('eventos/{event}/registrados', [EventController::class, 'registrations'])->name('events.registrations');
+
+        // Integration tokens (ADR-010). Registered unconditionally like the API
+        // routes — the controller 404s while NEXO_API_ENABLED is false, so
+        // route:cache can never bake in a decision the operator has not made yet.
+        Route::get('integraciones', [ApiTokenController::class, 'index'])->name('integrations.index');
+        Route::post('integraciones', [ApiTokenController::class, 'store'])
+            ->middleware('throttle:10,1')->name('integrations.store');
+        Route::post('integraciones/{apiToken}/revocar', [ApiTokenController::class, 'revoke'])->name('integrations.revoke');
 
         Route::get('eventos/{event}/escanear', [CheckinController::class, 'scanner'])->name('events.scan');
         // Generous on purpose: a busy door legitimately scans once every couple

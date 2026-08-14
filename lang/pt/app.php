@@ -11,4 +11,6 @@ return [
     // Carbon format string, translatedFormat(): month names come from the
     // Carbon locale, the ORDER of the parts comes from here.
     'datetime' => 'j M Y, H:i',
+    // Same idea without the clock, for dates where the hour is noise.
+    'date' => 'j M Y',
 ];
