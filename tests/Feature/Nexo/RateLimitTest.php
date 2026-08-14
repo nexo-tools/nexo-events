@@ -15,10 +15,12 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 
 /** Named limiters this tool declares, e.g. ['login-ip', 'report']. */
-// This tool limits inline per route (throttle:10,1 and friends), which the
-// standard allows for surfaces only it has. What it must not skip is the
-// sign-in POST, asserted below.
-const NAMED_LIMITERS = [];
+// The organizer and attendee surfaces limit inline per route (throttle:10,1
+// and friends), which the standard allows for surfaces only this tool has.
+// The integration API is the exception and needs names: its limits are keyed
+// by token rather than by address, and an operator has to be able to raise
+// them from the env (ADR-010, AC-API-13).
+const NAMED_LIMITERS = ['nexo-api-read', 'nexo-api-write'];
 
 /**
  * URI of the credential sign-in POST, or null if the tool has none. Matched by
@@ -57,6 +59,27 @@ it('throttles the sign-in POST at the route, not only per credential', function 
     $throttles = collect($route->gatherMiddleware())->filter(fn ($m): bool => is_string($m) && str_starts_with($m, 'throttle:'));
 
     expect($throttles)->not->toBeEmpty('The sign-in POST has no throttle middleware — the per-credential lockout is blind to one IP trying many accounts.');
+});
+
+it('throttles every write of the integration API, not only its reads', function () {
+    // A read that runs away costs a query; a write creates events and queues
+    // mail to everyone holding a ticket. The write endpoints are the ones a
+    // missing limiter would hurt on, so they are checked by enumeration rather
+    // than by trusting the group they were written into.
+    $writes = collect(Route::getRoutes()->getRoutes())
+        ->filter(fn ($r): bool => str_starts_with($r->uri(), 'api/')
+            && array_intersect(['POST', 'PATCH', 'PUT', 'DELETE'], $r->methods()) !== []);
+
+    expect($writes)->not->toBeEmpty('No API write routes found — did the prefix change?');
+
+    $unlimited = $writes
+        ->reject(fn ($r): bool => collect($r->gatherMiddleware())
+            ->contains(fn ($m): bool => is_string($m) && str_starts_with($m, 'throttle:')))
+        ->map(fn ($r): string => implode('|', $r->methods()).' '.$r->uri())
+        ->values()
+        ->all();
+
+    expect($unlimited)->toBe([], "API write routes with no throttle:\n".implode("\n", $unlimited));
 });
 
 it('keeps its limits configurable by the operator', function () {
