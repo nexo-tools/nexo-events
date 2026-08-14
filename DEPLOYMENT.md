@@ -115,6 +115,42 @@ php artisan config:cache && php artisan route:cache && php artisan view:cache
 `scripts/deploy.sh` already does this on every deploy — the trap is only when you edit `.env`
 by hand *between* deploys, which is exactly how SSO gets switched on (PLAN task 8.6).
 
+The integration API below is deliberately built the other way round — its routes are
+**always** registered and the flag is checked at request time — precisely so that turning it
+on is one `.env` edit and a `config:cache`, with no route surprise. Re-caching after any
+`.env` edit is still the rule.
+
+## Integration API (optional, off by default)
+
+Lets an organizer connect an external system — their own website, typically — to their
+account with a scoped, revocable token, so it can create and publish **its own** events and
+get the public `/e/{slug}` URL back. Off unless you turn it on; nothing about a standalone
+instance changes while it is off, panel included. Design and rationale: [ADR-010](docs/adr/ADR-010-integration-api.md),
+contract: [SPEC-integration-api](docs/specs/SPEC-integration-api.md).
+
+| Variable | Default | What it does |
+| --- | --- | --- |
+| `NEXO_API_ENABLED` | `false` | Master switch. While false, every `/api/v1/*` request answers **404** and `/app/integraciones` does not exist. |
+| `NEXO_API_RATE_READ` | `60` | Read requests per minute **per token**. |
+| `NEXO_API_RATE_WRITE` | `20` | Write requests per minute per token (create, edit, publish, close, cancel). |
+
+Turning it on:
+
+```bash
+# in .env
+NEXO_API_ENABLED=true
+php artisan config:cache        # the routes are already there; only config caching matters
+```
+
+Then, as the organizer: **Integrations** in the panel → name the system, pick what it may
+do, copy the token **once** (only its sha256 is stored, so it cannot be shown again) → paste
+it into the other system. `GET /api/v1/me` is the handshake to confirm the link, and it
+reports `email_verified`, which publishing requires (ADR-007).
+
+Two guarantees worth stating to whoever asks for the integration: **no attendee data is
+reachable through the API** — no names, no emails, no ticket tokens, ever — and revoking a
+token from the panel takes effect on the very next request.
+
 ## Post-deploy smoke
 
 ```bash

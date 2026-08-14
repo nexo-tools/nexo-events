@@ -54,6 +54,10 @@ single account ([Nexo ID](https://github.com/nexo-tools/nexo-id) SSO).
   CDNs, no font services, no trackers); attendee data stays in your database.
 - **Multilingual** — English, Spanish and Portuguese (`en`/`es`/`pt`) with a visible
   switcher, plus a translatable `/help` center.
+- **Connect your own site** *(optional)* — an integration API lets an organizer link an
+  external system to their account with a scoped, revocable token, so their website can
+  create and publish its events and link the ticket page. Off by default; attendee data is
+  never reachable through it.
 - **Self-hostable** — a standard Laravel app; runs on your own infrastructure.
 
 ## Screenshots
@@ -87,8 +91,8 @@ VPS. Multi-instance by design — run your own ticketing for your own events, wi
 attendee data staying in your database.
 
 **[DEPLOYMENT.md](DEPLOYMENT.md)** has the real steps: running it locally, the
-environment reference (mail, attribution, optional Nexo ID SSO) and the production
-deploy. Note that deploys are manual here on purpose — see
+environment reference (mail, attribution, optional Nexo ID SSO, optional integration
+API — `NEXO_API_*`) and the production deploy. Note that deploys are manual here on purpose — see
 [ADR-009](docs/adr/ADR-009-manual-deploy-during-door-windows.md).
 
 ## Documentation

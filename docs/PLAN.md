@@ -136,13 +136,21 @@ public `/e/{slug}` URL back. Off by default (`NEXO_API_ENABLED=false`): standalo
 installs see zero change. Governing docs: **ADR-010** + `docs/specs/SPEC-integration-api.md`.
 
 - [x] 10.1 SPEC + ADR: `docs/specs/SPEC-integration-api.md` (AC-API-1..15b) + `docs/adr/ADR-010-integration-api.md` (house hashed-token pattern over Sanctum; gate in middleware, routes always registered; idempotent creation via `external_ref`; `starts_at` normalized to the instance clock; auth middleware ahead of the throttle in the priority list). This task list reconciled.
-- [ ] 10.2 Migrations: `api_tokens` (user FK, name, sha256 `token_hash` unique, `abilities` json, `last_used_at`, `revoked_at`) + `events.external_ref` with `UNIQUE(organizer_id, external_ref)`; `DatabaseStandardTest` green; rollback exercised.
-- [ ] 10.3a Extract `EventCreator` and `EventLifecycle` (publish/close/cancel) from `EventController` — web behavior byte-identical, existing tests untouched. Its own commit, so a regression here is visible without API noise.
-- [ ] 10.3b API surface: `ApiToken` model + `AuthenticateApiToken` middleware (404 when disabled, Bearer → sha256 lookup, revocation, `last_used_at`, scope check); `routes/api.php` via `withRouting(api:)` under `api/v1`; `Api\EventApiController` reusing `EventRequest` + `EventCreator` + `EventLifecycle`; named rate limiters (`NEXO_API_RATE_READ`/`NEXO_API_RATE_WRITE`) keyed by token.
-- [ ] 10.4 Organizer panel `/app/integraciones`: issue (name + scopes, raw token shown once), list (`last_used_at`), revoke; behind the same flag as the API (AC-API-15b); translated es/en/pt; a11y per STANDARD.
-- [ ] 10.5 Tests + guardians: full AC↔test traceability incl. deliberate throttle violations; `RateLimitTest` covers `api/*` writes; `NexoSsoSilentExclusionsTest` asserts `api/*` outside silent SSO; `DatabaseStandardTest` `EXPECTED_TABLES` updated with `api_tokens`; `route:cache` exercised with the flag off (404) and on (200); suite green with the flag **off** (standalone intact); Pint + Larastan + i18n `--check` clean.
-- [ ] 10.6 Close-out: AGENTS.md checkpoint + README env table (`NEXO_API_*`); deploy dark with the flag off *(owner-gated: manual deploy outside door windows; the flag turns on only when the first consumer ships)*.
+- [x] 10.2 Migrations: `api_tokens` (user FK, name, sha256 `token_hash` unique, `abilities` json, `last_used_at`, `revoked_at`) + `events.external_ref` with `UNIQUE(organizer_id, external_ref)`; `DatabaseStandardTest` green; rollback exercised.
+- [x] 10.3a Extract `EventCreator` and `EventLifecycle` (publish/close/cancel) from `EventController` — web behavior byte-identical, existing tests untouched. Its own commit, so a regression here is visible without API noise.
+- [x] 10.3b API surface: `ApiToken` model + `AuthenticateApiToken` middleware (404 when disabled, Bearer → sha256 lookup, revocation, `last_used_at`, scope check); `routes/api.php` via `withRouting(api:)` under `api/v1`; `Api\EventApiController` reusing `EventRequest` + `EventCreator` + `EventLifecycle`; named rate limiters (`NEXO_API_RATE_READ`/`NEXO_API_RATE_WRITE`) keyed by token.
+- [x] 10.4 Organizer panel `/app/integraciones`: issue (name + scopes, raw token shown once), list (`last_used_at`), revoke; behind the same flag as the API (AC-API-15b); translated es/en/pt; a11y per STANDARD.
+- [x] 10.5 Tests + guardians: full AC↔test traceability incl. deliberate throttle violations; `RateLimitTest` covers `api/*` writes; `NexoSsoSilentExclusionsTest` asserts `api/*` outside silent SSO; `DatabaseStandardTest` `EXPECTED_TABLES` updated with `api_tokens`; `route:cache` exercised with the flag off (404) and on (200); suite green with the flag **off** (standalone intact); Pint + Larastan + i18n `--check` clean.
+- [x] 10.6 Close-out: AGENTS.md checkpoint + README env table (`NEXO_API_*`); deploy dark with the flag off *(owner-gated: manual deploy outside door windows; the flag turns on only when the first consumer ships)*.
 
 **Gate 10-API:** AC↔test grep pass · suite green with `NEXO_API_ENABLED=false` and with it on · no attendee PII in any API response (asserted) · `route:cache` exercised with the flag off · owner sign-off.
+
+*Status 2026-08-13 — code complete, evidence below, **owner sign-off pending**. AC↔test is
+now a test rather than a grep, and it checks both directions (`ApiSpecTraceabilityTest`).
+Suite 238 → 287, identical with the flag off and on. No-PII asserted on all six
+event-returning endpoints against a real registration. `route:cache` exercised with the flag
+off, including an app booted from the compiled route file. What is still open is owner-gated
+and off the code path: the deploy (dark, flag off, outside door windows), the production
+smoke (`api/v1/me` → 404), and creating the first organizer account for the consumer.*
 
 **Gate 10:** per integration — real cross-tool flow exercised, **standalone mode still green** (self-host story intact), owner sign-off.

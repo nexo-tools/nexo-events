@@ -53,6 +53,38 @@ Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./ven
 
 ## Accumulated context
 
+- **2026-08-13** — **Integration API v1 built (PLAN 10.1–10.6), off by default, not yet
+  deployed.** An organizer can link an external system to their account with a scoped,
+  revocable token and let it create/read/update/publish its own events; the first consumer
+  is a real venue's Next.js site. `NEXO_API_ENABLED=false` everywhere until an operator says
+  otherwise. Governing docs: [ADR-010](docs/adr/ADR-010-integration-api.md) +
+  [SPEC-integration-api](docs/specs/SPEC-integration-api.md). 238 → 287 tests.
+  What a future session should not have to rediscover:
+  - **The env gate is in the middleware, never around the route registration**, and there is
+    now a test that boots an app from the `route:cache`d file to prove it (404 with the flag
+    off, 401 — reached auth — with it on). Verified to fail if `routes/api.php` is wrapped in
+    the `if (! config(...)) return;` shape that `routes/nexo-sso.php` uses. That shape is the
+    trap already documented in DEPLOYMENT.md; the API is deliberately the counter-example.
+  - **Middleware order is not the order written on the route.** Laravel sorts a route's
+    middleware by its priority list, and `ThrottleRequests` is on it — so `AuthenticateApiToken`
+    is prepended to that list in `bootstrap/app.php`. Without it the throttle runs first: a
+    disabled API answers 429 instead of 404, and the limiter keys by IP instead of by token.
+    Asserted by test, and the test was checked to fail with the line removed.
+  - **MySQL 8.4 drops the auto-created foreign-key index** when a new index leads with the
+    same column. Adding `unique(organizer_id, external_ref)` made that unique the FK's index,
+    so dropping it in `down()` failed with errno 1553; the migration now removes and re-adds
+    the foreign key. Found by actually running the rollback, which is why DATABASE-STANDARD
+    §11 asks for both a written plan *and* an executed one.
+  - **`starts_at` is normalized to the instance timezone at the API boundary.** Eloquent
+    persists the wall time of whatever offset it is handed, so `...T00:00:00Z` would have been
+    stored as `00:00` local — three hours off in Buenos Aires, and invisible, because the event
+    page shows what was stored.
+  - **One presenter for every event answer**, so "no attendee PII crosses the API" is a
+    property of a single function; a test asserts it against a real registration on all six
+    endpoints. Attendee data is out of scope by design, not by omission.
+  - The token panel (`/app/integraciones`) rides the same flag: with the API off it 404s and
+    the dashboard shows no link. Operational consequence, accepted: the first token can only
+    be issued once the flag is on.
 - **2026-08-02** — **Ola de estandarización transversal (correo, DB, ops, UI).** El correo pasó a la plantilla de familia (`templates/nexo-mail`, registrada con `Blade::anonymousComponentPath` en `AppServiceProvider`): los cuatro mails que había más tres nuevos — cancelación de evento a quien tenga entrada, recordatorio previo (`events:send-reminders`, horario, idempotente por `tickets.reminded_at`, **sin QR a propósito**: solo se guarda el hash del token, así que meterlo obligaría a rotarlo y matar la entrada que la persona ya tiene) y los dos avisos de seguridad de la familia. `tickets.locale` guarda el idioma del registro porque el mail sale desde una cola o desde la sesión del organizador, donde no hay request. Guardianes nuevos: `MailStandardTest`, `DatabaseStandardTest`, `OperatorAlertTest`, `RateLimitTest`, `AuthChromeTest`, y `HelpAndThemeTest`/`StaticPagesTest` endurecidos. Un 500 ahora le manda mail al operador (dedupe 15 min, `NEXO_OPS_MAIL`). 197 → 239 tests.
 - **2026-07-29** — **Translation keys flipped from Spanish to English** (190 tests green), matching
   nexoid/nexoshort/nexolinks and the decision recorded in `alvaro/templates/nexo-ui/STANDARD.md`.
