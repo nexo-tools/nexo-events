@@ -38,6 +38,23 @@ return [
         'endpoint' => (string) env('NEXO_BEACON_ENDPOINT', 'https://nexotools.alvarocdev.com/beacon'),
     ],
 
+    // Integration API v1 (ADR-010). OFF by default: a standalone install must
+    // behave exactly as it did before this existed — with the flag false the
+    // /api/v1 routes are registered but answer 404, and the organizer panel
+    // shows no trace of them. The routes are registered either way on purpose:
+    // conditional registration is what `route:cache` bakes in, and this project
+    // has already paid for that once with SSO (DEPLOYMENT.md).
+    'api' => [
+        'enabled' => (bool) env('NEXO_API_ENABLED', false),
+
+        // Per token, per minute. Reads are cheap and a panel that shows a live
+        // counter will poll; writes create events and queue mail. Tunable
+        // because a limit nobody can raise at 3am is a limit that will be hit
+        // at 3am.
+        'rate_read' => (int) env('NEXO_API_RATE_READ', 60),
+        'rate_write' => (int) env('NEXO_API_RATE_WRITE', 20),
+    ],
+
     // Deploy freeze window around an event's start (see events:door-guard).
     // There is no `ends_at` column, so the window is inferred: long enough
     // before for doors opening, long enough after to cover the event itself.
