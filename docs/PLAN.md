@@ -128,4 +128,21 @@ Defects & drift: `routes/console.php` schedules `nexo:send-reminders`, which **d
 
 Key work: SSO and/or beacon activation if deferred at Gate 8 (D3/D4 — propagate hardened `nexo-sso-client` — nonce + RP-logout —, register the prod client, `post_logout_redirect_uri`; beacon env + hub allowlist + metrics check); Nexo Short auto short-link per event when their API is live (adds the `short_url` column, ADR-006 §3); event images (deferred per D7); minimal admin UI if report volume warrants it; Nexo Links featured event; attendee accounts / "my tickets" (v2, via Nexo ID); offline check-in exploration. Payments (Mercado Pago, AR/LatAm) stays a separate v2 planning round — not a phase here.
 
+### Integration API v1 (opened 2026-08-12 — first external consumer: La Herrería's site)
+
+**Objective:** an organizer can link an external site to their account with a scoped,
+revocable API token, and that site can create/read/update/publish its events and get the
+public `/e/{slug}` URL back. Off by default (`NEXO_API_ENABLED=false`): standalone
+installs see zero change. Governing docs: **ADR-010** + `docs/specs/SPEC-integration-api.md`.
+
+- [x] 10.1 SPEC + ADR: `docs/specs/SPEC-integration-api.md` (AC-API-1..15b) + `docs/adr/ADR-010-integration-api.md` (house hashed-token pattern over Sanctum; gate in middleware, routes always registered; idempotent creation via `external_ref`; `starts_at` normalized to the instance clock; auth middleware ahead of the throttle in the priority list). This task list reconciled.
+- [ ] 10.2 Migrations: `api_tokens` (user FK, name, sha256 `token_hash` unique, `abilities` json, `last_used_at`, `revoked_at`) + `events.external_ref` with `UNIQUE(organizer_id, external_ref)`; `DatabaseStandardTest` green; rollback exercised.
+- [ ] 10.3a Extract `EventCreator` and `EventLifecycle` (publish/close/cancel) from `EventController` — web behavior byte-identical, existing tests untouched. Its own commit, so a regression here is visible without API noise.
+- [ ] 10.3b API surface: `ApiToken` model + `AuthenticateApiToken` middleware (404 when disabled, Bearer → sha256 lookup, revocation, `last_used_at`, scope check); `routes/api.php` via `withRouting(api:)` under `api/v1`; `Api\EventApiController` reusing `EventRequest` + `EventCreator` + `EventLifecycle`; named rate limiters (`NEXO_API_RATE_READ`/`NEXO_API_RATE_WRITE`) keyed by token.
+- [ ] 10.4 Organizer panel `/app/integraciones`: issue (name + scopes, raw token shown once), list (`last_used_at`), revoke; behind the same flag as the API (AC-API-15b); translated es/en/pt; a11y per STANDARD.
+- [ ] 10.5 Tests + guardians: full AC↔test traceability incl. deliberate throttle violations; `RateLimitTest` covers `api/*` writes; `NexoSsoSilentExclusionsTest` asserts `api/*` outside silent SSO; `DatabaseStandardTest` `EXPECTED_TABLES` updated with `api_tokens`; `route:cache` exercised with the flag off (404) and on (200); suite green with the flag **off** (standalone intact); Pint + Larastan + i18n `--check` clean.
+- [ ] 10.6 Close-out: AGENTS.md checkpoint + README env table (`NEXO_API_*`); deploy dark with the flag off *(owner-gated: manual deploy outside door windows; the flag turns on only when the first consumer ships)*.
+
+**Gate 10-API:** AC↔test grep pass · suite green with `NEXO_API_ENABLED=false` and with it on · no attendee PII in any API response (asserted) · `route:cache` exercised with the flag off · owner sign-off.
+
 **Gate 10:** per integration — real cross-tool flow exercised, **standalone mode still green** (self-host story intact), owner sign-off.
