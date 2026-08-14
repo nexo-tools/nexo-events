@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Schema;
  * without anybody deciding it shows up as a failure.
  */
 const EXPECTED_TABLES = [
+    'api_tokens',
     'cache',
     'cache_locks',
     'checkins',

@@ -18,6 +18,7 @@ use Illuminate\Support\Str;
  * @property int $organizer_id
  * @property string $title
  * @property string $slug
+ * @property ?string $external_ref
  * @property ?string $description
  * @property Carbon $starts_at
  * @property ?string $venue
