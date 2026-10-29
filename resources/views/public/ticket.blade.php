@@ -2,15 +2,24 @@
     <h1 class="mb-1 text-xl font-bold">{{ __('Your ticket') }}</h1>
     <p class="mb-4 text-sm text-muted">{{ $ticket->event->title }} · {{ $ticket->event->starts_at->translatedFormat(__('app.datetime')) }}</p>
 
-    {{-- The QR keeps its white quiet zone in dark mode too (`dark:bg-white`):
-         QrSvg paints black modules, and scanners need that contrast — a QR on a
-         dark surface is unreadable at the door. --}}
-    <div class="mb-4 flex justify-center rounded-lg bg-white p-4 dark:bg-white">
-        {!! app(\App\Services\QrSvg::class)->forUrl($token) !!}
-    </div>
+    @if ($ticket->status === \App\Enums\TicketStatus::Revoked)
+        {{-- A released spot (ADR-011 §6): the door already answers "revoked";
+             the page says so instead of showing a QR that no longer works.
+             No email is sent to the person. --}}
+        <p class="nexo-flash nexo-flash--danger mb-4" role="alert" data-ticket-released>{{ __('The organizer released your spot: this ticket is no longer valid at the door. If you think this is a mistake, talk to whoever is organizing the event.') }}</p>
 
-    <p class="text-center text-sm text-muted">{{ $ticket->attendee_name }}</p>
-    <p class="text-center text-xs text-muted">{{ __('Show this QR at the door.') }}</p>
+        <p class="text-center text-sm text-muted">{{ $ticket->attendee_name }}</p>
+    @else
+        {{-- The QR keeps its white quiet zone in dark mode too (`dark:bg-white`):
+             QrSvg paints black modules, and scanners need that contrast — a QR on a
+             dark surface is unreadable at the door. --}}
+        <div class="mb-4 flex justify-center rounded-lg bg-white p-4 dark:bg-white" data-ticket-qr>
+            {!! app(\App\Services\QrSvg::class)->forUrl($token) !!}
+        </div>
+
+        <p class="text-center text-sm text-muted">{{ $ticket->attendee_name }}</p>
+        <p class="text-center text-xs text-muted">{{ __('Show this QR at the door.') }}</p>
+    @endif
 
     {{-- What a ticket holder needs to get there (ADR-012). `venue` is public
          anyway; access_info is shown here and in the emails and nowhere else.

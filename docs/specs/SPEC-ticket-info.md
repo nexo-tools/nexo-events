@@ -1,4 +1,4 @@
-# SPEC — Ticket-holder info and payment text (PLAN Phase 10, tasks 10.7–10.8)
+# SPEC — Ticket-holder info and payment text (PLAN Phase 10, tasks 10.7–10.8 and 10.12)
 
 > Written before the code. Governing decision: **ADR-012** (ticket-holder info and payment
 > text), which amends ADR-001 §1 narrowly — the product still processes no payment — and
@@ -68,6 +68,15 @@ byte-identical to v1 (`price: "0"`, `ARS`).
 Not in `/e/{slug}`, not in the `<meta name="description">` built by `seoDescription()`, not
 in the JSON-LD, not in the sitemap. Asserted by test on each one.
 
+### A released ticket says so
+
+A spot released by the owner or a collaborator (`tickets.status = revoked`, ADR-011 §6)
+used to keep rendering its QR on `/t/{token}`: only the door knew. From task 10.12 the
+ticket page replaces the QR and "Show this QR at the door" with a danger notice
+(`role="alert"`) saying the organizer released the spot and to talk to them if it is a
+mistake; title, date, name, "Where" and both fields stay. No email is sent to the person
+(backlog; trigger: the first argument at the door).
+
 ### Validation lives in `EventRequest`, the one rule set
 
 `access_info`: `nullable|string|max:1000`. `payment_info`: `nullable|string|max:300`. Same
@@ -75,7 +84,8 @@ rules for the web form and the API (ADR-010 §6).
 
 ## Acceptance criteria
 
-All seven landed with task 10.8 (bold is what the traceability guardian reads).
+AC-TICKET-1..7 landed with task 10.8 and AC-TICKET-8 with task 10.12 (bold is what the
+traceability guardian reads).
 
 - **AC-TICKET-1** — With `access_info` set, `/t/{token}` shows it under "Only for ticket
   holders", together with "Where" (`venue`, which the ticket page did not show before).
@@ -97,6 +107,11 @@ All seven landed with task 10.8 (bold is what the traceability guardian reads).
 - **AC-TICKET-7** — Every new string is translated (es/pt maps, generator `--check`
   clean), and `DarkModeCoverageTest`, `AccessibilityTest` and `MailStandardTest` stay
   green with the new markup.
+- **AC-TICKET-8** — On `/t/{token}` of a `revoked` ticket the released notice is present
+  and the QR (and "Show this QR at the door") is absent, while title, date, name, "Where"
+  and the ticket-holder info stay; on a `valid` and on a `checked_in` ticket the notice is
+  absent and the QR present, and the `checked_in` one keeps its "already checked in" flash.
+  The notice is translated in es and pt.
 
 ## Guardians
 

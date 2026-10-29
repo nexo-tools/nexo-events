@@ -50,7 +50,8 @@ band by email from its own panel, and reuse the same band account next time.
 6. **Releasing a spot** (`tickets.status = revoked`) becomes reachable from the
    registrations list for owner and collaborators. The status already existed and was
    already honoured by capacity and by the door; nothing could assign it. A checked-in
-   ticket cannot be released.
+   ticket cannot be released. The ticket page says so: a released ticket shows a notice
+   instead of its QR (10.12, AC-TICKET-8); no email is sent to the person.
 7. **Through the API**, collaborators are a separate opt-in scope, `collaborators:manage`,
    limited to events with an `external_ref` (the ones the integration created), and every
    invitation made by a token mails the owner and records the token's name in

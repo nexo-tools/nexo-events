@@ -93,6 +93,8 @@ email starts a fresh invitation. Inviting is throttled (`throttle:10,1` on the w
 existed and was already honoured — capacity excludes revoked tickets and the door rejects
 them — but nothing could assign it. A checked-in ticket cannot be released (the person is
 inside). The use case is a paid event with capacity where people reserved and did not pay.
+The released person gets no email; their ticket page says the spot was released and stops
+showing the QR (task 10.12, SPEC-ticket-info AC-TICKET-8).
 
 ### Who sees what
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\TicketStatus;
 use App\Mail\EventReminder;
 use App\Mail\TicketIssued;
 use App\Models\Event;
@@ -218,4 +219,51 @@ it('AC-TICKET-7: every new string is translated, not left in English', function 
 
     expect($html)->toContain('aria-describedby="access_info-hint"')
         ->and($html)->toContain('aria-describedby="payment_info-hint"');
+});
+
+it('AC-TICKET-8: a released ticket says so on its page and no longer shows a QR', function (): void {
+    ['event' => $event, 'ticket' => $ticket, 'token' => $token] = tiTicketFor(['access_info' => TI_ADDRESS, 'payment_info' => TI_PRICE]);
+    $ticket->update(['status' => TicketStatus::Revoked]);
+
+    $html = (string) $this->get(route('ticket.show', ['token' => $token]))->assertOk()->getContent();
+    $key = 'The organizer released your spot: this ticket is no longer valid at the door. If you think this is a mistake, talk to whoever is organizing the event.';
+    $notice = __($key);
+
+    expect($html)->toContain('data-ticket-released')
+        ->and($html)->toContain('role="alert"')
+        ->and($html)->toContain(e($notice))
+        ->and($html)->not->toContain('data-ticket-qr')
+        ->and($html)->not->toContain(e(__('Show this QR at the door.')))
+        // Everything else a ticket holder reads stays.
+        ->and($html)->toContain(e($event->title))
+        ->and($html)->toContain('Ana Pérez')
+        ->and($html)->toContain('La Sala · Floresta')
+        ->and($html)->toContain(TI_ADDRESS)
+        ->and($html)->toContain(e(TI_PRICE));
+
+    foreach (['es', 'pt'] as $locale) {
+        $map = json_decode((string) file_get_contents(lang_path("{$locale}.json")), true);
+        expect(isset($map[$key]) && $map[$key] !== $key)->toBeTrue("[{$locale}] the released-ticket notice is not translated.");
+    }
+});
+
+it('AC-TICKET-8: a valid and a checked-in ticket keep their QR and show no released notice', function (): void {
+    ['ticket' => $valid, 'token' => $validToken] = tiTicketFor();
+    $checkedIn = tiTicketFor();
+    $checkedIn['ticket']->update(['status' => TicketStatus::CheckedIn]);
+
+    $validHtml = (string) $this->get(route('ticket.show', ['token' => $validToken]))->assertOk()->getContent();
+    $checkedInHtml = (string) $this->get(route('ticket.show', ['token' => $checkedIn['token']]))->assertOk()->getContent();
+
+    expect($valid->fresh()->status)->toBe(TicketStatus::Valid);
+
+    foreach ([$validHtml, $checkedInHtml] as $html) {
+        expect($html)->toContain('data-ticket-qr')
+            ->and($html)->toContain(e(__('Show this QR at the door.')))
+            ->and($html)->not->toContain('data-ticket-released');
+    }
+
+    // The checked-in ticket keeps its own flash; the valid one has none.
+    expect($checkedInHtml)->toContain(e(__('You have already checked in to this event.')))
+        ->and($validHtml)->not->toContain(e(__('You have already checked in to this event.')));
 });

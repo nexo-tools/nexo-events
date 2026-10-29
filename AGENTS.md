@@ -54,7 +54,7 @@ Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./ven
 ## Accumulated context
 
 - **2026-10-28** — **Event collaborators, ticket-holder info and Integration API v1.1 built
-  (PLAN 10.7–10.11), not yet deployed.** Same first consumer (a venue whose bands manage the
+  (PLAN 10.7–10.12), not yet deployed.** Same first consumer (a venue whose bands manage the
   entries of their nights). Governing docs: [ADR-011](docs/adr/ADR-011-event-collaborators.md),
   [ADR-012](docs/adr/ADR-012-ticket-holder-info-and-payment-text.md), the ADR-010 §4
   amendment, SPEC-event-collaborators, SPEC-ticket-info, SPEC-integration-api v1.1.
@@ -81,7 +81,8 @@ Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./ven
     owner (`CollaboratorInvitedByIntegration`) and records the token name in `invited_via`.
   - **Release a spot is a conditional update** (`status = valid` and no checkin row), so it
     cannot race a check-in into undoing an entry. The released person's `/t/{token}` still
-    renders; the door answers `revoked`.
+    renders, says the spot was released and shows no QR (10.12, AC-TICKET-8); the door answers
+    `revoked`; no email goes to the person.
   - **`access_info` is "not published", not "secret"** — one free registration away. It never
     reaches `/e/{slug}`, the meta description, the JSON-LD or the sitemap (asserted). With
     `payment_info` set the JSON-LD drops `price`/`priceCurrency`; without it, v1 bytes.
