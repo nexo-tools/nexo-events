@@ -45,7 +45,7 @@ class InvitationController extends Controller
             return $this->show($request, $token);
         }
 
-        return redirect()->route('events.registrations', $outcome['collaborator']->event_id)
+        return redirect()->route('events.manage', $outcome['collaborator']->event_id)
             ->with('status', __('Invitation accepted. You can now manage the tickets of this event.'));
     }
 

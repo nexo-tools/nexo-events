@@ -7,8 +7,10 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\CheckinController;
+use App\Http\Controllers\CollaboratorController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\EventManagementController;
 use App\Http\Controllers\EventReportController;
 use App\Http\Controllers\HelpController;
 use App\Http\Controllers\InvitationController;
@@ -74,6 +76,19 @@ Route::middleware('auth')->group(function () {
         Route::post('eventos/{event}/cerrar', [EventController::class, 'close'])->name('events.close');
         Route::post('eventos/{event}/cancelar', [EventController::class, 'cancel'])->name('events.cancel');
         Route::get('eventos/{event}/registrados', [EventController::class, 'registrations'])->name('events.registrations');
+
+        // Ticket management — owner and collaborators (ADR-011).
+        Route::get('eventos/{event}/gestion', [EventManagementController::class, 'show'])->name('events.manage');
+        Route::post('eventos/{event}/cupo', [EventManagementController::class, 'capacity'])
+            ->middleware('throttle:30,1')->name('events.capacity');
+        Route::post('eventos/{event}/reabrir', [EventManagementController::class, 'reopen'])
+            ->middleware('throttle:30,1')->name('events.reopen');
+
+        // Collaborators — owner only. Inviting sends a mail, hence the tight limit.
+        Route::post('eventos/{event}/colaboradores', [CollaboratorController::class, 'store'])
+            ->middleware('throttle:10,1')->name('collaborators.store');
+        Route::post('eventos/{event}/colaboradores/{collaborator}/revocar', [CollaboratorController::class, 'revoke'])
+            ->name('collaborators.revoke');
 
         // Integration tokens (ADR-010). Registered unconditionally like the API
         // routes — the controller 404s while NEXO_API_ENABLED is false, so

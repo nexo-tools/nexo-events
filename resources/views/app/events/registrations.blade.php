@@ -18,12 +18,21 @@
             <li class="flex items-center justify-between gap-3 rounded-lg border border-line p-3">
                 <span>
                     <span class="font-medium">{{ $ticket->attendee_name }}</span>
-                    <span class="block text-xs text-muted">{{ $ticket->attendee_email }} · {{ $ticket->status->label() }}</span>
+                    <span class="block text-xs text-muted">@if ($showEmails){{ $ticket->attendee_email }} · @endif{{ $ticket->status->label() }}</span>
                 </span>
                 @if ($ticket->checkin === null && $ticket->status->value === 'valid')
-                    <form method="POST" action="{{ route('tickets.checkin', $ticket) }}">@csrf
-                        <x-button variant="secondary" class="nexo-btn--sm" :block="false">{{ __('Check in') }}</x-button>
-                    </form>
+                    <span class="flex flex-wrap gap-2">
+                        <form method="POST" action="{{ route('tickets.checkin', $ticket) }}">@csrf
+                            <x-button variant="secondary" class="nexo-btn--sm" :block="false">{{ __('Check in') }}</x-button>
+                        </form>
+                        {{-- ADR-011 §6: the reservation that was never paid. --}}
+                        <form method="POST" action="{{ route('tickets.release', $ticket) }}"
+                              onsubmit="return confirm(@js(__('Release the spot of :name? Their ticket stops working at the door.', ['name' => $ticket->attendee_name])))">@csrf
+                            <x-button variant="secondary" class="nexo-btn--sm" :block="false">{{ __('Release spot') }}</x-button>
+                        </form>
+                    </span>
+                @elseif ($ticket->status->value === 'revoked')
+                    <span class="text-xs font-medium text-muted">{{ __('Spot released') }}</span>
                 @else
                     <span class="text-xs font-medium text-success-subtle-fg">{{ __('Checked in') }}</span>
                 @endif
@@ -39,5 +48,5 @@
         @endforelse
     </ul>
 
-    <a href="{{ route('events.edit', $event) }}" class="mt-4 block text-sm text-muted hover:underline">{{ __('Back') }}</a>
+    <a href="{{ $showEmails ? route('events.edit', $event) : route('events.manage', $event) }}" class="mt-4 block text-sm text-muted hover:underline">{{ __('Back') }}</a>
 </x-app-layout>

@@ -31,6 +31,21 @@
         @endforelse
     </ul>
 
+    {{-- Events somebody else owns and invited this account to manage
+         (ADR-011). Absent when there are none, so an organizer who never
+         collaborates sees the dashboard exactly as before. --}}
+    @if ($managed->isNotEmpty())
+        <h2 class="mt-8 text-lg font-bold">{{ __('Events you manage') }}</h2>
+        <ul class="mt-3 space-y-2" data-managed-events>
+            @foreach ($managed as $event)
+                <li class="rounded-lg border border-line p-3">
+                    <a href="{{ route('events.manage', $event) }}" class="font-medium hover:underline">{{ $event->title }}</a>
+                    <div class="text-xs text-muted">{{ $event->starts_at->translatedFormat(__('app.datetime')) }} · {{ $event->status->label() }} · {{ trans_choice('app.tickets', $event->tickets_count) }}</div>
+                </li>
+            @endforeach
+        </ul>
+    @endif
+
     {{-- Only where the API is on: an instance that never turns it on has no
          reason to show a door to it (AC-API-15b). --}}
     @if (config('nexo.api.enabled'))

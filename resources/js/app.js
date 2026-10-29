@@ -45,3 +45,32 @@ window.addEventListener('pageshow', (event) => {
         element.disabled = false;
     });
 });
+
+// Copy-to-clipboard for read-only fields (the public link on "Ticket
+// management"). Progressive enhancement: the button ships `hidden` and is only
+// revealed where the Clipboard API exists; without it the field stays
+// selectable by hand, which is what it was before.
+if (navigator.clipboard) {
+    document.querySelectorAll('[data-copy]').forEach((button) => {
+        button.hidden = false;
+    });
+
+    document.addEventListener('click', async (event) => {
+        const button = event.target.closest('[data-copy]');
+        if (!button) {
+            return;
+        }
+
+        const field = document.getElementById(button.dataset.copy);
+        if (!field) {
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(field.value ?? field.textContent ?? '');
+            button.textContent = button.dataset.copied ?? button.textContent;
+        } catch {
+            field.select?.();
+        }
+    });
+}

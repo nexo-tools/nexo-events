@@ -123,8 +123,8 @@ whether the invited email has an account.
 
 ## Acceptance criteria
 
-Criteria still listed without bold land with the task in parentheses; bold is what the
-traceability guardian reads (AC-COLLAB-1..10, 17 and 18 landed with 10.9).
+All eighteen are in bold — what the traceability guardian reads: AC-COLLAB-1..10, 17 and 18
+landed with 10.9, AC-COLLAB-11..16 with 10.10.
 
 - **AC-COLLAB-1** — Inviting creates a row with the email lowercased, a sha256
   `invite_token_hash` (the raw token is returned once and stored nowhere), `expires_at` =
@@ -152,20 +152,20 @@ traceability guardian reads (AC-COLLAB-1..10, 17 and 18 landed with 10.9).
 - **AC-COLLAB-10** — `DatabaseStandardTest` is green with the new table declared; the
   rollback is run against real MySQL; `MailStandardTest`, `RateLimitTest` and the full suite
   are green with the API flag off.
-- AC-COLLAB-11 (10.10) — The owner invites, resends and revokes from the event's edit
+- **AC-COLLAB-11** — The owner invites, resends and revokes from the event's edit
   screen; each action is reflected in the list with its status; right after inviting, the
   link is shown once with a "Share on WhatsApp" link, and not again on reload.
-- AC-COLLAB-12 (10.10) — "Ticket management" answers 200 for the owner and an accepted
+- **AC-COLLAB-12** — "Ticket management" answers 200 for the owner and an accepted
   collaborator and 403 for anyone else, shows registered, checked-in and capacity, and
   renders in the app shell.
-- AC-COLLAB-13 (10.10) — A collaborator changes the capacity (below the issued tickets:
+- **AC-COLLAB-13** — A collaborator changes the capacity (below the issued tickets:
   422), closes and reopens registration; reopening fails with the unverified-email message
   when the OWNER has not verified.
-- AC-COLLAB-14 (10.10) — The registrations list contains no attendee email when a
+- **AC-COLLAB-14** — The registrations list contains no attendee email when a
   collaborator opens it, and does when the owner does; it offers "Release a spot".
-- AC-COLLAB-15 (10.10) — The collaborator's dashboard lists the event under "Events you
+- **AC-COLLAB-15** — The collaborator's dashboard lists the event under "Events you
   manage"; the owner's dashboard does not list it twice.
-- AC-COLLAB-16 (10.10) — The edit form warns that the event is managed by another system
+- **AC-COLLAB-16** — The edit form warns that the event is managed by another system
   only when `external_ref` is set.
 - **AC-COLLAB-17** — An owner without a verified email cannot invite: the service
   answers `UNVERIFIED`, and no row and no mail are created.

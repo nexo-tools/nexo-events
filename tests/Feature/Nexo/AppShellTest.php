@@ -2,6 +2,7 @@
 
 use App\Models\Event;
 use App\Models\User;
+use App\Services\CollaboratorInviter;
 
 // Guardian: the authenticated area has a shell of its own.
 //
@@ -21,6 +22,7 @@ it('renders the organizer screens in the app shell, not the auth card', function
         route('events.edit', $event),
         route('events.registrations', $event),
         route('events.scan', $event),
+        route('events.manage', $event),
     ];
 
     foreach ($screens as $url) {
@@ -29,6 +31,24 @@ it('renders the organizer screens in the app shell, not the auth card', function
         expect(str_contains($html, 'max-w-3xl'))->toBeTrue("{$url} is not using the app shell container.");
         expect(str_contains($html, 'max-w-md'))->toBeFalse("{$url} is still rendering inside the auth card.");
     }
+});
+
+it('renders the collaborator screens in the app shell too: invitation and ticket management', function (): void {
+    $event = Event::factory()->create();
+    $band = User::factory()->create(['email' => 'banda@example.com']);
+    $url = app(CollaboratorInviter::class)->invite($event, 'banda@example.com', $event->organizer)['url'];
+
+    $html = (string) $this->actingAs($band)->get((string) $url)->assertOk()->getContent();
+
+    expect(str_contains($html, 'max-w-3xl'))->toBeTrue('The invitation screen is not using the app shell container.')
+        ->and(str_contains($html, 'max-w-md'))->toBeFalse('The invitation screen renders inside the auth card.');
+
+    $this->actingAs($band)->post((string) $url.'/aceptar');
+
+    $manage = (string) $this->actingAs($band)->get(route('events.manage', $event))->assertOk()->getContent();
+
+    expect(str_contains($manage, 'max-w-3xl'))->toBeTrue()
+        ->and(str_contains($manage, 'max-w-md'))->toBeFalse();
 });
 
 it('offers logout and a way back to the panel from every organizer screen', function (): void {

@@ -2,6 +2,14 @@
     <h1 class="mb-1 text-xl font-bold">{{ $event->title }}</h1>
     <p class="mb-4 text-sm text-muted">{{ __('Status') }}: {{ $event->status->label() }}</p>
 
+    {{-- Content is last-write-wins from whatever system created the event
+         (ADR-011 / SPEC-integration-api): say so before somebody edits here. --}}
+    @if ($event->external_ref !== null)
+        <p class="nexo-flash nexo-flash--info mb-4" role="note" data-external-notice>
+            {{ __('This event is managed by another system: content changes made here may be overwritten from there.') }}
+        </p>
+    @endif
+
     @if (session('status'))
         <p class="nexo-flash mb-4" role="status">{{ session('status') }}</p>
     @endif
@@ -33,6 +41,7 @@
             @if ($event->status->value === 'published')
                 <form method="POST" action="{{ route('events.close', $event) }}">@csrf<x-button variant="secondary" :block="false">{{ __('Close registration') }}</x-button></form>
             @endif
+            <a href="{{ route('events.manage', $event) }}" class="nexo-btn nexo-btn--ghost">{{ __('Ticket management') }}</a>
             <a href="{{ route('events.registrations', $event) }}" class="nexo-btn nexo-btn--ghost">{{ __('Registrations') }}</a>
             <a href="{{ route('events.scan', $event) }}" class="nexo-btn nexo-btn--ghost">{{ __('Check-in') }}</a>
         </div>
@@ -48,6 +57,8 @@
             <x-button variant="danger" :block="false">{{ __('Cancel event') }}</x-button>
         </form>
     </div>
+
+    @include('app.events._collaborators', ['event' => $event, 'collaborators' => $collaborators])
 
     <a href="{{ route('dashboard') }}" class="mt-4 block text-sm text-muted hover:underline">{{ __('Back to the dashboard') }}</a>
 </x-app-layout>

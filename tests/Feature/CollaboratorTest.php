@@ -78,7 +78,7 @@ it('AC-COLLAB-2: accepting with a verified account of the same email grants acce
         ->assertOk()->assertSee($event->title);
 
     $this->actingAs($band)->post(route('invitations.accept', ['token' => $token]))
-        ->assertRedirect(route('events.registrations', $event));
+        ->assertRedirect(route('events.manage', $event));
 
     $row = EventCollaborator::sole();
     expect($row->user_id)->toBe($band->id)

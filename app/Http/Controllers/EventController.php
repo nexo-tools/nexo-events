@@ -33,7 +33,10 @@ class EventController extends Controller
     {
         $this->owned($request, $event);
 
-        return view('app.events.edit', ['event' => $event]);
+        return view('app.events.edit', [
+            'event' => $event,
+            'collaborators' => $event->collaborators()->latest('invited_at')->get(),
+        ]);
     }
 
     public function update(EventRequest $request, Event $event): RedirectResponse
@@ -79,6 +82,9 @@ class EventController extends Controller
 
         return view('app.events.registrations', [
             'event' => $event,
+            // Collaborators see names and status; attendee emails stay with the
+            // owner, who is the one answerable for them (ADR-011 §2).
+            'showEmails' => $event->organizer_id === $request->user()->id,
             'tickets' => $event->tickets()->with('checkin')->latest()->get(),
         ]);
     }
