@@ -4,7 +4,7 @@
 // NOT reviewed by a lawyer: written to describe accurately what this codebase
 // actually does, so a review starts from something true.
 return [
-    'updated' => 'Last updated: 26 July 2026',
+    'updated' => 'Last updated: 28 October 2026',
 
     // Rendered only when NEXO_LEGAL_OPERATOR / NEXO_LEGAL_CONTACT are set.
     'operator' => [
@@ -23,7 +23,7 @@ return [
             ],
             [
                 'h' => 'What we store about attendees',
-                'p' => 'The name and email you type when registering for an event, the language you registered in — so we write to you in that one and not another — and whether you checked in. We do not create an account or ask for a password. Those details are visible to that event\'s organizer — they are the ones who need to know who is coming.',
+                'p' => 'The name and email you type when registering for an event, the language you registered in — so we write to you in that one and not another — and whether you checked in. We do not create an account or ask for a password. Those details are visible to that event\'s organizer — they are the ones who need to know who is coming. The organizer can delegate managing an event\'s tickets to collaborators they invite: those collaborators see your name and whether you checked in, never your email.',
             ],
             [
                 'h' => 'Tickets and their QR code',
@@ -62,7 +62,7 @@ return [
         'sections' => [
             [
                 'h' => 'What the service is',
-                'p' => 'A tool to publish free events, take registrations by email and validate tickets with a QR code at the door. We do not process payments or sell tickets.',
+                'p' => 'A tool to publish free events, take registrations by email and validate tickets with a QR code at the door. We do not process payments or sell tickets. When an event states a price, payment is arranged directly between the attendee and the organizer, outside the platform.',
             ],
             [
                 'h' => 'Your account',
@@ -70,7 +70,7 @@ return [
             ],
             [
                 'h' => 'Responsibility for your events',
-                'p' => 'An event\'s content, its accuracy, whether it actually happens, and the handling of registrants\' data are the organizer\'s responsibility. Whoever publishes an event acts as the controller of that data towards their attendees and must comply with whatever rules apply to them.',
+                'p' => 'An event\'s content, its accuracy, whether it actually happens, and the handling of registrants\' data are the organizer\'s responsibility, including what the collaborators they invite do with it. Whoever publishes an event acts as the controller of that data towards their attendees and must comply with whatever rules apply to them.',
             ],
             [
                 'h' => 'Misuse',

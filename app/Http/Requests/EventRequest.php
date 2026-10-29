@@ -25,6 +25,11 @@ class EventRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:5000'],
             'starts_at' => [$presence, 'date'],
             'venue' => ['nullable', 'string', 'max:255'],
+            // ADR-012: plain text, escaped on output. access_info is shown only to
+            // ticket holders; payment_info is public and describes a price the
+            // platform never collects.
+            'access_info' => ['nullable', 'string', 'max:1000'],
+            'payment_info' => ['nullable', 'string', 'max:300'],
             'capacity' => ['nullable', 'integer', 'min:1', 'max:1000000'],
             // API only — the consumer's own key for the event, which is what
             // makes creation idempotent. The web form has no such field, and the

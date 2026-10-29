@@ -75,27 +75,26 @@ rules for the web form and the API (ADR-010 §6).
 
 ## Acceptance criteria
 
-The criteria below are listed without bold until the task that implements them lands
-(task 10.8); bold is what the traceability guardian reads.
+All seven landed with task 10.8 (bold is what the traceability guardian reads).
 
-- AC-TICKET-1 (10.8) — With `access_info` set, `/t/{token}` shows it under "Only for ticket
+- **AC-TICKET-1** — With `access_info` set, `/t/{token}` shows it under "Only for ticket
   holders", together with "Where" (`venue`, which the ticket page did not show before).
   `/e/{slug}`, its `<meta name="description">` and its JSON-LD do not contain it.
-- AC-TICKET-2 (10.8) — The ticket email and the reminder email carry an `access_info` row
+- **AC-TICKET-2** — The ticket email and the reminder email carry an `access_info` row
   and a `payment_info` row when set, rendered in es, en and pt (extends AC-EMAIL-2).
-- AC-TICKET-3 (10.8) — With `payment_info` set, `/e/{slug}` shows it before the
+- **AC-TICKET-3** — With `payment_info` set, `/e/{slug}` shows it before the
   registration form and the JSON-LD `offers` carries no `price` and no `priceCurrency`;
   without it, the JSON-LD is byte-identical to the v1 output.
-- AC-TICKET-4 (10.8) — The door scanner page shows `payment_info` as a fixed note when set,
+- **AC-TICKET-4** — The door scanner page shows `payment_info` as a fixed note when set,
   and nothing when it is not.
-- AC-TICKET-5 (10.8) — With both fields empty, `/t/{token}`, `/e/{slug}` and both emails
+- **AC-TICKET-5** — With both fields empty, `/t/{token}`, `/e/{slug}` and both emails
   render no new block and no new row (the only addition to `/t/{token}` is "Where", which
   belongs to AC-TICKET-1).
-- AC-TICKET-6 (10.8) — The migration is additive (two nullable columns, `down()` drops
+- **AC-TICKET-6** — The migration is additive (two nullable columns, `down()` drops
   them), `DatabaseStandardTest` stays green with `EXPECTED_TABLES` unchanged, the migration
   is run and rolled back against real MySQL (DATABASE-STANDARD §11), and `EventRequest`
   enforces the two length limits on the web form and the API alike.
-- AC-TICKET-7 (10.8) — Every new string is translated (es/pt maps, generator `--check`
+- **AC-TICKET-7** — Every new string is translated (es/pt maps, generator `--check`
   clean), and `DarkModeCoverageTest`, `AccessibilityTest` and `MailStandardTest` stay
   green with the new markup.
 

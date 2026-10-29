@@ -139,6 +139,11 @@ class EventApiController extends Controller
             'issued_tickets_count' => $event->issuedTicketsCount(),
             'is_sold_out' => $event->isSoldOut(),
             'public_url' => route('public.event', $event),
+            // v1.1 (ADR-012, SPEC-integration-api AC-API-6c). Event fields and a
+            // counter — still nothing about who those people are.
+            'access_info' => $event->access_info,
+            'payment_info' => $event->payment_info,
+            'checked_in_count' => $event->checkedInCount(),
         ];
     }
 

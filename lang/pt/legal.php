@@ -4,7 +4,7 @@
 // NÃO revisado por advogado: escrito para descrever com precisão o que este
 // código realmente faz.
 return [
-    'updated' => 'Última atualização: 26 de julho de 2026',
+    'updated' => 'Última atualização: 28 de outubro de 2026',
 
     // Rendered only when NEXO_LEGAL_OPERATOR / NEXO_LEGAL_CONTACT are set.
     'operator' => [
@@ -23,7 +23,7 @@ return [
             ],
             [
                 'h' => 'O que guardamos sobre os participantes',
-                'p' => 'O nome e o e-mail informados ao se inscrever num evento, o idioma em que você se inscreveu — para escrevermos nesse idioma e não em outro — e se você entrou ou não. Não criamos conta nem pedimos senha. Esses dados ficam visíveis para o organizador do evento: é quem precisa saber quem vai.',
+                'p' => 'O nome e o e-mail informados ao se inscrever num evento, o idioma em que você se inscreveu — para escrevermos nesse idioma e não em outro — e se você entrou ou não. Não criamos conta nem pedimos senha. Esses dados ficam visíveis para o organizador do evento: é quem precisa saber quem vai. O organizador pode delegar a gestão dos ingressos de um evento a colaboradores que ele convida: eles veem o seu nome e se você entrou, nunca o seu e-mail.',
             ],
             [
                 'h' => 'Os ingressos e o código QR',
@@ -62,7 +62,7 @@ return [
         'sections' => [
             [
                 'h' => 'O que é o serviço',
-                'p' => 'Uma ferramenta para publicar eventos gratuitos, receber inscrições por e-mail e validar ingressos com QR na porta. Não processamos pagamentos nem vendemos ingressos.',
+                'p' => 'Uma ferramenta para publicar eventos gratuitos, receber inscrições por e-mail e validar ingressos com QR na porta. Não processamos pagamentos nem vendemos ingressos. Se um evento informa um preço, o pagamento é combinado diretamente entre o participante e o organizador, fora da plataforma.',
             ],
             [
                 'h' => 'Sua conta',
@@ -70,7 +70,7 @@ return [
             ],
             [
                 'h' => 'Responsabilidade pelos seus eventos',
-                'p' => 'O conteúdo de um evento, a sua veracidade, a sua realização e o tratamento dos dados de quem se inscreve são responsabilidade do organizador. Quem publica um evento atua como responsável por esses dados perante os participantes e deve cumprir as normas aplicáveis.',
+                'p' => 'O conteúdo de um evento, a sua veracidade, a sua realização e o tratamento dos dados de quem se inscreve são responsabilidade do organizador, inclusive o que fizerem com eles os colaboradores que ele convidar. Quem publica um evento atua como responsável por esses dados perante os participantes e deve cumprir as normas aplicáveis.',
             ],
             [
                 'h' => 'Uso indevido',

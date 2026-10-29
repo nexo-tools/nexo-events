@@ -12,6 +12,32 @@
     <p class="text-center text-sm text-muted">{{ $ticket->attendee_name }}</p>
     <p class="text-center text-xs text-muted">{{ __('Show this QR at the door.') }}</p>
 
+    {{-- What a ticket holder needs to get there (ADR-012). `venue` is public
+         anyway; access_info is shown here and in the emails and nowhere else.
+         Plain text, escaped, line breaks kept: no markup ever comes from these. --}}
+    @if ($ticket->event->venue || $ticket->event->access_info || $ticket->event->payment_info)
+        <dl class="mt-6 space-y-3 border-t border-line pt-4 text-sm" data-ticket-info>
+            @if ($ticket->event->venue)
+                <div>
+                    <dt class="text-xs font-medium uppercase tracking-wide text-muted">{{ __('Where') }}</dt>
+                    <dd class="text-ink">{{ $ticket->event->venue }}</dd>
+                </div>
+            @endif
+            @if ($ticket->event->access_info)
+                <div data-access-info>
+                    <dt class="text-xs font-medium uppercase tracking-wide text-muted">{{ __('Only for ticket holders') }}</dt>
+                    <dd class="whitespace-pre-line text-ink">{{ $ticket->event->access_info }}</dd>
+                </div>
+            @endif
+            @if ($ticket->event->payment_info)
+                <div data-payment-info>
+                    <dt class="text-xs font-medium uppercase tracking-wide text-muted">{{ __('Entry') }}</dt>
+                    <dd class="text-ink">{{ $ticket->event->payment_info }}</dd>
+                </div>
+            @endif
+        </dl>
+    @endif
+
     @if ($ticket->status->value === 'checked_in')
         <p class="nexo-flash mt-4 justify-center" role="status">{{ __('You have already checked in to this event.') }}</p>
     @endif

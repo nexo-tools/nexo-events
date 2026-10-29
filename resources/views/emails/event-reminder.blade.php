@@ -21,6 +21,8 @@
         __('Event') => $event->title,
         __('When') => $event->starts_at->translatedFormat(__('app.datetime')),
         __('Where') => $event->venue,
+        __('Only for ticket holders') => $event->access_info,
+        __('Entry') => $event->payment_info,
         __('Issued to') => $ticket->attendee_name,
     ]" />
 

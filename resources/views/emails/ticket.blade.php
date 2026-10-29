@@ -20,9 +20,13 @@
         {{ $event->title }}
     </h1>
 
+    {{-- Empty rows are skipped by the panel, so an event without access_info
+         or payment_info renders exactly the v1 rows (ADR-012). --}}
     <x-nexo-mail::panel :rows="[
         __('When') => $event->starts_at->translatedFormat(__('app.datetime')),
         __('Where') => $event->venue,
+        __('Only for ticket holders') => $event->access_info,
+        __('Entry') => $event->payment_info,
         __('Issued to') => $ticket->attendee_name,
     ]" />
 

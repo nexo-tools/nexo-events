@@ -56,8 +56,13 @@ single account ([Nexo ID](https://github.com/nexo-tools/nexo-id) SSO).
   switcher, plus a translatable `/help` center.
 - **Connect your own site** *(optional)* — an integration API lets an organizer link an
   external system to their account with a scoped, revocable token, so their website can
-  create and publish its events and link the ticket page. Off by default; attendee data is
-  never reachable through it.
+  create and publish its events and link the ticket page. Off by default. No API answer
+  ever carries attendee data; a separate, opt-in scope lets an integration invite
+  collaborators to the events it created, and those collaborators (people with their own
+  verified accounts) see registrants' names — never emails.
+- **Info only for ticket holders, and a price as text** — an event can carry details shown
+  only on the ticket and its emails (the exact address, how to get in) and a free-text price
+  ("Entry $8,000 · pay at the door"). Nexo Events never collects the money.
 - **Self-hostable** — a standard Laravel app; runs on your own infrastructure.
 
 ## Screenshots

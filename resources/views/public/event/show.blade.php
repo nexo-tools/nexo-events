@@ -8,6 +8,16 @@
         <p class="mb-6 whitespace-pre-line text-sm text-ink">{{ $event->description }}</p>
     @endif
 
+    {{-- Price text, before anyone decides to register (ADR-012). Nothing is
+         collected here: registering is a reservation. access_info is never
+         rendered on this page — it is for ticket holders only. --}}
+    @if ($event->payment_info)
+        <p class="mb-6 rounded-lg border border-line p-3 text-sm text-ink" data-payment-info>
+            <span class="block text-xs font-medium uppercase tracking-wide text-muted">{{ __('Entry') }}</span>
+            {{ $event->payment_info }}
+        </p>
+    @endif
+
     @if ($event->status->value === 'published')
         @if (session('status'))
             <p class="nexo-flash mb-4" role="status">{{ session('status') }}</p>

@@ -22,10 +22,12 @@ use Illuminate\Support\Str;
  * @property ?string $description
  * @property Carbon $starts_at
  * @property ?string $venue
+ * @property ?string $access_info ticket holders only: /t/{token} and its emails (ADR-012)
+ * @property ?string $payment_info display-only price text; nothing is collected (ADR-012)
  * @property ?int $capacity
  * @property EventStatus $status
  */
-#[Fillable(['title', 'description', 'starts_at', 'venue', 'capacity', 'status'])]
+#[Fillable(['title', 'description', 'starts_at', 'venue', 'access_info', 'payment_info', 'capacity', 'status'])]
 class Event extends Model
 {
     /** @use HasFactory<EventFactory> */
@@ -74,6 +76,12 @@ class Event extends Model
     public function issuedTicketsCount(): int
     {
         return $this->tickets()->where('status', '!=', TicketStatus::Revoked->value)->count();
+    }
+
+    /** People who actually came in — the door's number, next to issuedTicketsCount(). */
+    public function checkedInCount(): int
+    {
+        return $this->tickets()->where('status', TicketStatus::CheckedIn->value)->count();
     }
 
     public function isSoldOut(): bool

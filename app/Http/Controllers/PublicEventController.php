@@ -63,7 +63,10 @@ class PublicEventController extends Controller
         };
     }
 
-    /** A one-line summary for search results and link previews. */
+    /**
+     * A one-line summary for search results and link previews. Built from the
+     * public fields only: access_info never reaches it (ADR-012).
+     */
     private function seoDescription(Event $event): string
     {
         $when = $event->starts_at->translatedFormat(__('app.datetime'));
@@ -107,16 +110,33 @@ class PublicEventController extends Controller
                 '@type' => 'Organization',
                 'name' => $event->organizer->name,
             ],
-            'offers' => [
-                '@type' => 'Offer',
-                'price' => '0',
-                'priceCurrency' => 'ARS',
-                'availability' => $event->isSoldOut()
-                    ? 'https://schema.org/SoldOut'
-                    : 'https://schema.org/InStock',
-                'url' => route('public.event', $event),
-            ],
+            'offers' => $this->offer($event),
         ], fn ($value): bool => $value !== null);
+    }
+
+    /**
+     * The JSON-LD offer. Free events keep the v1 claim (price 0), byte for byte.
+     * An event that describes a price in payment_info (ADR-012) gets no price at
+     * all: that text is not a number we can parse, and inventing one — or
+     * keeping "0" next to "Entry $8,000" — would be the product lying in its
+     * own markup.
+     *
+     * @return array<string, string>
+     */
+    private function offer(Event $event): array
+    {
+        $price = $event->payment_info
+            ? []
+            : ['price' => '0', 'priceCurrency' => 'ARS'];
+
+        return [
+            '@type' => 'Offer',
+            ...$price,
+            'availability' => $event->isSoldOut()
+                ? 'https://schema.org/SoldOut'
+                : 'https://schema.org/InStock',
+            'url' => route('public.event', $event),
+        ];
     }
 
     /**

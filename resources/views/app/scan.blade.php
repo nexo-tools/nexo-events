@@ -2,6 +2,15 @@
     <h1 class="mb-1 text-xl font-bold">{{ __('Door check-in') }}</h1>
     <p class="mb-4 text-sm text-muted">{{ $event->title }}</p>
 
+    {{-- Whoever is at the door collects (or checks a transfer receipt) before
+         scanning: the ticket is a reservation, and its validity never depends
+         on payment (ADR-012). --}}
+    @if ($event->payment_info)
+        <p class="nexo-flash nexo-flash--info mb-4" role="note" data-payment-info>
+            <span><span class="font-medium">{{ __('Entry') }}:</span> {{ $event->payment_info }}</span>
+        </p>
+    @endif
+
     @if (session('checkin'))
         @include('app._checkin-flash', ['result' => session('checkin')])
     @endif

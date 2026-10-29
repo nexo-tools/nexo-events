@@ -194,7 +194,7 @@ costs nothing and saves it a round trip.
 - **AC-API-6c** — `GET /events/{id}` returns exactly these fields: `id`, `slug`, `title`,
   `description`, `status`, `starts_at`, `venue`, `capacity`, `issued_tickets_count`,
   `is_sold_out`, `public_url`. The test enumerates the key set, so adding or dropping a
-  field is a deliberate contract change, not a silent one. *v1.1 rewrite (lands with task
+  field is a deliberate contract change, not a silent one. *v1.1 rewrite (landed with task
   10.8, together with its test): fourteen keys — the eleven above, then `access_info`,
   `payment_info`, `checked_in_count`; `checked_in_count` counts only `checked_in` tickets.*
 - **AC-API-7** — `PATCH /events/{id}` updates only the provided fields and never

@@ -1,11 +1,13 @@
 <?php
 
 use App\Enums\EventStatus;
+use App\Enums\TicketStatus;
 use App\Mail\EventCancelled;
 use App\Models\ApiToken;
 use App\Models\Event;
 use App\Models\User;
 use App\Services\EventRegistrar;
+use App\Services\TicketCheckin;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Mail;
 
@@ -273,12 +275,15 @@ test('AC-API-6c: GET /events/{id} returns exactly the agreed field set', functio
     $response = $this->getJson("/api/v1/events/{$event->id}", bearer(apiToken($user)))->assertOk();
 
     // Enumerated, so adding or dropping a field is a deliberate contract change.
+    // v1.1: the eleven v1 keys, then the three of ADR-012 / SPEC v1.1.
     expect(array_keys($response->json()))->toBe([
         'id', 'slug', 'title', 'description', 'status', 'starts_at', 'venue',
         'capacity', 'issued_tickets_count', 'is_sold_out', 'public_url',
+        'access_info', 'payment_info', 'checked_in_count',
     ]);
 
     $response->assertJsonPath('issued_tickets_count', 1)
+        ->assertJsonPath('checked_in_count', 0)
         ->assertJsonPath('is_sold_out', false)
         ->assertJsonPath('capacity', 2);
 });
@@ -292,6 +297,28 @@ test('AC-API-6c: the counter is a counter — sold out is reported, attendees ar
         ->assertOk()
         ->assertJsonPath('issued_tickets_count', 1)
         ->assertJsonPath('is_sold_out', true);
+});
+
+test('AC-API-6c: checked_in_count counts only tickets that came in, and the two text fields round-trip', function (): void {
+    $user = User::factory()->create();
+    $event = Event::factory()->for($user, 'organizer')->create();
+    $a = app(EventRegistrar::class)->register($event, 'Ana', 'ana@example.com');
+    app(EventRegistrar::class)->register($event, 'Beto', 'beto@example.com');
+    $c = app(EventRegistrar::class)->register($event, 'Caro', 'caro@example.com');
+    app(TicketCheckin::class)->checkInTicket($a['ticket'], $user);
+    $c['ticket']->forceFill(['status' => TicketStatus::Revoked])->save();
+
+    $raw = apiToken($user);
+
+    $this->getJson("/api/v1/events/{$event->id}", bearer($raw))
+        ->assertOk()
+        ->assertJsonPath('checked_in_count', 1)
+        ->assertJsonPath('issued_tickets_count', 2);
+
+    $this->patchJson("/api/v1/events/{$event->id}", ['access_info' => 'Timbre B', 'payment_info' => 'Entrada $5.000'], bearer($raw))
+        ->assertOk()
+        ->assertJsonPath('access_info', 'Timbre B')
+        ->assertJsonPath('payment_info', 'Entrada $5.000');
 });
 
 test('AC-API-7: PATCH updates only what it is sent and never regenerates the slug', function (): void {
