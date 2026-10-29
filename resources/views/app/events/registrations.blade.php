@@ -6,6 +6,13 @@
         @include('app._checkin-flash', ['result' => session('checkin')])
     @endif
 
+    @if (session('status'))
+        <p class="nexo-flash mb-4" role="status">{{ session('status') }}</p>
+    @endif
+    @error('release')
+        <p class="nexo-flash nexo-flash--danger mb-4" role="alert">{{ $message }}</p>
+    @enderror
+
     <ul class="space-y-2">
         @forelse ($tickets as $ticket)
             <li class="flex items-center justify-between gap-3 rounded-lg border border-line p-3">

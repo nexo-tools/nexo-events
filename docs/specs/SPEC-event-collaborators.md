@@ -123,33 +123,33 @@ whether the invited email has an account.
 
 ## Acceptance criteria
 
-The criteria below are listed without bold until the task that implements them lands; bold
-is what the traceability guardian reads.
+Criteria still listed without bold land with the task in parentheses; bold is what the
+traceability guardian reads (AC-COLLAB-1..10, 17 and 18 landed with 10.9).
 
-- AC-COLLAB-1 (10.9) — Inviting creates a row with the email lowercased, a sha256
+- **AC-COLLAB-1** — Inviting creates a row with the email lowercased, a sha256
   `invite_token_hash` (the raw token is returned once and stored nowhere), `expires_at` =
   `max(now + 7d, starts_at + 1d)` (for an event three weeks away: `starts_at + 1d`), and
   queues `CollaboratorInvited` to the lowercased email.
-- AC-COLLAB-2 (10.9) — Accepting with a verified account of the same email sets `user_id`
+- **AC-COLLAB-2** — Accepting with a verified account of the same email sets `user_id`
   and `accepted_at` and clears the hash; the same link then answers 404.
-- AC-COLLAB-3 (10.9) — Accepting with an account of another email answers 403 and
+- **AC-COLLAB-3** — Accepting with an account of another email answers 403 and
   associates nothing; an expired invitation answers 410; a revoked or unknown one, 404; an
   unverified account with the right email is asked to verify first and associates nothing.
-- AC-COLLAB-4 (10.9) — A signed-out visitor opening an invitation is redirected to the login
+- **AC-COLLAB-4** — A signed-out visitor opening an invitation is redirected to the login
   page and, after registering (or signing in), lands back on the invitation (`intended`).
-- AC-COLLAB-5 (10.9) — An accepted collaborator can open the registrations list and the
+- **AC-COLLAB-5** — An accepted collaborator can open the registrations list and the
   scanner, check in by token and by hand, close registration and release a spot; and gets
   403 on edit, update, publish, cancel and inviting.
-- AC-COLLAB-6 (10.9) — A revoked collaborator, one whose invitation lapsed without being
+- **AC-COLLAB-6** — A revoked collaborator, one whose invitation lapsed without being
   accepted, and an accepted one 8 days after `starts_at` get 403 on every managed route;
   the owner keeps access.
-- AC-COLLAB-7 (10.9) — A user who is neither owner nor collaborator still gets 403
+- **AC-COLLAB-7** — A user who is neither owner nor collaborator still gets 403
   (`EventManagementTest` and `CheckinTest` third-party tests unchanged).
-- AC-COLLAB-8 (10.9) — A check-in made by a collaborator records their id in
+- **AC-COLLAB-8** — A check-in made by a collaborator records their id in
   `checkins.checked_by`.
-- AC-COLLAB-9 (10.9) — The eleventh active invitation is refused; re-inviting a pending
+- **AC-COLLAB-9** — The eleventh active invitation is refused; re-inviting a pending
   email rotates the hash and the previous link stops working.
-- AC-COLLAB-10 (10.9) — `DatabaseStandardTest` is green with the new table declared; the
+- **AC-COLLAB-10** — `DatabaseStandardTest` is green with the new table declared; the
   rollback is run against real MySQL; `MailStandardTest`, `RateLimitTest` and the full suite
   are green with the API flag off.
 - AC-COLLAB-11 (10.10) — The owner invites, resends and revokes from the event's edit
@@ -167,9 +167,9 @@ is what the traceability guardian reads.
   manage"; the owner's dashboard does not list it twice.
 - AC-COLLAB-16 (10.10) — The edit form warns that the event is managed by another system
   only when `external_ref` is set.
-- AC-COLLAB-17 (10.9) — An owner without a verified email cannot invite: the service
+- **AC-COLLAB-17** — An owner without a verified email cannot invite: the service
   answers `UNVERIFIED`, and no row and no mail are created.
-- AC-COLLAB-18 (10.9) — Releasing a spot sets the ticket to `revoked`, frees capacity,
+- **AC-COLLAB-18** — Releasing a spot sets the ticket to `revoked`, frees capacity,
   refuses a checked-in ticket, and the released QR answers `revoked` at the scanner.
 
 ## Guardians

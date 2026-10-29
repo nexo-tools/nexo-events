@@ -14,7 +14,7 @@ class CheckinController extends Controller
 {
     public function scanner(Request $request, Event $event): View
     {
-        $this->owned($request, $event);
+        $this->managed($request, $event);
 
         return view('app.scan', [
             'event' => $event,
@@ -44,7 +44,7 @@ class CheckinController extends Controller
     /** Process a scanned/entered token against THIS event's door. */
     public function checkin(Request $request, Event $event, TicketCheckin $checkin): RedirectResponse|JsonResponse
     {
-        $this->owned($request, $event);
+        $this->managed($request, $event);
 
         // The event is passed INTO the check-in so a ticket from another event is
         // rejected before anything is written. Rejecting it afterwards, as this
@@ -69,15 +69,19 @@ class CheckinController extends Controller
     /** Manual fallback from the registered list (broken QR / dead camera). */
     public function manual(Request $request, Ticket $ticket, TicketCheckin $checkin): RedirectResponse
     {
-        $this->owned($request, $ticket->event);
+        $this->managed($request, $ticket->event);
 
         $outcome = $checkin->checkInTicket($ticket, $request->user());
 
         return back()->with('checkin', $outcome['result']);
     }
 
-    private function owned(Request $request, Event $event): void
+    /**
+     * Owner or an accepted collaborator (ADR-011): the door is where a second
+     * person is most needed. checkins.checked_by records which one scanned.
+     */
+    private function managed(Request $request, Event $event): void
     {
-        abort_unless($event->organizer_id === $request->user()->id, 403);
+        abort_unless($event->canBeManagedBy($request->user()), 403);
     }
 }

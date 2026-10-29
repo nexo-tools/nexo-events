@@ -36,7 +36,9 @@ class EmailVerificationController extends Controller
             event(new Verified($request->user()));
         }
 
-        return redirect()->route('dashboard')
+        // intended: a collaborator who had to verify before accepting goes back
+        // to the invitation (ADR-011 §3). Without one, the dashboard as before.
+        return redirect()->intended(route('dashboard'))
             ->with('status', __('Your email is verified. You can publish events now.'));
     }
 

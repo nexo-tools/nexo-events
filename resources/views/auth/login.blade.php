@@ -1,6 +1,15 @@
 <x-guest-layout :auth-card="true" :noindex="true">
     <h1 class="mb-6 text-xl font-semibold">{{ __('Sign in to your account') }}</h1>
 
+    {{-- Arriving from a collaborator invitation (ADR-011): the one rule people
+         trip on is the email address. Generic on purpose — it never says
+         whether that address already has an account. --}}
+    @if (str_contains((string) session('url.intended'), '/app/invitaciones/'))
+        <p class="nexo-flash nexo-flash--info mb-4" role="status" data-invitation-help>
+            {{ __('To accept the invitation, sign in or create your account with the same email it was sent to.') }}
+        </p>
+    @endif
+
     @if (session('status'))
         <p class="nexo-flash mb-4" role="status">{{ session('status') }}</p>
     @endif

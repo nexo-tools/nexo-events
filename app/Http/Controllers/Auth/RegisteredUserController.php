@@ -29,6 +29,8 @@ class RegisteredUserController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('dashboard');
+        // intended, like the login: somebody who registers from a collaborator
+        // invitation lands back on it (ADR-011). Without one, the dashboard.
+        return redirect()->intended(route('dashboard'));
     }
 }

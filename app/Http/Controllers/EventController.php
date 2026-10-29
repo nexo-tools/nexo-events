@@ -59,7 +59,7 @@ class EventController extends Controller
 
     public function close(Request $request, Event $event): RedirectResponse
     {
-        $this->owned($request, $event);
+        $this->managed($request, $event);
         $this->lifecycle->close($event);
 
         return back()->with('status', __('Registration closed.'));
@@ -75,7 +75,7 @@ class EventController extends Controller
 
     public function registrations(Request $request, Event $event): View
     {
-        $this->owned($request, $event);
+        $this->managed($request, $event);
 
         return view('app.events.registrations', [
             'event' => $event,
@@ -83,8 +83,15 @@ class EventController extends Controller
         ]);
     }
 
+    /** Owner only: content, publishing a draft, cancelling, collaborators. */
     private function owned(Request $request, Event $event): void
     {
         abort_unless($event->organizer_id === $request->user()->id, 403);
+    }
+
+    /** Owner or an accepted collaborator inside the access window (ADR-011). */
+    private function managed(Request $request, Event $event): void
+    {
+        abort_unless($event->canBeManagedBy($request->user()), 403);
     }
 }

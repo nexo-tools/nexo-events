@@ -28,6 +28,7 @@ const EXPECTED_TABLES = [
     'cache',
     'cache_locks',
     'checkins',
+    'event_collaborators',
     'event_reports',
     'event_views',
     'events',

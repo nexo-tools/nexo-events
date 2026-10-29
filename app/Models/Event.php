@@ -66,6 +66,45 @@ class Event extends Model
         return $this->belongsTo(User::class, 'organizer_id');
     }
 
+    /**
+     * People invited to manage this event's tickets (ADR-011).
+     *
+     * @return HasMany<EventCollaborator, $this>
+     */
+    public function collaborators(): HasMany
+    {
+        return $this->hasMany(EventCollaborator::class);
+    }
+
+    /**
+     * How long after the event a collaborator keeps access: long enough to
+     * check the list the next day, short enough that a band does not hold its
+     * audience's names indefinitely (ADR-011 §4).
+     */
+    public const COLLABORATOR_ACCESS_DAYS = 7;
+
+    /**
+     * Owner, or an accepted, unrevoked collaborator inside the access window.
+     * The one question every "managed" route asks; owner-only routes keep
+     * comparing organizer_id directly.
+     */
+    public function canBeManagedBy(User $user): bool
+    {
+        if ($this->organizer_id === $user->id) {
+            return true;
+        }
+
+        if (now()->greaterThanOrEqualTo($this->starts_at->copy()->addDays(self::COLLABORATOR_ACCESS_DAYS))) {
+            return false;
+        }
+
+        return $this->collaborators()
+            ->where('user_id', $user->id)
+            ->whereNotNull('accepted_at')
+            ->whereNull('revoked_at')
+            ->exists();
+    }
+
     /** @return HasMany<Ticket, $this> */
     public function tickets(): HasMany
     {

@@ -21,6 +21,7 @@
 // Pest note: toContain() is variadic — a second argument is another needle, not
 // a failure message — so human-readable messages go through toBeTrue()/toBe().
 
+use App\Mail\CollaboratorInvited;
 use App\Mail\EventCancelled;
 use App\Mail\EventReminder;
 use App\Mail\EventReported;
@@ -29,6 +30,7 @@ use App\Mail\OperatorAlert;
 use App\Mail\PasswordChanged;
 use App\Mail\TicketIssued;
 use App\Models\Event;
+use App\Models\EventCollaborator;
 use App\Models\EventReport;
 use App\Models\Ticket;
 use App\Models\User;
@@ -70,6 +72,7 @@ function nexoMails(): array
         'nexo-id-linked' => fn () => new NexoIdLinked(User::factory()->create()),
         'verify-email' => fn () => [new VerifyEmailQueued, User::factory()->unverified()->create()],
         'reset-password' => fn () => [new ResetPasswordQueued('raw-reset-token'), User::factory()->create()],
+        'collaborator-invited' => fn () => new CollaboratorInvited(EventCollaborator::factory()->create(), 'https://example.test/app/invitaciones/x'),
     ];
 }
 

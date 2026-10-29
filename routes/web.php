@@ -11,10 +11,12 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventReportController;
 use App\Http\Controllers\HelpController;
+use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\PublicEventController;
 use App\Http\Controllers\SeoController;
 use App\Http\Controllers\TicketController;
+use App\Http\Controllers\TicketReleaseController;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
@@ -90,6 +92,20 @@ Route::middleware('auth')->group(function () {
             ->middleware('throttle:120,1')->name('events.checkin');
         Route::post('tickets/{ticket}/checkin', [CheckinController::class, 'manual'])
             ->middleware('throttle:60,1')->name('tickets.checkin');
+        // Owner or collaborator (ADR-011 §6): the reservation nobody paid for.
+        Route::post('tickets/{ticket}/liberar', TicketReleaseController::class)
+            ->middleware('throttle:60,1')->name('tickets.release');
+
+        // Collaborator invitations (ADR-011). Behind auth on purpose: the
+        // signed-out visitor goes to login with this as the intended URL, so the
+        // page never says whether the invited email has an account. The token is
+        // 40 alphanumerics; anything else is not an invitation.
+        Route::get('invitaciones/{token}', [InvitationController::class, 'show'])
+            ->where('token', '[A-Za-z0-9]{40}')
+            ->middleware('throttle:30,1')->name('invitations.show');
+        Route::post('invitaciones/{token}/aceptar', [InvitationController::class, 'accept'])
+            ->where('token', '[A-Za-z0-9]{40}')
+            ->middleware('throttle:30,1')->name('invitations.accept');
     });
 });
 
