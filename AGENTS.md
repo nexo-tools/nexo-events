@@ -53,6 +53,43 @@ Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./ven
 
 ## Accumulated context
 
+- **2026-10-28** — **Event collaborators, ticket-holder info and Integration API v1.1 built
+  (PLAN 10.7–10.11), not yet deployed.** Same first consumer (a venue whose bands manage the
+  entries of their nights). Governing docs: [ADR-011](docs/adr/ADR-011-event-collaborators.md),
+  [ADR-012](docs/adr/ADR-012-ticket-holder-info-and-payment-text.md), the ADR-010 §4
+  amendment, SPEC-event-collaborators, SPEC-ticket-info, SPEC-integration-api v1.1.
+  287 → 344 tests, identical with `NEXO_API_ENABLED` off and on. What a future session should
+  not have to rediscover:
+  - **Managed vs owned.** `Event::canBeManagedBy()` (owner, or an accepted, unrevoked
+    collaborator while `now < starts_at + 7 days`) guards registrations, close, reopen,
+    capacity, "Ticket management", the scanner, both check-ins and "release a spot".
+    Everything else — edit, update, publish a draft, cancel, collaborators — still compares
+    `organizer_id` directly. A new route has to pick one on purpose.
+  - **Acceptance needs the same email AND a verified account.** The invitation link is shown
+    once to whoever invites (flash / `invite_url` in the API `POST`) so it can go by chat;
+    that is only safe because an unverified account with the invited email cannot accept. Do
+    not drop the verification check without also dropping the shared link.
+  - **`expires_at = max(now + 7d, starts_at + 1d)`.** A plain "+7 days" leaves the venue's
+    door account without access on show night when the invitation went out weeks ahead.
+  - **The traceability guardian now reads three SPECs** (`traceableSpecs()` in
+    `ApiSpecTraceabilityTest`). A criterion is declared by writing it in **bold**; planned
+    ones are written without bold and with the task number, and go bold in the commit that
+    adds their tests. That is how a SPEC lands before its code without the suite going red
+    and without loosening the guardian.
+  - **`collaborators:manage` only reaches events with `external_ref`.** An event the owner made
+    by hand is never opened up by a token. Every invitation made through a token mails the
+    owner (`CollaboratorInvitedByIntegration`) and records the token name in `invited_via`.
+  - **Release a spot is a conditional update** (`status = valid` and no checkin row), so it
+    cannot race a check-in into undoing an entry. The released person's `/t/{token}` still
+    renders; the door answers `revoked`.
+  - **`access_info` is "not published", not "secret"** — one free registration away. It never
+    reaches `/e/{slug}`, the meta description, the JSON-LD or the sitemap (asserted). With
+    `payment_info` set the JSON-LD drops `price`/`priceCurrency`; without it, v1 bytes.
+  - Web routes never render JSON (`shouldRenderJsonWhen` is `api/*` only): a validation
+    failure on `/app/...` is a redirect with errors, also for `postJson` in tests.
+  - Deploy is owner-gated and goes in its own block after the 10.1–10.6 one (ADR-009 door
+    windows; `DEPLOY_FORCE` only with a written reason). Real-phone pass of the new screens
+    at 390 px is owner-gated too.
 - **2026-08-13** — **Integration API v1 built (PLAN 10.1–10.6), off by default, not yet
   deployed.** An organizer can link an external system to their account with a scoped,
   revocable token and let it create/read/update/publish its own events; the first consumer

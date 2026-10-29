@@ -35,8 +35,16 @@ class ApiToken extends Model
 
     public const WRITE = 'events:write';
 
+    /**
+     * Invite, list and revoke collaborators of the events this integration
+     * created (ADR-011, SPEC-integration-api v1.1). Separate and unticked by
+     * default: a collaborator sees registrants' names, so granting it is not
+     * a side effect of being allowed to edit a title.
+     */
+    public const MANAGE_COLLABORATORS = 'collaborators:manage';
+
     /** The scopes an organizer may pick from. Order is the order they are offered in. */
-    public const ABILITIES = [self::READ, self::WRITE];
+    public const ABILITIES = [self::READ, self::WRITE, self::MANAGE_COLLABORATORS];
 
     /** @return array<string, string> */
     protected function casts(): array

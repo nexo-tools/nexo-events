@@ -33,6 +33,19 @@
                        class="rounded border-control bg-surface text-link focus:ring-ring">
                 {{ __('Create, edit, publish and cancel its events') }}
             </label>
+            {{-- Unticked by default (ADR-011 §7): it is the one scope that lets
+                 a third party see registrants' names. --}}
+            <label for="ability-collaborators" class="flex items-start gap-2 py-1 text-sm">
+                <input type="checkbox" id="ability-collaborators" name="abilities[]" value="collaborators:manage"
+                       aria-describedby="ability-collaborators-warning"
+                       class="mt-0.5 rounded border-control bg-surface text-link focus:ring-ring">
+                <span>
+                    {{ __('Invite collaborators to the events it created') }}
+                    <span id="ability-collaborators-warning" class="block text-xs text-warning-subtle-fg" data-collaborators-warning>
+                        {{ __('It can invite third parties to see the names of the people registered (never their emails) for the events this integration created. You get an email every time it does.') }}
+                    </span>
+                </span>
+            </label>
             @error('abilities')
                 <p class="mt-1 text-sm text-danger-subtle-fg">{{ $message }}</p>
             @enderror

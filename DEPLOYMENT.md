@@ -56,7 +56,7 @@ So the rule is enforced by code, not by discipline:
 - **`php artisan events:door-guard`** exits non-zero if any *published* event starts within the next 2 hours or started within the last 6 hours (configurable: `NEXO_DOOR_GUARD_BEFORE` / `NEXO_DOOR_GUARD_AFTER`).
 - **`scripts/deploy.sh` runs it first**, before `artisan down`, and aborts.
 - **The GitHub workflow is `workflow_dispatch` only** — deliberately not on push, unlike the sibling tools, so a merge can never take the instance down mid-event.
-- Override with `DEPLOY_FORCE=1` only when you are deploying the fix *for* the event that is running.
+- Override with `DEPLOY_FORCE=1` only when you are deploying the fix *for* the event that is running — and write down why, where the team will read it, before running it. The guard watches every organizer's events on the instance, not only yours; an override is a decision about someone else's door too.
 
 ```bash
 php artisan events:door-guard          # human-readable
@@ -132,7 +132,7 @@ contract: [SPEC-integration-api](docs/specs/SPEC-integration-api.md).
 | --- | --- | --- |
 | `NEXO_API_ENABLED` | `false` | Master switch. While false, every `/api/v1/*` request answers **404** and `/app/integraciones` does not exist. |
 | `NEXO_API_RATE_READ` | `60` | Read requests per minute **per token**. |
-| `NEXO_API_RATE_WRITE` | `20` | Write requests per minute per token (create, edit, publish, close, cancel). |
+| `NEXO_API_RATE_WRITE` | `20` | Write requests per minute per token (create, edit, publish, close, cancel, invite and revoke collaborators). |
 
 Turning it on:
 
@@ -147,9 +147,19 @@ do, copy the token **once** (only its sha256 is stored, so it cannot be shown ag
 it into the other system. `GET /api/v1/me` is the handshake to confirm the link, and it
 reports `email_verified`, which publishing requires (ADR-007).
 
-Two guarantees worth stating to whoever asks for the integration: **no attendee data is
-reachable through the API** — no names, no emails, no ticket tokens, ever — and revoking a
-token from the panel takes effect on the very next request.
+Scopes, in the order the panel offers them: `events:read`, `events:write` and — unticked by
+default, with a warning — `collaborators:manage` (v1.1), which lets the token invite, list
+and revoke collaborators **of the events it created** (`external_ref` set). A consumer that
+hands ticket management to other people (a venue inviting the band) needs all three: turn
+the flag on, `config:cache`, then issue the token with the three boxes ticked.
+
+Two guarantees worth stating to whoever asks for the integration: **no API answer carries
+attendee data** — no names, no emails, no ticket tokens, ever — and revoking a token from
+the panel takes effect on the very next request. What `collaborators:manage` adds, said
+plainly: a person the token invites can, after accepting with a verified account of that
+email, see the **names and status** of the registrants of that event (not their emails)
+until the access is removed or the event is a week old; the owner is emailed for every such
+invitation (ADR-011, and the amendment to ADR-010 §4).
 
 ## Post-deploy smoke
 

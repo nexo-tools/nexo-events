@@ -65,6 +65,29 @@ single account ([Nexo ID](https://github.com/nexo-tools/nexo-id) SSO).
   ("Entry $8,000 · pay at the door"). Nexo Events never collects the money.
 - **Self-hostable** — a standard Laravel app; runs on your own infrastructure.
 
+### Collaborators
+
+An event has one owner, but the door rarely has one person. The owner can invite someone
+by email to manage **one** event's tickets: change the capacity, close and reopen
+registration, see the registrations list by **name and status** (never attendee emails),
+check people in by camera or by hand, and release a spot nobody paid for. The invitee
+accepts with their own account — it must use the invited email and be verified — so a
+forwarded invitation is useless without that inbox. One role, at most 10 active per event,
+revocable at once, and the access ends a week after the event. Through the integration API
+the same thing is a separate, opt-in scope limited to the events the integration created,
+and the owner gets an email for every invitation a token makes.
+
+### Paid events without a gateway
+
+Nexo Events does not take money and does not plan to in this version. What an organizer
+*can* do is say what an entry costs and how it is paid — free text such as "Entry $8,000 ·
+pay at the door" — shown on the public page, on the ticket, in the emails and on the door
+scanner, where whoever is at the door collects before scanning. The ticket is a nominal
+reservation; its validity never depends on payment, and the event's JSON-LD stops claiming
+`price: 0` when such a text is set. A second field carries information **only for ticket
+holders** (the exact address, how to get in): it appears on the ticket and its emails and
+never on the public page — "not published", not "secret", since registering is free.
+
 ## Screenshots
 
 Captured from a local instance seeded with `DemoSeeder`, by

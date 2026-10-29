@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\CollaboratorApiController;
 use App\Http\Controllers\Api\EventApiController;
 use App\Http\Controllers\Api\MeController;
 use App\Models\ApiToken;
@@ -35,5 +36,17 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::post('events/{event}/publish', [EventApiController::class, 'publish'])->whereNumber('event')->name('events.publish');
         Route::post('events/{event}/close', [EventApiController::class, 'close'])->whereNumber('event')->name('events.close');
         Route::post('events/{event}/cancel', [EventApiController::class, 'cancel'])->whereNumber('event')->name('events.cancel');
+    });
+
+    // v1.1 — collaborators (ADR-011). Only events the token's owner created
+    // through an integration (external_ref set); reads and writes keep their
+    // own budgets, like the event endpoints.
+    Route::middleware('api.token:'.ApiToken::MANAGE_COLLABORATORS)->group(function (): void {
+        Route::get('events/{event}/collaborators', [CollaboratorApiController::class, 'index'])
+            ->whereNumber('event')->middleware('throttle:nexo-api-read')->name('collaborators.index');
+        Route::post('events/{event}/collaborators', [CollaboratorApiController::class, 'store'])
+            ->whereNumber('event')->middleware('throttle:nexo-api-write')->name('collaborators.store');
+        Route::delete('events/{event}/collaborators/{collaborator}', [CollaboratorApiController::class, 'destroy'])
+            ->whereNumber(['event', 'collaborator'])->middleware('throttle:nexo-api-write')->name('collaborators.destroy');
     });
 });

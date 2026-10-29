@@ -8,9 +8,9 @@
 > **v1.1 (2026-10-28)** adds, without breaking any v1 call: three fields to the event
 > payload (`access_info`, `payment_info`, `checked_in_count` — SPEC-ticket-info, ADR-012) and
 > a separate, opt-in scope `collaborators:manage` with three endpoints to invite, list and
-> revoke event collaborators (SPEC-event-collaborators, ADR-011). The v1.1 criteria are
-> listed without bold until the task that implements them lands (10.8 for the payload,
-> 10.11 for the endpoints): bold is what `ApiSpecTraceabilityTest` reads.
+> revoke event collaborators (SPEC-event-collaborators, ADR-011). The v1.1 criteria landed
+> with tasks 10.8 (payload) and 10.11 (endpoints), each in bold together with its tests —
+> bold is what `ApiSpecTraceabilityTest` reads.
 
 ## Purpose
 
@@ -211,7 +211,7 @@ costs nothing and saves it a round trip.
   flow; `.../close` closes registrations. Responses reflect the new status.
 - **AC-API-11** — No API response ever contains attendee PII (names, emails, ticket
   tokens) — asserted by test on every event-returning endpoint. *Extended in 10.11 to all
-  ten endpoints, the three collaborator ones included.*
+  ten endpoints, the three collaborator ones included (landed).*
 
 ### Extraction, limits, guardians
 
@@ -240,21 +240,21 @@ costs nothing and saves it a round trip.
 
 ### Collaborators (v1.1 — task 10.11)
 
-- AC-API-16 (10.11) — A token without `collaborators:manage` gets 403 on the three
+- **AC-API-16** — A token without `collaborators:manage` gets 403 on the three
   collaborator endpoints; with it, `GET` lists `{id, email, status, invited_at, expires_at,
   accepted_at, invited_via}` and nothing about attendees.
-- AC-API-17 (10.11) — `POST` with a new email answers 201 with `invite_url`, queues
+- **AC-API-17** — `POST` with a new email answers 201 with `invite_url`, queues
   `CollaboratorInvited` to the invitee and `CollaboratorInvitedByIntegration` to the owner
   naming the token; repeated on a pending email it answers 200 and rotates the hash; on an
   accepted one, 200 and no mail.
-- AC-API-18 (10.11) — `DELETE` sets `revoked_at` and answers 204 twice in a row; the
+- **AC-API-18** — `DELETE` sets `revoked_at` and answers 204 twice in a row; the
   collaborator gets 403 on their next request.
-- AC-API-19 (10.11) — The three endpoints answer 404 for another organizer's event and for
+- **AC-API-19** — The three endpoints answer 404 for another organizer's event and for
   the token owner's own event when it has no `external_ref`.
-- AC-API-20 (10.11) — The eleventh active invitation answers 422 `too_many_collaborators`;
+- **AC-API-20** — The eleventh active invitation answers 422 `too_many_collaborators`;
   an unverified owner gets 422 `email_unverified`.
-- AC-API-21 (10.11) — The panel refuses invented scopes (AC-API-15 widened) and shows the
+- **AC-API-21** — The panel refuses invented scopes (AC-API-15 widened) and shows the
   warning next to the `collaborators:manage` box.
-- AC-API-22 (10.11) — With `NEXO_API_ENABLED=false` the three endpoints answer 404, and
+- **AC-API-22** — With `NEXO_API_ENABLED=false` the three endpoints answer 404, and
   `route:cache` contains them.
-- AC-API-23 (10.11) — The `GET` list never contains `invite_url` nor any hash.
+- **AC-API-23** — The `GET` list never contains `invite_url` nor any hash.
