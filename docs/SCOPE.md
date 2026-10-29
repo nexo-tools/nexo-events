@@ -18,19 +18,21 @@ Source input: a pre-planning evaluation brief (2026-07-20), kept out of this rep
 - **Attendee registration with email only** — no attendee account (conversion first; closed decision 2026-07-19). One ticket per email per event.
 - **Atomic capacity**: two simultaneous registrations for the last spot resolve to exactly one ticket (sold-out). Mandatory race-condition tests (AC-traced).
 - **QR ticket**: opaque server-side token (no attendee data in the QR), shown on screen and delivered by transactional email (ADR-004, ADR-005).
-- **Door check-in**: web app using the organizer's phone camera — valid → green; already used / revoked / invalid → red with reason. Atomic (double-scan resolves to one entry). Organizer-only in MVP.
+- **Door check-in**: web app using the organizer's phone camera — valid → green; already used / revoked / invalid → red with reason. Atomic (double-scan resolves to one entry). Organizer-only in MVP; *since 2026-10-28 also invited collaborators (see below).*
 - **Manual check-in fallback**: organizer finds the attendee in the registered list and checks them in through the same atomic path (broken QR / dead camera at the door). *Addition beyond the brief — confirm at Gate 0.*
 - **Live registered/checked-in list** for the organizer.
 - **Anti-abuse**: rate limiting on all public writes, event report mechanism, per-event kill-switch (closed decision; ADR-007).
+- **Event collaborators** *(In since 2026-10-28, ADR-011)* — the owner invites someone by email to manage one event's tickets: capacity, close/reopen, the registrations list by name (no emails), door check-in, releasing a spot. One role; acceptance bound to an account with the same verified email; access ends 7 days after the event.
+- **Ticket-holder info and payment text** *(In since 2026-10-28, ADR-012)* — `access_info` (shown only on the ticket and its emails, e.g. the exact address) and `payment_info` (price / how to pay, as display-only text). The platform still processes no payment.
 - **Cookieless product analytics**: page views and registration counters via the VisitorHash pattern (no cookies, no raw IPs).
 - **Multi-instance attribution**: `NEXO_ATTRIBUTION_*` footer (ecosystem pattern).
 
 ### Out (with the why)
 
-- **Payments / paid tickets** — a project in itself (gateway, refunds, invoicing, legal). v1 is free-events-only by closed decision; v2 targets AR/LatAm with Mercado Pago as natural candidate.
+- **Payments / paid tickets** — a project in itself (gateway, refunds, invoicing, legal). v1 is free-events-only by closed decision; v2 targets AR/LatAm with Mercado Pago as natural candidate. *(2026-10-28: a price may be **displayed** as text — `payment_info`, ADR-012 — but nothing is collected; payment states and receipts remain Out.)*
 - **Offline check-in with sync** — venues without signal are real in LatAm, but v1 is online-only to ship; recorded as a known limitation (ADR-004).
 - **Attendee accounts** — email-only wins conversion for free events; optional "save your tickets" account arrives with Nexo ID integration (ADR-003).
-- **Staff/collaborator scanning roles** — organizer-only keeps MVP auth simple; multi-scanner events are v2 (ADR-004 — confirm at Gate 0).
+- ~~**Staff/collaborator scanning roles**~~ — *moved to In on 2026-10-28 as event collaborators (ADR-011). What stays Out: more than one role, collaborators across all of an owner's events, collaborators seeing attendee emails.*
 - **Ticket types (GA/VIP), per-type quotas, discount codes** — complexity that free v1 doesn't need.
 - **Waitlist on sold-out, ticket transfer between people** — post-v1 backlog.
 - **Automatic email reminders** — only the ticket email is essential; more sends burn the free email tier.
@@ -78,7 +80,7 @@ Source input: a pre-planning evaluation brief (2026-07-20), kept out of this rep
   attendees who register during the event are not in the cached set; and the local check-ins need
   an idempotent push on reconnect. Pairs with the Wallet passes above — that covers the attendee
   side of a venue with no signal, this covers the organizer side.
-- Staff scanning roles — needs invitations/permissions model.
+- ~~Staff scanning roles — needs invitations/permissions model.~~ *Built 2026-10-28 as event collaborators (ADR-011).*
 - Attendee accounts + "my tickets" — via Nexo ID once its client pattern exists (nexoid ADR-004 / Phase 3).
 - Ticket types, quotas per type, discount codes; waitlist; ticket transfer; email reminders — brief §7.
 - Nexo Short auto short-link per event; Nexo Links featured event; Nexo Agenda bridge — post-launch integrations (ADR-006).
@@ -89,3 +91,4 @@ Source input: a pre-planning evaluation brief (2026-07-20), kept out of this rep
 <!-- Dated changes to the scope above, with the why. Never edit history silently. -->
 
 - **2026-07-26 — Event image upload deferred post-v1.** The MVP "in" list promised an event image; it was never built (no column, no upload path). Rather than add it now, it moves to the backlog. Why: it is not part of the core loop (create → register → ticket → door), and an upload field on a public multi-organizer tool brings its own surface — storage limits, image moderation, and files that a DB-only backup would not cover. Keeping v1 DB-only keeps the restore drill (PLAN 8.4) honest. Public event pages ship with the shared OG image until this lands.
+- **2026-10-28 — Event collaborators In; payment *text* In; payments still Out.** The first integration consumer (a venue whose bands manage the entries of their own nights) needs a second person on an event without sharing the owner's login, an address that only ticket holders see, and a way to say "entry $X, pay at the door" without the JSON-LD claiming the event is free. All three are ordinary organizer needs, built generically and additive: an instance that never invites anyone and leaves both fields empty behaves exactly as before. ADR-011, ADR-012; SPEC-event-collaborators, SPEC-ticket-info; SPEC-integration-api v1.1.

@@ -11,7 +11,7 @@ The brief's hard technical requirements (§4, non-negotiable at the *what* level
 
 ### QR token
 
-1. The QR encodes only an **opaque random token** (CSPRNG, ≥128 bits of entropy, URL-safe encoding — exact format in the phase SPEC). It is a pointer to the ticket on the server; it carries **no attendee data** and is **not** derived from ticket fields (no HMAC-of-data — revocation and simplicity beat signature cleverness when the check always hits the DB anyway).
+1. *(Note 2026-10-28, [ADR-012](ADR-012-ticket-holder-info-and-payment-text.md): the ticket page and emails now carry the event's `access_info` and `payment_info`; the QR itself is unchanged and still carries nothing but the token.)* The QR encodes only an **opaque random token** (CSPRNG, ≥128 bits of entropy, URL-safe encoding — exact format in the phase SPEC). It is a pointer to the ticket on the server; it carries **no attendee data** and is **not** derived from ticket fields (no HMAC-of-data — revocation and simplicity beat signature cleverness when the check always hits the DB anyway).
 2. The DB stores a **hash of the token** (SHA-256), not the raw token — a leaked DB must not allow forging valid QR entries. The raw token exists only in the QR/ticket link delivered to the attendee. Same pattern as password-reset tokens.
 3. The same token backs the attendee's "view my ticket" URL. Revocation = ticket status change; the token never needs rotating in v1.
 
@@ -27,6 +27,8 @@ The brief's hard technical requirements (§4, non-negotiable at the *what* level
 
 6. Scanning is a **web page on the organizer's phone** (camera + JS decode, ADR-002 §5). Result UX: valid → green; already checked in / revoked / wrong event / unknown → red **with the reason**. A **manual fallback** (search the registered list, check in through the same atomic path) covers broken QRs and dead cameras.
 7. **Only the event's organizer can scan in MVP.** Staff/collaborator scanner roles are v2 (needs an invitation/permission model). *Confirm at Gate 0.*
+
+   > **Superseded by [ADR-011](ADR-011-event-collaborators.md) (2026-10-28).** The owner can invite collaborators by email to one event; an accepted collaborator scans and checks in with their own account, and `checkins.checked_by` records who did. The atomicity guarantees of §4–§5 are untouched: they never depended on who scans.
 8. **Online-only in v1** (known limitation, brief §4): no connectivity at the door means no QR validation. The registered list is server-rendered too — v1 offers no offline mode; offline-with-sync is backlog.
 
 ### Minimal data model (MVP, re-evaluated from brief §8)

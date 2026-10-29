@@ -38,6 +38,14 @@ multi-instance is env-configured and off by default (SSO, beacon); routes must s
    verified-email publish gate included), plus `GET /me` as the account-linking handshake.
    **No attendee PII ever crosses the API**: the blast radius of a leaked token is the
    owner's event metadata, never registrants.
+
+   > **Amended 2026-10-28 by [ADR-011](ADR-011-event-collaborators.md).** Still true of every
+   > response: no attendee data crosses the API. But a token holding the separate, opt-in
+   > scope `collaborators:manage` can invite a collaborator who — after creating and
+   > verifying an account with that email and accepting — sees the **names and status** of
+   > the registrants of the events that integration created (never emails or tickets, never
+   > other events), until revoked or until 7 days after the event. A token without that
+   > scope keeps exactly the radius above. Mitigations and the full statement are in ADR-011.
 5. **Idempotent creation** via nullable `events.external_ref` +
    `UNIQUE(organizer_id, external_ref)`: consumer retries are safe by construction.
 6. **Shared core, not parallel code paths**: creation logic moves to

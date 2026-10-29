@@ -10,6 +10,8 @@ The evaluation brief (2026-07-20, not part of this repository) closed the core p
 ## Decision
 
 1. **v1 is free events with registration only** — no payment gateway, no fees, no refunds. Paid ticketing is v2, aimed at the **Argentina/LatAm market** (Mercado Pago as natural candidate). *(Closed by Alvaro, 2026-07-20.)*
+
+   > **Amended 2026-10-28 by [ADR-012](ADR-012-ticket-holder-info-and-payment-text.md), narrowly.** The platform still never collects, holds or refunds money, and a ticket's validity never depends on payment. An organizer may now *describe* a price and how to pay in a plain-text `payment_info`, shown on the public page, the ticket, the emails and the scanner; paying happens outside the product.
 2. **Public multi-organizer from day 1**: anyone with an account can create events, like the sibling Nexo tools. This forces the anti-abuse baseline of ADR-007. *(Closed by Alvaro, 2026-07-20.)*
 3. **QR check-in at the door is part of the MVP** — without entry validation the tickets are decorative. *(Closed by Alvaro, 2026-07-20.)*
 4. **Open source, multi-instance, self-hostable** — like the rest of the ecosystem: MIT license, `NEXO_ATTRIBUTION_*` env-based footer, repo docs in English. Repo starts **private**; it goes public only after passing `audit-open-source`. *(Confirmed by Alvaro, 2026-07-19.)*

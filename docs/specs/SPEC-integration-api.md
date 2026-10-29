@@ -1,9 +1,16 @@
-# SPEC — Integration API v1 (PLAN Phase 10, tasks 10.1–10.6)
+# SPEC — Integration API v1 (PLAN Phase 10, tasks 10.1–10.6) · v1.1 (tasks 10.7–10.11)
 
 > Written before the code. Governing decision: **ADR-010** (per-account hashed API tokens,
 > env-gated, no new dependencies), which puts into practice the posture **ADR-006** committed
 > to in planning: siblings and external consumers talk to Nexo Events over a public HTTP API
 > with an explicit contract — never a shared database.
+>
+> **v1.1 (2026-10-28)** adds, without breaking any v1 call: three fields to the event
+> payload (`access_info`, `payment_info`, `checked_in_count` — SPEC-ticket-info, ADR-012) and
+> a separate, opt-in scope `collaborators:manage` with three endpoints to invite, list and
+> revoke event collaborators (SPEC-event-collaborators, ADR-011). The v1.1 criteria are
+> listed without bold until the task that implements them lands (10.8 for the payload,
+> 10.11 for the endpoints): bold is what `ApiSpecTraceabilityTest` reads.
 
 ## Purpose
 
@@ -21,6 +28,12 @@ event lifecycle (create, read, update, publish, close, cancel) plus a `GET /me` 
 idempotent creation via `events.external_ref`; a minimal organizer panel
 (`/app/integraciones`) to issue and revoke tokens; named env-tunable rate limits;
 guardian-test updates.
+
+**In (v1.1):** `access_info` / `payment_info` accepted on create and update and returned in
+the payload, plus `checked_in_count`; scope `collaborators:manage` with
+`GET|POST /events/{id}/collaborators` and `DELETE /events/{id}/collaborators/{cid}`, limited
+to events the integration created (`external_ref` set); a mail to the owner for every
+invitation made through the API.
 
 **Out (explicitly):** attendee data over the API (no ticket lists, no emails — a leaked
 token must never expose PII); event images (SCOPE amendment 2026-07-26 stands); webhooks
@@ -88,6 +101,32 @@ persist the link before the event goes public (no publish-but-link-lost window).
 key, set once at creation by the service, never mass-assignable and never editable through
 `PATCH` (repointing it would silently break the other side's idempotency).
 
+### v1.1 — collaborators: a separate scope, a narrow reach, and a loud trail
+
+Inviting a collaborator grants a third party sight of attendee **names** (never emails) for
+one event (ADR-011). That is not something `events:write` may do as a side effect, so it is
+its own scope, `collaborators:manage`, unticked by default in the panel and offered with a
+warning. Its reach is narrowed to events that carry an `external_ref` — the ones an
+integration created — so a token can never open up an event the organizer made by hand.
+Every invitation made through a token mails the owner (token name, invited email, event)
+and records `invited_via` = the token's name, visible in the collaborator list.
+
+The raw invitation link is returned once, in the `POST` response (`invite_url`), so the
+consumer can offer it through another channel when email is slow or filtered. It is never
+returned by a read: the `GET` list carries no link and no hash. Sharing it widens nothing,
+because acceptance requires a signed-in, verified account with the invited email
+(SPEC-event-collaborators).
+
+**Blast radius, written down** (amends ADR-010 §4): a leaked token holding
+`collaborators:manage` can invite an address its holder controls and, after that address
+creates and verifies an account and accepts, read the **names and status** of the
+registrants of the events created through that integration — never emails, never ticket
+tokens, never other events — until the owner revokes the collaborator or the token, or
+the access window closes 7 days after the event. Mitigations: separate opt-in scope;
+`external_ref` scoping; a mail to the owner per invitation; `invited_via` visible; same
+verified email to accept; single-use links; at most 10 active collaborators; immediate
+revocation.
+
 ## API contract
 
 Base `/api/v1` · `Authorization: Bearer <token>` · JSON errors `{message, errors?}` ·
@@ -102,10 +141,20 @@ Base `/api/v1` · `Authorization: Bearer <token>` · JSON errors `{message, erro
 | `PATCH /events/{id}` | write | partial update; slug never regenerates (published links never break) → event payload |
 | `POST /events/{id}/publish` | write | web-panel semantics; 422 `{message, code: "email_unverified"}`; idempotent on published |
 | `POST /events/{id}/close` · `/cancel` | write | web-panel semantics (cancel queues attendee mails) |
+| `GET /events/{id}/collaborators` *(v1.1)* | collaborators:manage | `[{id, email, status, invited_at, expires_at, accepted_at, invited_via}]`, `status` ∈ `pending · accepted · expired · revoked`; no link, no hash; 404 if the event has no `external_ref` |
+| `POST /events/{id}/collaborators` *(v1.1)* | collaborators:manage | `{email, locale?}` → 201 `{…, invite_url}` + two mails (invitee, owner). Pending or expired email → 200, rotates the link and re-sends (with `invite_url`); accepted → 200, no mail, no `invite_url`; revoked → 201, fresh invitation; more than 10 active → 422 `{code: "too_many_collaborators"}`; unverified owner → 422 `{code: "email_unverified"}` |
+| `DELETE /events/{id}/collaborators/{cid}` *(v1.1)* | collaborators:manage | sets `revoked_at`; 204, idempotent; access ends on the collaborator's next request |
+
+In v1.1 `POST /events` and `PATCH /events/{id}` also accept `access_info` (≤1000) and
+`payment_info` (≤300) — same `EventRequest` rules as the web form. A consumer that owns the
+content but not the tickets (the first one) sends `capacity` only on creation and never
+sends `status`: after creation, capacity and registration state belong to whoever manages
+the tickets.
 
 **Event payload** — one shape for every event-returning endpoint, frozen by AC-API-6c:
 `{id, slug, title, description, status, starts_at, venue, capacity, issued_tickets_count,
-is_sold_out, public_url}`. One presenter, so "no attendee PII" is a property of one
+is_sold_out, public_url}` in v1, plus `access_info`, `payment_info` and `checked_in_count`
+(tickets in `checked_in`) in v1.1 — fourteen keys. One presenter, so "no attendee PII" is a property of one
 function instead of a habit repeated in six places. Creation returns the same shape as a
 read: a superset of the `{id, slug, status, public_url}` the first consumer needs, which
 costs nothing and saves it a round trip.
@@ -145,7 +194,9 @@ costs nothing and saves it a round trip.
 - **AC-API-6c** — `GET /events/{id}` returns exactly these fields: `id`, `slug`, `title`,
   `description`, `status`, `starts_at`, `venue`, `capacity`, `issued_tickets_count`,
   `is_sold_out`, `public_url`. The test enumerates the key set, so adding or dropping a
-  field is a deliberate contract change, not a silent one.
+  field is a deliberate contract change, not a silent one. *v1.1 rewrite (lands with task
+  10.8, together with its test): fourteen keys — the eleven above, then `access_info`,
+  `payment_info`, `checked_in_count`; `checked_in_count` counts only `checked_in` tickets.*
 - **AC-API-7** — `PATCH /events/{id}` updates only the provided fields and never
   regenerates the slug, even when `title` changes. A field absent from the body keeps its
   stored value; `external_ref` is not updatable.
@@ -159,7 +210,8 @@ costs nothing and saves it a round trip.
 - **AC-API-10** — `POST .../cancel` cancels and queues the same attendee mails as the web
   flow; `.../close` closes registrations. Responses reflect the new status.
 - **AC-API-11** — No API response ever contains attendee PII (names, emails, ticket
-  tokens) — asserted by test on every event-returning endpoint.
+  tokens) — asserted by test on every event-returning endpoint. *Extended in 10.11 to all
+  ten endpoints, the three collaborator ones included.*
 
 ### Extraction, limits, guardians
 
@@ -169,6 +221,7 @@ costs nothing and saves it a round trip.
   (`NEXO_API_RATE_READ`, default 60/min), writes (`NEXO_API_RATE_WRITE`, default 20/min);
   a deliberate-violation test gets 429. Two tokens of the same account do not share a
   bucket, and the gate still wins: with the API disabled the answer is 404, never 429.
+  *Extended in 10.11: `POST …/collaborators` above the write limit gets 429.*
 - **AC-API-14** — `api/*` is excluded from silent-SSO redirects (guardian
   `NexoSsoSilentExclusionsTest` extended) and the new migrations pass
   `DatabaseStandardTest`.
@@ -184,3 +237,24 @@ costs nothing and saves it a round trip.
   never turns the API on sees no trace of it — the standalone guarantee covers the UI, not
   only the endpoints. (Consequence to keep in mind operationally: the first token can only
   be issued once the flag is on.)
+
+### Collaborators (v1.1 — task 10.11)
+
+- AC-API-16 (10.11) — A token without `collaborators:manage` gets 403 on the three
+  collaborator endpoints; with it, `GET` lists `{id, email, status, invited_at, expires_at,
+  accepted_at, invited_via}` and nothing about attendees.
+- AC-API-17 (10.11) — `POST` with a new email answers 201 with `invite_url`, queues
+  `CollaboratorInvited` to the invitee and `CollaboratorInvitedByIntegration` to the owner
+  naming the token; repeated on a pending email it answers 200 and rotates the hash; on an
+  accepted one, 200 and no mail.
+- AC-API-18 (10.11) — `DELETE` sets `revoked_at` and answers 204 twice in a row; the
+  collaborator gets 403 on their next request.
+- AC-API-19 (10.11) — The three endpoints answer 404 for another organizer's event and for
+  the token owner's own event when it has no `external_ref`.
+- AC-API-20 (10.11) — The eleventh active invitation answers 422 `too_many_collaborators`;
+  an unverified owner gets 422 `email_unverified`.
+- AC-API-21 (10.11) — The panel refuses invented scopes (AC-API-15 widened) and shows the
+  warning next to the `collaborators:manage` box.
+- AC-API-22 (10.11) — With `NEXO_API_ENABLED=false` the three endpoints answer 404, and
+  `route:cache` contains them.
+- AC-API-23 (10.11) — The `GET` list never contains `invite_url` nor any hash.

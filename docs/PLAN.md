@@ -153,4 +153,31 @@ off, including an app booted from the compiled route file. What is still open is
 and off the code path: the deploy (dark, flag off, outside door windows), the production
 smoke (`api/v1/me` → 404), and creating the first organizer account for the consumer.*
 
+### Event collaborators, ticket-holder info and API v1.1 (opened 2026-10-28 — same consumer)
+
+**Objective:** an event owner can invite collaborators by email to manage one event's tickets
+(capacity, close/reopen, the registrations list by name, door check-in, releasing a spot)
+with their own accounts; the ticket and its emails can carry ticket-holder-only info (the
+exact address) and a display-only price text; the integration API gains those fields and an
+opt-in scope to invite collaborators to the events it created. Everything additive: with
+`NEXO_API_ENABLED=false`, no collaborators and both fields empty, the app behaves exactly as
+before. Governing docs: **ADR-011**, **ADR-012** (+ the ADR-010 §4 amendment),
+`docs/specs/SPEC-event-collaborators.md`, `docs/specs/SPEC-ticket-info.md`,
+`docs/specs/SPEC-integration-api.md` v1.1.
+
+- [x] 10.7 SPECs and ADRs before the code: SPEC-event-collaborators (AC-COLLAB-1..18), SPEC-ticket-info (AC-TICKET-1..7), SPEC-integration-api v1.1 (14-key payload, `collaborators:manage`, AC-API-16..23); ADR-011 (supersedes ADR-004 §7 and the SPEC-scanner "one scanner" note; amends ADR-010 §4), ADR-012 (amends ADR-001 §1 narrowly; note on ADR-004 §1); SCOPE amended. New ACs are listed without bold until the task that implements them, so `ApiSpecTraceabilityTest` stays green without being weakened.
+- [ ] 10.8 Ticket-holder info and payment text: migration (`access_info` text, `payment_info` string(300)), `EventRequest` rules, form fields, `/t/{token}` (Where + both fields), `/e/{slug}` (`payment_info`; JSON-LD without `price` when set), both emails, scanner note, API payload (+ `access_info`, `payment_info`, `checked_in_count`), legal pages es/en/pt (collaborators see names; still no payments), README.
+- [ ] 10.9 Collaborators: `event_collaborators` table, `EventCollaborator`, `Event::canBeManagedBy`, `CollaboratorInviter` (verified owner, rotating single-use hashed link, `expires_at = max(now+7d, starts_at+1d)`, 10 active max), invitation review/accept routes (same verified email), managed routes, "release a spot", `CollaboratorInvited` mail, `ApiSpecTraceabilityTest` generalized to the three SPECs.
+- [ ] 10.10 Collaborator screens, phone first: "Collaborators" section in the owner's edit screen (invite, resend, revoke, link shown once with WhatsApp share), "Ticket management" for owner and collaborators (counters, capacity, close/reopen), "Events you manage" on the dashboard, registrations without emails for collaborators + "Release a spot", "managed by another system" notice. *Real-phone pass at 390 px owner-gated.*
+- [ ] 10.11 API v1.1: `collaborators:manage` (panel box with warning), `GET|POST|DELETE …/collaborators` on `external_ref` events only, `invite_url` once in the `POST`, `CollaboratorInvitedByIntegration` mail to the owner; AC-API-16..23 in bold with their tests; README, DEPLOYMENT, AGENTS checkpoint.
+
+**Gate 10-API v1.1:** suite green with `NEXO_API_ENABLED` off and on · Pint, Larastan, i18n
+`--check` clean · AC↔test traceability in the three SPECs, both directions · `route:cache`
+exercised with the new routes · no attendee PII in any of the ten API answers · migrations run
+and rolled back against real MySQL · local HTTP smoke of the ten endpoints · deliberate
+violations (price back in the JSON-LD with `payment_info`; accept with another email; drop the
+`external_ref` scoping; drop the verified-owner gate on invite) each turn a named test red ·
+owner sign-off. **Deploy is owner-gated**, in its own block after the 10.1–10.6 one, outside
+door windows, with a real ticket scanned in production before the API flag goes on.
+
 **Gate 10:** per integration — real cross-tool flow exercised, **standalone mode still green** (self-host story intact), owner sign-off.
