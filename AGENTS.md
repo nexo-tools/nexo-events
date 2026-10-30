@@ -58,8 +58,9 @@ Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./ven
   entries of their nights). Governing docs: [ADR-011](docs/adr/ADR-011-event-collaborators.md),
   [ADR-012](docs/adr/ADR-012-ticket-holder-info-and-payment-text.md), the ADR-010 §4
   amendment, SPEC-event-collaborators, SPEC-ticket-info, SPEC-integration-api v1.1.
-  287 → 344 tests, identical with `NEXO_API_ENABLED` off and on. What a future session should
-  not have to rediscover:
+  287 → 344 tests, identical with `NEXO_API_ENABLED` off and on. The eight deliberate
+  violations of Gate 10-API v1.1 were run locally on 2026-10-29, each turning its named test
+  red. What a future session should not have to rediscover:
   - **Managed vs owned.** `Event::canBeManagedBy()` (owner, or an accepted, unrevoked
     collaborator while `now < starts_at + 7 days`) guards registrations, close, reopen,
     capacity, "Ticket management", the scanner, both check-ins and "release a spot".

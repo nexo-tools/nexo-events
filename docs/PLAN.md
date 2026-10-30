@@ -184,9 +184,9 @@ owner sign-off. **Deploy is owner-gated**, in its own block after the 10.1–10.
 door windows, with a real ticket scanned in production before the API flag goes on.
 
 *Status 2026-10-29 — code complete (10.7–10.12), owner sign-off pending. Suite 287 → 346,
-identical with the flag off and on; evidence for each gate criterion, including the first four
-deliberate violations, is kept with the owner's planning notes. The four door-path violations
-are still to run, locally and before the push. Still owner-gated: the deploy,
+identical with the flag off and on; evidence for each gate criterion is kept with the owner's
+planning notes. All eight deliberate violations were run locally on 2026-10-29, each turning
+its named test red. Still owner-gated: the deploy,
 the real-phone pass of the new screens at 390 px (accept an invitation, Ticket management,
 capacity, registrations, scanner), and creating the accounts and the three-scope token for
 the consumer.*
