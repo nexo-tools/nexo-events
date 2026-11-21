@@ -59,6 +59,14 @@ return [
         ],
     ],
 
+    // Inserted into the privacy page after the attendee section, and only
+    // while NEXO_ATTENDEE_PHONE=optional (PLAN 10.13). With the switch off the
+    // page stays exactly as it was.
+    'privacy_phone' => [
+        'h' => 'Tu teléfono, si lo dejas',
+        'p' => 'Si esta instancia lo tiene activado, al registrarte puedes dejar un WhatsApp o teléfono. Es opcional: puedes registrarte sin él. Sirve para que quien organiza el evento pueda avisarte algo (un cambio de horario, por ejemplo). Lo ve solo quien organiza ese evento: no lo ven los colaboradores que invite, no aparece en ninguna página pública, no viaja en los correos y no sale por la API de integración. Se conserva y se borra igual que tu nombre y tu email.',
+    ],
+
     'terms' => [
         'title' => 'Términos de uso',
         'intro' => 'Al usar esta instancia de Nexo Events aceptas lo que sigue. Es un servicio gratuito, ofrecido tal cual está.',

@@ -1,4 +1,4 @@
-# SPEC — Ticket-holder info and payment text (PLAN Phase 10, tasks 10.7–10.8 and 10.12)
+# SPEC — Ticket-holder info and payment text (PLAN Phase 10, tasks 10.7–10.8 and 10.12) · optional attendee phone (10.13)
 
 > Written before the code. Governing decision: **ADR-012** (ticket-holder info and payment
 > text), which amends ADR-001 §1 narrowly — the product still processes no payment — and
@@ -85,7 +85,7 @@ rules for the web form and the API (ADR-010 §6).
 ## Acceptance criteria
 
 AC-TICKET-1..7 landed with task 10.8 and AC-TICKET-8 with task 10.12 (bold is what the
-traceability guardian reads).
+traceability guardian reads). AC-TICKET-9..13 (task 10.13) are in their own section below.
 
 - **AC-TICKET-1** — With `access_info` set, `/t/{token}` shows it under "Only for ticket
   holders", together with "Where" (`venue`, which the ticket page did not show before).
@@ -112,6 +112,49 @@ traceability guardian reads).
   and the ticket-holder info stay; on a `valid` and on a `checked_in` ticket the notice is
   absent and the QR present, and the `checked_in` one keeps its "already checked in" flash.
   The notice is translated in es and pt.
+
+## Optional attendee phone (task 10.13, 2026-11-21)
+
+Venue organizers asked for a way to reach registrants by WhatsApp: a changed time, a door
+that opens late. Registration asked only for name and email (ADR-003 §2), so the only
+channel was email. This section adds a phone **behind an instance switch**, as amended in
+ADR-003 on 2026-11-21.
+
+- **Switch.** `NEXO_ATTENDEE_PHONE` → `config('nexo.attendee_phone')`, `off` (default) or
+  `optional`; any other value reads as `off`. Self-hosters who never set it see no change.
+- **Form.** With `optional`, `/e/{slug}` shows a field after the email: label "WhatsApp or
+  phone (optional)", hint "Only the organizer sees it, in case they need to reach you."
+  (es/en/pt), `type="tel"`, `autocomplete="tel"`, `inputmode="tel"`, `name="phone"`, never
+  required, wired through `x-field` (label `for`, hint in `aria-describedby`).
+- **Validation** (`RegisterAttendeeRequest`). `off`: no rule at all and nothing stored even
+  if posted. `optional`: nullable, string, max 30, only an optional leading `+`, digits,
+  spaces, `()`, `-` and `.`, and at least 6 digits. Trimmed; empty is `null`.
+- **Storage.** `tickets.attendee_phone`, nullable `varchar(30)`, next to `attendee_email`.
+  A duplicate registration (same email) does not overwrite it.
+- **Visibility: the event owner only**, in the registrations list next to the email — the
+  same `showEmails` condition (ADR-011 §2). A number starting with `+` links to
+  `https://wa.me/<digits>` ("WhatsApp", new tab); any other to `tel:<digits>`.
+  Collaborators never see it; it is in no email, on no public page (`/e/{slug}`, `/t/{token}`,
+  sitemap) and in no API answer (AC-API-11).
+- **Retention.** There is no purge or anonymization job: tickets live and die with their
+  event (cascade). The phone is a column of the ticket, so it follows the name and email.
+- **Privacy page.** With `optional`, a section right after "what we store about attendees"
+  says what is kept, why and who sees it (es/en/pt). With `off` the page is unchanged.
+
+- **AC-TICKET-9** — With the switch `off` (the default, and for any value other than
+  `optional`) `/e/{slug}` has no phone field, and a `phone` posted anyway is neither
+  validated nor stored.
+- **AC-TICKET-10** — With `optional` the field follows the email with the label, hint and
+  attributes above, is not required, and registering without it still works; the stored
+  value is trimmed and an empty one is `null`.
+- **AC-TICKET-11** — Letters, a `+` anywhere but the start, fewer than 6 digits and more
+  than 30 characters are refused; the usual ways of writing a number are accepted.
+- **AC-TICKET-12** — The owner's registrations list shows the phone next to the email,
+  linked to `wa.me` when it starts with `+` and to `tel:` otherwise; an accepted
+  collaborator's list does not contain it; neither do `/e/{slug}`, `/t/{token}`, the
+  sitemap, the ticket email or the reminder.
+- **AC-TICKET-13** — The privacy page carries the phone section, in es, en and pt, only
+  while the switch is `optional`, placed right after the attendee section.
 
 ## Guardians
 

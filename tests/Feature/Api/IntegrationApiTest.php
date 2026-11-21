@@ -424,10 +424,13 @@ test('AC-API-10: cancel mails everyone holding a ticket, exactly like the panel 
     Mail::assertQueued(EventCancelled::class, 2);
 });
 
-test('AC-API-11: no answer of this API carries attendee names, emails or ticket tokens', function (): void {
+test('AC-API-11: no answer of this API carries attendee names, emails, phones or ticket tokens', function (): void {
     $user = User::factory()->create();
     $event = Event::factory()->for($user, 'organizer')->create(['title' => 'Con público']);
-    $issued = app(EventRegistrar::class)->register($event, 'Ana Pérez', 'ana.perez@example.com');
+    // With the optional phone (PLAN 10.13) on and filled in: the number is
+    // attendee PII like the email, and the presenter must not learn about it.
+    config(['nexo.attendee_phone' => 'optional']);
+    $issued = app(EventRegistrar::class)->register($event, 'Ana Pérez', 'ana.perez@example.com', '+54 9 11 2345-6789');
     $raw = apiToken($user);
 
     $responses = [
@@ -445,6 +448,8 @@ test('AC-API-11: no answer of this API carries attendee names, emails or ticket 
 
         expect($body)->not->toContain('Ana Pérez')
             ->and($body)->not->toContain('ana.perez@example.com')
+            ->and($body)->not->toContain('2345-6789')
+            ->and($body)->not->toContain('attendee_phone')
             ->and($body)->not->toContain($issued['token'])
             ->and($body)->not->toContain($issued['ticket']->token_hash);
     }

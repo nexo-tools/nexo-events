@@ -211,7 +211,8 @@ costs nothing and saves it a round trip.
   flow; `.../close` closes registrations. Responses reflect the new status.
 - **AC-API-11** — No API response ever contains attendee PII (names, emails, ticket
   tokens) — asserted by test on every event-returning endpoint. *Extended in 10.11 to all
-  ten endpoints, the three collaborator ones included (landed).*
+  ten endpoints, the three collaborator ones included (landed). Extended in 10.13: the
+  optional attendee phone (SPEC-ticket-info AC-TICKET-12) is asserted absent too.*
 
 ### Extraction, limits, guardians
 

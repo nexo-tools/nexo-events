@@ -31,6 +31,13 @@
                 <input type="text" name="website" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true">
                 <x-field :label="__('Your name')" name="name" required autocomplete="name" />
                 <x-field :label="__('Email')" name="email" type="email" required autocomplete="email" />
+                {{-- PLAN 10.13: only where the instance collects it
+                     (NEXO_ATTENDEE_PHONE=optional), never required, and only
+                     the event owner ever sees it. --}}
+                @if ($askPhone)
+                    <x-field :label="__('WhatsApp or phone (optional)')" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="30"
+                             :hint="__('Only the organizer sees it, in case they need to reach you.')" />
+                @endif
                 <x-button>{{ __('Register') }}</x-button>
             </form>
         @endif

@@ -32,7 +32,9 @@ single account ([Nexo ID](https://github.com/nexo-tools/nexo-id) SSO).
 - **No per-ticket fees, no lock-in** — your events, attendees and data live on *your*
   domain. Commercial platforms take a cut of every ticket; this one is free to run.
 - **Register with just an email** — attendees sign up from the public event page with
-  no account and no app to install, and get their ticket on screen immediately.
+  no account and no app to install, and get their ticket on screen immediately. An
+  instance can also ask for an optional WhatsApp or phone (`NEXO_ATTENDEE_PHONE`, off by
+  default) that only the event owner ever sees.
 - **The ticket arrives by email** — a queued message with the QR embedded as an image
   and a link that still works when images are blocked. Lost it? A resend flow issues a
   fresh ticket (and retires the old QR).
@@ -120,7 +122,7 @@ attendee data staying in your database.
 
 **[DEPLOYMENT.md](DEPLOYMENT.md)** has the real steps: running it locally, the
 environment reference (mail, attribution, optional Nexo ID SSO, optional integration
-API — `NEXO_API_*`) and the production deploy. Note that deploys are manual here on purpose — see
+API — `NEXO_API_*`, optional attendee phone — `NEXO_ATTENDEE_PHONE`) and the production deploy. Note that deploys are manual here on purpose — see
 [ADR-009](docs/adr/ADR-009-manual-deploy-during-door-windows.md).
 
 ## Documentation

@@ -32,3 +32,27 @@ Nexo ID exists and has passed its own Gate 0 ([nexo-id](https://github.com/nexo-
 - Attendee PII in v1 is minimal (name + email per ticket) — good for privacy posture and for GDPR-ish hygiene.
 - When SSO lands, it is additive (account linking per nexoid ADR-005 pattern); no migration machinery.
 - Attendees can't self-serve "all my tickets" across events in v1 (each ticket travels by email/link) — accepted trade-off, solved by v2 accounts.
+
+## Amendment — 2026-11-21: optional attendee phone behind an instance switch (PLAN 10.13)
+
+**Context.** Venue organizers (the first integration consumer among them) need a way to
+reach registrants by WhatsApp — a changed time, a door that opens late. With §2 the only
+channel is email, which people do not read on the way to a venue.
+
+**Decision.** §2 stays the default: name + email produce a ticket, no account. An instance
+may additionally ask for **an optional WhatsApp or phone** by setting
+`NEXO_ATTENDEE_PHONE=optional` (default `off`; any other value reads as `off`):
+
+- The field is never required; registering without it works exactly as before.
+- With the switch `off` the field is absent and a phone posted anyway is ignored, so a
+  self-hosted instance that never sets the variable collects nothing new.
+- Stored as `tickets.attendee_phone` (nullable, ≤30 characters, validated to look like a
+  number). It lives and dies with the ticket, like the name and email.
+- **Only the event owner sees it**, next to the email in the registrations list (the same
+  owner-only condition ADR-011 §2 set for emails). Collaborators, emails, public pages and
+  the integration API never carry it.
+- The privacy page describes it only while the switch is `optional`.
+
+**Consequences.** "Attendee PII is minimal" now reads: name + email, plus a phone only where
+the operator turned it on and the person chose to leave it. Still no attendee account, no
+password, no login. Contract and tests: SPEC-ticket-info AC-TICKET-9..13, AC-API-11.

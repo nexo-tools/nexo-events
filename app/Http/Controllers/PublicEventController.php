@@ -10,6 +10,7 @@ use App\Models\Event;
 use App\Services\EventRegistrar;
 use App\Services\EventViewCounter;
 use App\Services\TicketResender;
+use App\Support\AttendeePhone;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -32,6 +33,7 @@ class PublicEventController extends Controller
             'description' => $this->seoDescription($event),
             'seoType' => 'article',
             'seoJsonLd' => $this->eventJsonLd($event),
+            'askPhone' => AttendeePhone::enabled(),
         ]);
     }
 
@@ -43,6 +45,7 @@ class PublicEventController extends Controller
             $event,
             $request->string('name')->toString(),
             $request->string('email')->toString(),
+            $request->phone(),
         );
 
         if ($outcome['result'] === EventRegistrar::OK && $outcome['ticket'] !== null && $outcome['token'] !== null) {

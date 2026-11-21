@@ -276,5 +276,9 @@
     "Your password changed": "Tu contraseña cambió",
     "Your ticket": "Tu entrada",
     "Your ticket for :event": "Tu entrada para :event",
-    "Your ticket QR code": "Código QR de tu entrada"
+    "Your ticket QR code": "Código QR de tu entrada",
+    "WhatsApp or phone (optional)": "WhatsApp o teléfono (opcional)",
+    "Only the organizer sees it, in case they need to reach you.": "Solo lo ve quien organiza, por si necesita avisarte algo.",
+    "The phone needs at least :count digits.": "El teléfono necesita al menos :count dígitos.",
+    "Use only digits, spaces, parentheses, dashes, dots and an optional + at the start.": "Usa solo números, espacios, paréntesis, guiones, puntos y un + opcional al principio."
 }

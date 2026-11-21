@@ -33,6 +33,8 @@ return [
         'category' => 'rubro',
         'city' => 'ciudad',
         'whatsapp_phone' => 'WhatsApp',
+        'phone' => 'teléfono',
+        'access_address' => 'dirección',
     ],
 
 ];

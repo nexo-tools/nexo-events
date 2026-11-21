@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Support\AttendeePhone;
 use Illuminate\View\View;
 
 /**
@@ -27,6 +28,15 @@ class LegalController extends Controller
     {
         /** @var array{title: string, intro: string, sections: array<int, array{h: string, p: string}>} $content */
         $content = __("legal.{$key}");
+
+        // PLAN 10.13: the optional attendee phone is described only on an
+        // instance that collects it, right after what is kept about attendees
+        // (the second section). With the switch off the page is unchanged.
+        if ($key === 'privacy' && AttendeePhone::enabled()) {
+            /** @var array{h: string, p: string} $phone */
+            $phone = __('legal.privacy_phone');
+            array_splice($content['sections'], 2, 0, [$phone]);
+        }
 
         return view('legal.show', [
             'title' => $content['title'],

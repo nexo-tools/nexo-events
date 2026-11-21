@@ -19,6 +19,20 @@
                 <span>
                     <span class="font-medium">{{ $ticket->attendee_name }}</span>
                     <span class="block text-xs text-muted">@if ($showEmails){{ $ticket->attendee_email }} · @endif{{ $ticket->status->label() }}</span>
+                    {{-- PLAN 10.13: the optional phone sits with the email, so
+                         it rides the same owner-only condition. Collaborators
+                         never get it. --}}
+                    @if ($showEmails && $ticket->attendee_phone)
+                        @php($phoneLink = \App\Support\AttendeePhone::link($ticket->attendee_phone))
+                        <span class="block text-xs text-muted" data-attendee-phone>
+                            @if ($phoneLink['whatsapp'])
+                                {{ $ticket->attendee_phone }} ·
+                                <a href="{{ $phoneLink['href'] }}" target="_blank" rel="noopener noreferrer" class="text-link underline">WhatsApp</a>
+                            @else
+                                <a href="{{ $phoneLink['href'] }}" class="text-link underline">{{ $ticket->attendee_phone }}</a>
+                            @endif
+                        </span>
+                    @endif
                 </span>
                 @if ($ticket->checkin === null && $ticket->status->value === 'valid')
                     <span class="flex flex-wrap gap-2">

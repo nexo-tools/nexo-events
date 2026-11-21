@@ -55,6 +55,13 @@ return [
         'rate_write' => (int) env('NEXO_API_RATE_WRITE', 20),
     ],
 
+    // Optional WhatsApp/phone field on the public registration form (PLAN 10.13,
+    // ADR-003 amendment 2026-11-21). `off` (default) or `optional`; anything
+    // else reads as `off`, so a typo never starts collecting phone numbers.
+    // When on, only the event owner ever sees the number: never collaborators,
+    // emails, public pages or the integration API.
+    'attendee_phone' => env('NEXO_ATTENDEE_PHONE', 'off') === 'optional' ? 'optional' : 'off',
+
     // Deploy freeze window around an event's start (see events:door-guard).
     // There is no `ends_at` column, so the window is inferred: long enough
     // before for doors opening, long enough after to cover the event itself.

@@ -32,6 +32,8 @@ return [
         'category' => 'categoria',
         'city' => 'cidade',
         'whatsapp_phone' => 'WhatsApp',
+        'phone' => 'telefone',
+        'access_address' => 'endereço',
         'client_name' => 'nome',
         'client_email' => 'email',
         'client_phone' => 'telefone',

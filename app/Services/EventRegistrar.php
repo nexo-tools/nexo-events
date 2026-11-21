@@ -26,12 +26,16 @@ class EventRegistrar
      * - one ticket per email per event: a repeat is idempotent (returns the
      *   existing ticket, no new token).
      *
+     * `$phone` is the optional attendee phone (PLAN 10.13), already normalized
+     * by the request — null whenever the instance does not collect it. A
+     * duplicate registration does not overwrite the one already stored.
+     *
      * @return array{result: string, ticket: ?Ticket, token: ?string}
      *                                                                `token` is the raw opaque QR token — returned ONCE, never stored.
      */
-    public function register(Event $event, string $name, string $email): array
+    public function register(Event $event, string $name, string $email, ?string $phone = null): array
     {
-        return DB::transaction(function () use ($event, $name, $email): array {
+        return DB::transaction(function () use ($event, $name, $email, $phone): array {
             // Lock the event row so concurrent registrations serialize (MySQL). Under
             // sqlite tests the lock is a no-op but the capacity check stays correct.
             $locked = Event::query()->whereKey($event->getKey())->lockForUpdate()->firstOrFail();
@@ -55,6 +59,7 @@ class EventRegistrar
             $ticket = new Ticket([
                 'attendee_name' => $name,
                 'attendee_email' => $email,
+                'attendee_phone' => $phone,
                 // The language this person registered in. Anything sent later
                 // (a cancellation, days afterwards, from the organizer's
                 // session) has no request to read a locale from.

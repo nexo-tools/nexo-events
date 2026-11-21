@@ -191,4 +191,12 @@ the real-phone pass of the new screens at 390 px (accept an invitation, Ticket m
 capacity, registrations, scanner), and creating the accounts and the three-scope token for
 the consumer.*
 
+### Attendee phone and private address (opened 2026-11-21 — same consumer)
+
+**Objective:** two small asks from the venue, both additive and invisible to an instance that
+does not use them. Governing docs: the ADR-003 amendment (2026-11-21), SPEC-ticket-info
+(AC-TICKET-9..), SPEC-integration-api.
+
+- [x] 10.13 Optional attendee phone: `NEXO_ATTENDEE_PHONE` (`off` default / `optional`) via `config('nexo.attendee_phone')`; field after the email on `/e/{slug}` (tel, optional, es/en/pt label and hint); `RegisterAttendeeRequest` rules only when on (≤30, `+`/digits/space/`()`/`-`/`.`, ≥6 digits, trimmed, empty → null), ignored when off; `tickets.attendee_phone` varchar(30); owner-only in the registrations list (wa.me for `+`, `tel:` otherwise), never for collaborators, in emails, on public pages or in the API (AC-API-11 extended); conditional privacy section es/en/pt; ADR-003 amendment; AC-TICKET-9..13. Migration rehearsed on MariaDB 11.8 (up, rollback with data, up). Deliberate violations: owner-only check removed → AC-TICKET-12 red; switch check removed → AC-TICKET-9 red.
+
 **Gate 10:** per integration — real cross-tool flow exercised, **standalone mode still green** (self-host story intact), owner sign-off.

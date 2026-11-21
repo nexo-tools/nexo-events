@@ -15,11 +15,12 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property int $event_id
  * @property string $attendee_name
  * @property string $attendee_email
+ * @property string|null $attendee_phone optional, owner-only (PLAN 10.13)
  * @property string|null $locale
  * @property string $token_hash
  * @property TicketStatus $status
  */
-#[Fillable(['attendee_name', 'attendee_email', 'locale', 'status'])] // token_hash is set internally, never mass-assigned
+#[Fillable(['attendee_name', 'attendee_email', 'attendee_phone', 'locale', 'status'])] // token_hash is set internally, never mass-assigned
 class Ticket extends Model
 {
     /** @use HasFactory<TicketFactory> */

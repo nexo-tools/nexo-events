@@ -161,6 +161,20 @@ email, see the **names and status** of the registrants of that event (not their 
 until the access is removed or the event is a week old; the owner is emailed for every such
 invitation (ADR-011, and the amendment to ADR-010 §4).
 
+## Attendee phone (optional, off by default)
+
+`NEXO_ATTENDEE_PHONE` decides whether the public registration form also asks for a
+WhatsApp or phone number (PLAN 10.13, ADR-003 amendment 2026-11-21).
+
+| Variable | Default | What it does |
+| --- | --- | --- |
+| `NEXO_ATTENDEE_PHONE` | `off` | `off`: name and email only, and a phone posted anyway is ignored. `optional`: the field appears after the email, never required. Any other value reads as `off`. |
+
+Only the **event owner** sees the number, next to the email in the registrations list (a
+WhatsApp link when it starts with `+`, a `tel:` link otherwise). Collaborators, emails,
+public pages and the integration API never carry it, and the privacy page describes it only
+while the switch is `optional`. Turning it on is an `.env` edit plus `php artisan config:cache`.
+
 ## Post-deploy smoke
 
 ```bash
