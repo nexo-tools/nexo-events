@@ -53,6 +53,21 @@ Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./ven
 
 ## Accumulated context
 
+- **2026-11-21** — **Pre-deploy pass for the 10.1–10.12 blocks.** Three things a future session
+  should not have to rediscover:
+  - **Production runs MariaDB 11.8, not MySQL.** `DB_CONNECTION=mysql` on the server, but the
+    engine is MariaDB (11.8.9 on 2026-11-21); the tests run on SQLite and the shared dev env is
+    MySQL 8.4, so neither exercises a migration on the real engine. Before a deploy that carries
+    migrations, rehearse them on a throwaway `mariadb:11.8` (up, rollback with data, up again).
+    Done for the four of 10.2/10.8/10.9 on 2026-11-21: clean.
+  - **`composer audit` turns red on its own** when advisories land on a lock nobody touched (29
+    in 9 packages between August and November). Updated with `--minimal-changes` and guzzle held
+    at `^7` (12 packages, no major jumps, Laravel 13.20 → 13.43); a plain `-W` update had pulled
+    guzzle 8 and `brick/math` 1.0 for nothing.
+  - **Organizer sign-up now has the honeypot** every other public form had (AC-ABUSE-6): scripted
+    sign-ups with third parties' addresses had been making the instance mail them since
+    2026-10-28. The unverified accounts they left in production (89 counted on 2026-11-12) were
+    not cleaned up by this change.
 - **2026-10-28** — **Event collaborators, ticket-holder info and Integration API v1.1 built
   (PLAN 10.7–10.12), not yet deployed.** Same first consumer (a venue whose bands manage the
   entries of their nights). Governing docs: [ADR-011](docs/adr/ADR-011-event-collaborators.md),
