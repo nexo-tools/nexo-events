@@ -65,3 +65,15 @@ address is on the ticket page and in the email, not in the code.
   (SPEC-integration-api v1.1, AC-API-6c rewritten on purpose).
 - "Private" means "not published", not "secret": registration is free and takes any email,
   so `access_info` is one registration away from anyone. The form's help text says so.
+
+## Amendment — 2026-11-21: the address on its own (PLAN 10.14)
+
+The exact address used to travel inside `access_info`, as free text nobody can tap. A third
+field, `events.access_address` (nullable, ≤255), carries it on its own so the ticket page
+can offer "copy" and "open in Google Maps / Apple Maps", and the emails one "Open in Google
+Maps" link. **It is private on exactly the same terms as `access_info`**: the ticket, its
+two emails and the organizer's screens; never `/e/{slug}`, its meta description, its JSON-LD
+or the sitemap; and "not published" still is not "secret". `access_info` stays for how to
+get in and what to bring. The map links are plain search URLs opened by the person's own
+browser — the server makes no request (zero external requests at runtime). Contract:
+SPEC-ticket-info AC-TICKET-14..18, SPEC-integration-api v1.2 AC-API-24.

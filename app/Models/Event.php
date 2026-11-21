@@ -22,12 +22,13 @@ use Illuminate\Support\Str;
  * @property ?string $description
  * @property Carbon $starts_at
  * @property ?string $venue
+ * @property ?string $access_address ticket holders only, like access_info: the exact address (PLAN 10.14)
  * @property ?string $access_info ticket holders only: /t/{token} and its emails (ADR-012)
  * @property ?string $payment_info display-only price text; nothing is collected (ADR-012)
  * @property ?int $capacity
  * @property EventStatus $status
  */
-#[Fillable(['title', 'description', 'starts_at', 'venue', 'access_info', 'payment_info', 'capacity', 'status'])]
+#[Fillable(['title', 'description', 'starts_at', 'venue', 'access_address', 'access_info', 'payment_info', 'capacity', 'status'])]
 class Event extends Model
 {
     /** @use HasFactory<EventFactory> */
@@ -126,6 +127,25 @@ class Event extends Model
     public function isSoldOut(): bool
     {
         return $this->capacity !== null && $this->issuedTicketsCount() >= $this->capacity;
+    }
+
+    /**
+     * Map links for the private address (PLAN 10.14). Plain search URLs: the
+     * address is what the organizer typed, and both apps geocode it themselves —
+     * nothing is looked up from here (zero external requests at runtime).
+     */
+    public function googleMapsUrl(): ?string
+    {
+        return $this->access_address
+            ? 'https://www.google.com/maps/search/?api=1&query='.rawurlencode($this->access_address)
+            : null;
+    }
+
+    public function appleMapsUrl(): ?string
+    {
+        return $this->access_address
+            ? 'https://maps.apple.com/?q='.rawurlencode($this->access_address)
+            : null;
     }
 
     public static function uniqueSlugFor(string $title): string

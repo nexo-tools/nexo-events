@@ -5,6 +5,19 @@
     photo gallery. What this mail gives instead is the practical thing: when and
     where, and the page where a lost ticket can be resent.
 --}}
+{{-- PLAN 10.14: the private address as a panel row, with one link to open it
+     in Google Maps. Built as HtmlString so the panel prints the link; the
+     address itself is escaped here. Null when the event has none, and the
+     panel skips null rows. --}}
+@php
+    $addressRow = $event->access_address
+        ? new \Illuminate\Support\HtmlString(
+            e($event->access_address)
+            .'<br><a href="'.e((string) $event->googleMapsUrl()).'" target="_blank" rel="noopener noreferrer" class="nexo-accent" style="color:#7c3aed; font-weight:600; text-decoration:underline;" data-maps="google">'
+            .e(__('Open in Google Maps')).'</a>'
+        )
+        : null;
+@endphp
 <x-nexo-mail::layout
     :title="__('Reminder: :event', ['event' => $event->title])"
     :preheader="__('Your event is coming up.')">
@@ -21,6 +34,7 @@
         __('Event') => $event->title,
         __('When') => $event->starts_at->translatedFormat(__('app.datetime')),
         __('Where') => $event->venue,
+        __('Address') => $addressRow,
         __('Only for ticket holders') => $event->access_info,
         __('Entry') => $event->payment_info,
         __('Issued to') => $ticket->attendee_name,

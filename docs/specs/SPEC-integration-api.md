@@ -1,4 +1,4 @@
-# SPEC — Integration API v1 (PLAN Phase 10, tasks 10.1–10.6) · v1.1 (tasks 10.7–10.11)
+# SPEC — Integration API v1 (PLAN Phase 10, tasks 10.1–10.6) · v1.1 (tasks 10.7–10.11) · v1.2 (task 10.14)
 
 > Written before the code. Governing decision: **ADR-010** (per-account hashed API tokens,
 > env-gated, no new dependencies), which puts into practice the posture **ADR-006** committed
@@ -11,6 +11,12 @@
 > revoke event collaborators (SPEC-event-collaborators, ADR-011). The v1.1 criteria landed
 > with tasks 10.8 (payload) and 10.11 (endpoints), each in bold together with its tests —
 > bold is what `ApiSpecTraceabilityTest` reads.
+>
+> **v1.2 (2026-11-21, task 10.14)** adds one optional field, again without breaking any
+> call: `access_address` (≤255), the venue's exact address, private like `access_info`
+> (SPEC-ticket-info AC-TICKET-14..18). Accepted on `POST /events` and `PATCH /events/{id}`,
+> returned next to `access_info`. A body without it behaves exactly as in v1.1
+> (AC-API-24).
 
 ## Purpose
 
@@ -146,7 +152,9 @@ Base `/api/v1` · `Authorization: Bearer <token>` · JSON errors `{message, erro
 | `DELETE /events/{id}/collaborators/{cid}` *(v1.1)* | collaborators:manage | sets `revoked_at`; 204, idempotent; access ends on the collaborator's next request |
 
 In v1.1 `POST /events` and `PATCH /events/{id}` also accept `access_info` (≤1000) and
-`payment_info` (≤300) — same `EventRequest` rules as the web form. A consumer that owns the
+`payment_info` (≤300) — same `EventRequest` rules as the web form. In v1.2 they also accept
+`access_address` (≤255), same rule as the web form; leaving it out of a `PATCH` keeps it,
+`null` clears it. A consumer that owns the
 content but not the tickets (the first one) sends `capacity` only on creation and never
 sends `status`: after creation, capacity and registration state belong to whoever manages
 the tickets.
@@ -154,7 +162,8 @@ the tickets.
 **Event payload** — one shape for every event-returning endpoint, frozen by AC-API-6c:
 `{id, slug, title, description, status, starts_at, venue, capacity, issued_tickets_count,
 is_sold_out, public_url}` in v1, plus `access_info`, `payment_info` and `checked_in_count`
-(tickets in `checked_in`) in v1.1 — fourteen keys. One presenter, so "no attendee PII" is a property of one
+(tickets in `checked_in`) in v1.1 — fourteen keys — plus `access_address` right after
+`access_info` in v1.2: fifteen keys. One presenter, so "no attendee PII" is a property of one
 function instead of a habit repeated in six places. Creation returns the same shape as a
 read: a superset of the `{id, slug, status, public_url}` the first consumer needs, which
 costs nothing and saves it a round trip.
@@ -196,7 +205,9 @@ costs nothing and saves it a round trip.
   `is_sold_out`, `public_url`. The test enumerates the key set, so adding or dropping a
   field is a deliberate contract change, not a silent one. *v1.1 rewrite (landed with task
   10.8, together with its test): fourteen keys — the eleven above, then `access_info`,
-  `payment_info`, `checked_in_count`; `checked_in_count` counts only `checked_in` tickets.*
+  `payment_info`, `checked_in_count`; `checked_in_count` counts only `checked_in` tickets.
+  v1.2 rewrite (task 10.14, with its test): fifteen keys — `access_address` between
+  `access_info` and `payment_info`.*
 - **AC-API-7** — `PATCH /events/{id}` updates only the provided fields and never
   regenerates the slug, even when `title` changes. A field absent from the body keeps its
   stored value; `external_ref` is not updatable.
@@ -259,3 +270,10 @@ costs nothing and saves it a round trip.
 - **AC-API-22** — With `NEXO_API_ENABLED=false` the three endpoints answer 404, and
   `route:cache` contains them.
 - **AC-API-23** — The `GET` list never contains `invite_url` nor any hash.
+
+### v1.2 — private address (task 10.14)
+
+- **AC-API-24** — `POST /events` with `access_address` stores it and returns it next to
+  `access_info`; without it the event is created as in v1.1 with `access_address: null`.
+  `PATCH` sets it, keeps it when the body does not mention it, clears it with `null`; more
+  than 255 characters is a 422 on both, as on the web form.

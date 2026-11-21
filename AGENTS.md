@@ -53,6 +53,22 @@ Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./ven
 
 ## Accumulated context
 
+- **2026-11-21** — **Optional attendee phone and private address (PLAN 10.13–10.14), built
+  locally, not deployed.** Two asks from the same venue, both invisible to an instance that
+  does not use them. What a future session should not have to rediscover:
+  - **`NEXO_ATTENDEE_PHONE` is `off` unless it is exactly `optional`.** With it off the
+    request has no `phone` rule and `phone()` returns null, so a posted number is dropped,
+    not stored. The number is owner-only: it rides the same `showEmails` condition as the
+    email in the registrations list, and AC-API-11 asserts it never reaches the API. There
+    is no purge/anonymization job anywhere: tickets cascade with their event.
+  - **`access_address` is private on the same terms as `access_info`** (ADR-012 amendment):
+    the never-public assertions of both live in one test (AC-TICKET-1/17). The copy button
+    is the existing `data-copy` handler in `app.js`, now reverting its label after 2 s.
+  - **After a deliberate violation in a Blade view, run `php artisan view:clear`.** Restoring
+    the file within the same second as the compile left a stale compiled view, and a green
+    test went red for no code reason.
+  - Production needs `NEXO_ATTENDEE_PHONE=optional` in `.env` (+ `config:cache`) for the
+    phone; the address needs nothing but the deploy.
 - **2026-11-21** — **Pre-deploy pass for the 10.1–10.12 blocks.** Three things a future session
   should not have to rediscover:
   - **Production runs MariaDB 11.8, not MySQL.** `DB_CONNECTION=mysql` on the server, but the

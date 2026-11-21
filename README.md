@@ -63,8 +63,9 @@ single account ([Nexo ID](https://github.com/nexo-tools/nexo-id) SSO).
   collaborators to the events it created, and those collaborators (people with their own
   verified accounts) see registrants' names — never emails.
 - **Info only for ticket holders, and a price as text** — an event can carry details shown
-  only on the ticket and its emails (the exact address, how to get in) and a free-text price
-  ("Entry $8,000 · pay at the door"). Nexo Events never collects the money.
+  only on the ticket and its emails (the exact address — with buttons to copy it and open it
+  in Google Maps or Apple Maps —, how to get in) and a free-text price ("Entry $8,000 · pay
+  at the door"). Nexo Events never collects the money.
 - **Self-hostable** — a standard Laravel app; runs on your own infrastructure.
 
 ### Collaborators

@@ -28,6 +28,9 @@ class EventRequest extends FormRequest
             // ADR-012: plain text, escaped on output. access_info is shown only to
             // ticket holders; payment_info is public and describes a price the
             // platform never collects.
+            // PLAN 10.14: the exact address on its own, private like access_info,
+            // so the ticket can offer copy and open-in-a-map buttons.
+            'access_address' => ['nullable', 'string', 'max:255'],
             'access_info' => ['nullable', 'string', 'max:1000'],
             'payment_info' => ['nullable', 'string', 'max:300'],
             'capacity' => ['nullable', 'integer', 'min:1', 'max:1000000'],

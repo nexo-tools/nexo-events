@@ -142,6 +142,9 @@ class EventApiController extends Controller
             // v1.1 (ADR-012, SPEC-integration-api AC-API-6c). Event fields and a
             // counter — still nothing about who those people are.
             'access_info' => $event->access_info,
+            // v1.2 (PLAN 10.14): the private address, next to access_info and
+            // private the same way.
+            'access_address' => $event->access_address,
             'payment_info' => $event->payment_info,
             'checked_in_count' => $event->checkedInCount(),
         ];

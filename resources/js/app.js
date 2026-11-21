@@ -47,9 +47,11 @@ window.addEventListener('pageshow', (event) => {
 });
 
 // Copy-to-clipboard for read-only fields (the public link on "Ticket
-// management"). Progressive enhancement: the button ships `hidden` and is only
-// revealed where the Clipboard API exists; without it the field stays
-// selectable by hand, which is what it was before.
+// management", the private address on the ticket). Progressive enhancement:
+// the button ships `hidden` and is only revealed where the Clipboard API
+// exists; without it the text stays selectable by hand, which is what it was
+// before. After a copy the label reads `data-copied` for two seconds, then
+// goes back, so a second tap still says what it does.
 if (navigator.clipboard) {
     document.querySelectorAll('[data-copy]').forEach((button) => {
         button.hidden = false;
@@ -67,8 +69,14 @@ if (navigator.clipboard) {
         }
 
         try {
-            await navigator.clipboard.writeText(field.value ?? field.textContent ?? '');
-            button.textContent = button.dataset.copied ?? button.textContent;
+            await navigator.clipboard.writeText((field.value ?? field.textContent ?? '').trim());
+
+            button.dataset.label ??= button.textContent;
+            button.textContent = button.dataset.copied ?? button.dataset.label;
+            clearTimeout(Number(button.dataset.resetTimer));
+            button.dataset.resetTimer = String(setTimeout(() => {
+                button.textContent = button.dataset.label;
+            }, 2000));
         } catch {
             field.select?.();
         }

@@ -276,10 +276,11 @@ test('AC-API-6c: GET /events/{id} returns exactly the agreed field set', functio
 
     // Enumerated, so adding or dropping a field is a deliberate contract change.
     // v1.1: the eleven v1 keys, then the three of ADR-012 / SPEC v1.1.
+    // v1.2: access_address, next to access_info (PLAN 10.14, AC-API-24).
     expect(array_keys($response->json()))->toBe([
         'id', 'slug', 'title', 'description', 'status', 'starts_at', 'venue',
         'capacity', 'issued_tickets_count', 'is_sold_out', 'public_url',
-        'access_info', 'payment_info', 'checked_in_count',
+        'access_info', 'access_address', 'payment_info', 'checked_in_count',
     ]);
 
     $response->assertJsonPath('issued_tickets_count', 1)
@@ -319,6 +320,71 @@ test('AC-API-6c: checked_in_count counts only tickets that came in, and the two 
         ->assertOk()
         ->assertJsonPath('access_info', 'Timbre B')
         ->assertJsonPath('payment_info', 'Entrada $5.000');
+});
+
+test('AC-API-24: access_address is accepted on create and returned next to access_info; without it nothing changes', function (): void {
+    $user = User::factory()->create();
+    $raw = apiToken($user);
+    $address = 'Av. Avellaneda 3456 (timbre 2), Floresta, CABA';
+
+    $with = $this->postJson('/api/v1/events', [
+        'external_ref' => 'laherreria:evento:con-direccion',
+        'title' => 'Con dirección',
+        'starts_at' => now()->addWeek()->toIso8601String(),
+        'access_address' => $address,
+        'access_info' => 'Timbre B',
+    ], bearer($raw))->assertCreated()
+        ->assertJsonPath('access_address', $address)
+        ->assertJsonPath('access_info', 'Timbre B');
+
+    // The v1.1 body, exactly as the consumer sends it today: still a 201.
+    $without = $this->postJson('/api/v1/events', [
+        'external_ref' => 'laherreria:evento:sin-direccion',
+        'title' => 'Sin dirección',
+        'starts_at' => now()->addWeek()->toIso8601String(),
+    ], bearer($raw))->assertCreated()
+        ->assertJsonPath('access_address', null);
+
+    expect(Event::find($with->json('id'))->access_address)->toBe($address)
+        ->and(Event::find($without->json('id'))->access_address)->toBeNull();
+
+    $keys = array_keys($with->json());
+    expect(array_search('access_address', $keys, true))->toBe(array_search('access_info', $keys, true) + 1);
+
+    $this->getJson('/api/v1/events/'.$with->json('id'), bearer($raw))
+        ->assertOk()
+        ->assertJsonPath('access_address', $address);
+});
+
+test('AC-API-24: PATCH sets, keeps and clears access_address, with the web form\'s limit', function (): void {
+    $user = User::factory()->create();
+    $raw = apiToken($user);
+    $event = Event::factory()->for($user, 'organizer')->create(['external_ref' => 'laherreria:evento:9']);
+
+    $this->patchJson("/api/v1/events/{$event->id}", ['access_address' => 'Calle Ñandú 742 & Pje. 3'], bearer($raw))
+        ->assertOk()
+        ->assertJsonPath('access_address', 'Calle Ñandú 742 & Pje. 3');
+
+    // A PATCH that does not mention it keeps it (AC-API-7).
+    $this->patchJson("/api/v1/events/{$event->id}", ['title' => 'Otro título'], bearer($raw))
+        ->assertOk()
+        ->assertJsonPath('access_address', 'Calle Ñandú 742 & Pje. 3');
+
+    $this->patchJson("/api/v1/events/{$event->id}", ['access_address' => str_repeat('a', 256)], bearer($raw))
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['access_address']);
+
+    $this->postJson('/api/v1/events', [
+        'title' => 'Demasiado larga',
+        'starts_at' => now()->addWeek()->toIso8601String(),
+        'access_address' => str_repeat('a', 256),
+    ], bearer($raw))->assertUnprocessable()->assertJsonValidationErrors(['access_address']);
+
+    $this->patchJson("/api/v1/events/{$event->id}", ['access_address' => null], bearer($raw))
+        ->assertOk()
+        ->assertJsonPath('access_address', null);
+
+    expect($event->fresh()->access_address)->toBeNull();
 });
 
 test('AC-API-7: PATCH updates only what it is sent and never regenerates the slug', function (): void {

@@ -1,4 +1,4 @@
-# SPEC — Ticket-holder info and payment text (PLAN Phase 10, tasks 10.7–10.8 and 10.12) · optional attendee phone (10.13)
+# SPEC — Ticket-holder info and payment text (PLAN Phase 10, tasks 10.7–10.8 and 10.12) · optional attendee phone (10.13) · private address (10.14)
 
 > Written before the code. Governing decision: **ADR-012** (ticket-holder info and payment
 > text), which amends ADR-001 §1 narrowly — the product still processes no payment — and
@@ -85,7 +85,7 @@ rules for the web form and the API (ADR-010 §6).
 ## Acceptance criteria
 
 AC-TICKET-1..7 landed with task 10.8 and AC-TICKET-8 with task 10.12 (bold is what the
-traceability guardian reads). AC-TICKET-9..13 (task 10.13) are in their own section below.
+traceability guardian reads). AC-TICKET-9..13 (task 10.13) and AC-TICKET-14..18 (task 10.14) are in their own sections below.
 
 - **AC-TICKET-1** — With `access_info` set, `/t/{token}` shows it under "Only for ticket
   holders", together with "Where" (`venue`, which the ticket page did not show before).
@@ -155,6 +155,53 @@ ADR-003 on 2026-11-21.
   sitemap, the ticket email or the reminder.
 - **AC-TICKET-13** — The privacy page carries the phone section, in es, en and pt, only
   while the switch is `optional`, placed right after the attendee section.
+
+## Private venue address with copy and map buttons (task 10.14, 2026-11-21)
+
+Until now the exact address reached ticket holders inside the free text of `access_info`,
+where nobody can tap it. The venue asked for the address on its own, with a button to copy
+it and buttons to open it in a map.
+
+- **Storage.** `events.access_address`, nullable `varchar(255)`, after `venue`.
+  `EventRequest`: `nullable|string|max:255`, the one rule set for the web form and the API.
+- **Private exactly like `access_info`** (ADR-012): shown on `/t/{token}`, in the ticket
+  email, in the reminder and on the organizer's ticket-management page; never on
+  `/e/{slug}`, in its meta description, in its JSON-LD or in the sitemap. On a released
+  ticket it stays, as `access_info` does (AC-TICKET-8).
+- **Organizer form.** A text input before the `access_info` textarea: "Address (only for
+  ticket holders, optional)" (es "Dirección (solo para quien tiene entrada, opcional)"), with
+  a hint saying where it appears and that it is not published.
+- **Ticket page.** Under "Address": the address as text, then three actions —
+  - "Copy address" (es "Copiar dirección"): a `data-copy` button handled by the app bundle
+    (`resources/js/app.js`), shipped `hidden` and revealed only where the Clipboard API
+    exists; after copying its label reads "Address copied" (es "Copiada") for 2 seconds.
+    No inline script or handler: the CSP stays strict. Without JS the address and the links
+    still work.
+  - "Google Maps" → `https://www.google.com/maps/search/?api=1&query=` + `rawurlencode(address)`
+    and "Apple Maps" → `https://maps.apple.com/?q=` + `rawurlencode(address)`, both
+    `target="_blank" rel="noopener noreferrer"`, with an accessible name that says they open
+    a new tab.
+  - Existing `nexo-btn` classes only (design tokens, focus-visible, dark mode), wrapping at
+    390 px.
+- **Emails.** The ticket email and the reminder get an "Address" row: the address and one
+  link, "Open in Google Maps" (es "Abrir en Google Maps"), same URL. The address is escaped.
+- **API.** v1.2 of SPEC-integration-api: accepted on create and update, returned next to
+  `access_info` (AC-API-24).
+
+- **AC-TICKET-14** — `events.access_address` is a nullable column; the web form and the
+  API refuse more than 255 characters and accept 255; the form shows the labelled,
+  described input before `access_info` (es/en/pt).
+- **AC-TICKET-15** — With an address, `/t/{token}` shows it with the copy button (hidden
+  until the bundle reveals it, `data-copied` translated, no inline handler) and the two map
+  links with the encoded URLs, `target="_blank"`, `rel="noopener noreferrer"` and accessible
+  names; a released ticket keeps it; the ticket-management page shows it to the owner and
+  to a collaborator.
+- **AC-TICKET-16** — The ticket email and the reminder carry the address row and one
+  "Open in Google Maps" link, in es, en and pt, with the address escaped.
+- **AC-TICKET-17** — `/e/{slug}`, its meta description, its JSON-LD and the sitemap never
+  contain the address (raw or encoded) nor a map link (asserted together with AC-TICKET-1).
+- **AC-TICKET-18** — Without an address, no address block, copy button or map link
+  appears on the ticket page, the ticket-management page or either email.
 
 ## Guardians
 

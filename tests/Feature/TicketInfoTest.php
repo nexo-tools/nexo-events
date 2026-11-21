@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Schema;
  */
 const TI_ADDRESS = 'Calle Falsa 123, timbre B';
 const TI_PRICE = 'Entry $8.000 · pay at the door';
+const TI_STREET = 'Av. Avellaneda 3456 (timbre 2), Floresta';
 
 /** @return array{event: Event, token: string, ticket: Ticket} */
 function tiTicketFor(array $attributes = []): array
@@ -63,16 +64,23 @@ it('AC-TICKET-1: the ticket page shows where and the ticket-holder info', functi
         ->and($html)->toContain(__('Only for ticket holders'));
 });
 
-it('AC-TICKET-1: the public page, its meta description and its JSON-LD never carry the ticket-holder info', function (): void {
-    ['event' => $event] = tiTicketFor(['access_info' => TI_ADDRESS, 'description' => 'Una noche de rock']);
+it('AC-TICKET-1, AC-TICKET-17: the public page, its meta description, its JSON-LD and the sitemap never carry the ticket-holder info or the private address', function (): void {
+    ['event' => $event] = tiTicketFor(['access_info' => TI_ADDRESS, 'access_address' => TI_STREET, 'description' => 'Una noche de rock']);
 
     $html = (string) $this->get(route('public.event', $event))->assertOk()->getContent();
+    $sitemap = (string) $this->get(route('sitemap'))->getContent();
 
-    expect($html)->not->toContain(TI_ADDRESS)
-        ->and($html)->not->toContain(__('Only for ticket holders'))
-        ->and(tiMetaDescription($html))->not->toContain(TI_ADDRESS)
-        ->and(json_encode(tiJsonLd($html), JSON_UNESCAPED_UNICODE))->not->toContain(TI_ADDRESS)
-        ->and((string) $this->get(route('sitemap'))->getContent())->not->toContain(TI_ADDRESS);
+    foreach ([TI_ADDRESS, TI_STREET, 'Av. Avellaneda', rawurlencode(TI_STREET)] as $secret) {
+        expect(str_contains($html, $secret))->toBeFalse("The public page carries {$secret}.")
+            ->and(str_contains(tiMetaDescription($html), $secret))->toBeFalse("The meta description carries {$secret}.")
+            ->and(str_contains(json_encode(tiJsonLd($html), JSON_UNESCAPED_UNICODE), $secret))->toBeFalse("The JSON-LD carries {$secret}.")
+            ->and(str_contains($sitemap, $secret))->toBeFalse("The sitemap carries {$secret}.");
+    }
+
+    expect($html)->not->toContain(__('Only for ticket holders'))
+        ->and($html)->not->toContain('data-access-address')
+        ->and($html)->not->toContain('google.com/maps')
+        ->and($html)->not->toContain('maps.apple.com');
 });
 
 it('AC-TICKET-2: the ticket email and the reminder carry both rows, in es, en and pt', function (): void {
@@ -153,6 +161,8 @@ it('AC-TICKET-5: with both fields empty no new block or row appears anywhere', f
 
     foreach ([$ticketPage, $eventPage, $mails] as $html) {
         expect($html)->not->toContain('data-access-info')
+            ->and($html)->not->toContain('data-access-address')
+            ->and($html)->not->toContain('data-maps')
             ->and($html)->not->toContain('data-payment-info')
             ->and($html)->not->toContain('Only for ticket holders')
             ->and($html)->not->toContain('>Entry<');

@@ -14,6 +14,11 @@
 {{-- ADR-012. Plain text both. access_info is the one field on this form that
      never reaches the public page — the help says so, and also that "not
      published" is not "secret": registering is free. --}}
+{{-- PLAN 10.14: the exact address on its own, private exactly like
+     access_info, so the ticket can offer copy and open-in-a-map. --}}
+<x-field :label="__('Address (only for ticket holders, optional)')" name="access_address" :value="$e?->access_address" maxlength="255"
+         :hint="__('Shown on the ticket and in the emails, with buttons to copy it and open it in a map. It is not published on the event page.')" />
+
 <x-textarea :label="__('Only for ticket holders (optional)')" name="access_info" :value="$e?->access_info" maxlength="1000"
             :hint="__('Exact address, how to get in, what to bring. It is not published on the event page: it appears on the ticket and in the emails. Anyone who registers can read it.')" />
 

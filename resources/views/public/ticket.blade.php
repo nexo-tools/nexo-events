@@ -24,12 +24,33 @@
     {{-- What a ticket holder needs to get there (ADR-012). `venue` is public
          anyway; access_info is shown here and in the emails and nowhere else.
          Plain text, escaped, line breaks kept: no markup ever comes from these. --}}
-    @if ($ticket->event->venue || $ticket->event->access_info || $ticket->event->payment_info)
+    @if ($ticket->event->venue || $ticket->event->access_address || $ticket->event->access_info || $ticket->event->payment_info)
         <dl class="mt-6 space-y-3 border-t border-line pt-4 text-sm" data-ticket-info>
             @if ($ticket->event->venue)
                 <div>
                     <dt class="text-xs font-medium uppercase tracking-wide text-muted">{{ __('Where') }}</dt>
                     <dd class="text-ink">{{ $ticket->event->venue }}</dd>
+                </div>
+            @endif
+            {{-- PLAN 10.14: the private address, with copy and two map links.
+                 Private like access_info (shown here, in the emails and on the
+                 organizer's screens, nowhere public). The copy button is
+                 revealed by app.js only where the Clipboard API exists; the
+                 address and the links work without any JS. --}}
+            @if ($ticket->event->access_address)
+                <div data-access-address>
+                    <dt class="text-xs font-medium uppercase tracking-wide text-muted">{{ __('Address') }}</dt>
+                    <dd class="text-ink"><span id="access-address" class="break-words">{{ $ticket->event->access_address }}</span></dd>
+                    <dd class="mt-2 flex flex-wrap gap-2">
+                        <button type="button" hidden data-copy="access-address" data-copied="{{ __('Address copied') }}" aria-live="polite"
+                                class="nexo-btn nexo-btn--ghost nexo-btn--sm">{{ __('Copy address') }}</button>
+                        <a href="{{ $ticket->event->googleMapsUrl() }}" target="_blank" rel="noopener noreferrer"
+                           aria-label="{{ __('Open the address in :app (new tab)', ['app' => 'Google Maps']) }}"
+                           class="nexo-btn nexo-btn--ghost nexo-btn--sm" data-maps="google">Google Maps</a>
+                        <a href="{{ $ticket->event->appleMapsUrl() }}" target="_blank" rel="noopener noreferrer"
+                           aria-label="{{ __('Open the address in :app (new tab)', ['app' => 'Apple Maps']) }}"
+                           class="nexo-btn nexo-btn--ghost nexo-btn--sm" data-maps="apple">Apple Maps</a>
+                    </dd>
                 </div>
             @endif
             @if ($ticket->event->access_info)

@@ -280,5 +280,12 @@
     "WhatsApp or phone (optional)": "WhatsApp o teléfono (opcional)",
     "Only the organizer sees it, in case they need to reach you.": "Solo lo ve quien organiza, por si necesita avisarte algo.",
     "The phone needs at least :count digits.": "El teléfono necesita al menos :count dígitos.",
-    "Use only digits, spaces, parentheses, dashes, dots and an optional + at the start.": "Usa solo números, espacios, paréntesis, guiones, puntos y un + opcional al principio."
+    "Use only digits, spaces, parentheses, dashes, dots and an optional + at the start.": "Usa solo números, espacios, paréntesis, guiones, puntos y un + opcional al principio.",
+    "Address (only for ticket holders, optional)": "Dirección (solo para quien tiene entrada, opcional)",
+    "Shown on the ticket and in the emails, with buttons to copy it and open it in a map. It is not published on the event page.": "Se muestra en la entrada y en los correos, con botones para copiarla y abrirla en un mapa. No se publica en la página del evento.",
+    "Address": "Dirección",
+    "Copy address": "Copiar dirección",
+    "Address copied": "Copiada",
+    "Open the address in :app (new tab)": "Abrir la dirección en :app (pestaña nueva)",
+    "Open in Google Maps": "Abrir en Google Maps"
 }

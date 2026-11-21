@@ -30,12 +30,18 @@
         <a href="{{ route('events.registrations', $event) }}" class="nexo-btn nexo-btn--ghost w-full">{{ __('Registrations') }}</a>
     </div>
 
-    @if ($event->access_info || $event->payment_info)
+    @if ($event->access_address || $event->access_info || $event->payment_info)
         <dl class="mb-6 space-y-3 rounded-lg border border-line p-3 text-sm">
             @if ($event->payment_info)
                 <div>
                     <dt class="text-xs font-medium uppercase tracking-wide text-muted">{{ __('Entry') }}</dt>
                     <dd>{{ $event->payment_info }}</dd>
+                </div>
+            @endif
+            @if ($event->access_address)
+                <div data-access-address>
+                    <dt class="text-xs font-medium uppercase tracking-wide text-muted">{{ __('Address') }}</dt>
+                    <dd class="break-words">{{ $event->access_address }}</dd>
                 </div>
             @endif
             @if ($event->access_info)
