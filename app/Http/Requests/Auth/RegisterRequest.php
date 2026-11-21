@@ -15,6 +15,9 @@ class RegisterRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users')],
             'password' => ['required', 'confirmed', Password::defaults()],
+            // honeypot (SPEC-abuse AC-ABUSE-6): real users leave it empty. Without it,
+            // scripted sign-ups with third parties' addresses made the instance mail them.
+            'website' => ['nullable', 'string', 'max:0'],
         ];
     }
 }

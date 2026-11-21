@@ -38,6 +38,12 @@ Reports are unauthenticated by design (ADR-007 §3) — requiring an account to 
 - **AC-ABUSE-4** — The visible response is the same whether the event has zero prior reports or many, and reporting never discloses organizer or attendee data.
 - **AC-ABUSE-5** — A bot that fills the honeypot is refused and stores nothing.
 
+### Organizer sign-up (added 2026-11-21)
+
+Sign-up was the one public write without a honeypot, and every account it creates queues a verification mail. From 2026-10-28 the live instance took scripted sign-ups with third parties' real addresses: the instance was mailing people who never asked, from its own domain — a deliverability risk for the mails that matter (tickets, collaborator invitations). Same protection as the other public forms; the rate limit was already there.
+
+- **AC-ABUSE-6** — A sign-up that fills the honeypot is refused: no account is created, nobody is logged in and no verification mail is queued. A person who leaves it empty signs up exactly as before.
+
 ### Kill-switch
 
 - **AC-KILL-1** — `events:kill <slug> --reason="…"` sets the event to `killed` and records the reason, the timestamp and the status it had before.

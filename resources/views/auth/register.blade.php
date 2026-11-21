@@ -11,6 +11,7 @@
 
     <form method="POST" action="{{ route('register') }}" class="space-y-4">
         @csrf
+        <input type="text" name="website" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true">
 
         <x-field :label="__('Your name')" name="name" required autocomplete="name" />
         <x-field :label="__('Email')" name="email" type="email" required autocomplete="username" />
