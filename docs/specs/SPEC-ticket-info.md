@@ -1,4 +1,4 @@
-# SPEC — Ticket-holder info and payment text (PLAN Phase 10, tasks 10.7–10.8 and 10.12) · optional attendee phone (10.13) · private address (10.14)
+# SPEC — Ticket-holder info and payment text (PLAN Phase 10, tasks 10.7–10.8 and 10.12) · optional attendee phone (10.13) · private address (10.14) · "More information" link (10.15)
 
 > Written before the code. Governing decision: **ADR-012** (ticket-holder info and payment
 > text), which amends ADR-001 §1 narrowly — the product still processes no payment — and
@@ -85,7 +85,7 @@ rules for the web form and the API (ADR-010 §6).
 ## Acceptance criteria
 
 AC-TICKET-1..7 landed with task 10.8 and AC-TICKET-8 with task 10.12 (bold is what the
-traceability guardian reads). AC-TICKET-9..13 (task 10.13) and AC-TICKET-14..18 (task 10.14) are in their own sections below.
+traceability guardian reads). AC-TICKET-9..13 (task 10.13), AC-TICKET-14..18 (task 10.14) and AC-TICKET-19..23 (task 10.15) are in their own sections below.
 
 - **AC-TICKET-1** — With `access_info` set, `/t/{token}` shows it under "Only for ticket
   holders", together with "Where" (`venue`, which the ticket page did not show before).
@@ -202,6 +202,62 @@ it and buttons to open it in a map.
   contain the address (raw or encoded) nor a map link (asserted together with AC-TICKET-1).
 - **AC-TICKET-18** — Without an address, no address block, copy button or map link
   appears on the ticket page, the ticket-management page or either email.
+
+## Optional "More information" link (task 10.15, 2026-11-22)
+
+The first integration (a venue's site) pasted "More info and flyer: https://…" into the
+description. `/e/{slug}` prints the description as escaped plain text, so the link could not
+be tapped and read as clutter. Each event gets its own optional link instead, shown as a
+button. Unlike `access_address` it is **public** — but only on `/e/{slug}`.
+
+- **Storage.** `events.info_url`, nullable `varchar(2048)`, after `payment_info`.
+- **Validation** (`EventRequest`, the one rule set for the web form and the API):
+  `nullable|string|max:2048|url:https`. Only an absolute `https` URL with a host passes:
+  `http:`, `javascript:`, `data:`, `mailto:`, `ftp:`, protocol-relative (`//…`), scheme-less
+  and relative values are refused. Trimmed; empty is `null` (the framework's global
+  `TrimStrings` / `ConvertEmptyStringsToNull`). The error message says it must start with
+  `https://` (es/en/pt).
+- **Organizer form.** A `type="url"` input right after the description: "Link for more
+  information (optional)" (es «Link para ver más (opcional)»), hint "A link to your site with
+  more information about the event. It has to start with https://. It is shown as a “More
+  information” button." (es «Un link a tu sitio con más información del evento. Tiene que
+  empezar con https://. Se muestra como un botón «Más información».»).
+- **Public page.** After the description and before the price block and the registration
+  form, whatever the registration state (published, closed, cancelled): a `nexo-btn
+  nexo-btn--ghost` link reading "More information" (es «Más información») followed, visibly,
+  by the **domain** it leads to and `↗` — e.g. `laherreriafloresta.com.ar ↗` — plus a
+  screen-reader-only "(opens in a new tab)". Attributes: `href` escaped, `target="_blank"`,
+  `rel="noopener noreferrer nofollow ugc"`. No script, no inline style (strict CSP), design
+  tokens only (dark mode). With no link, nothing renders.
+- **The domain** is `parse_url($url, PHP_URL_HOST)`, lower-cased, without a leading `www.`.
+  Anyone can create events on an instance, so the button says where it leads instead of
+  letting its label vouch for it. A host that is not plain ASCII is shown as punycode
+  (`idn_to_ascii`, when the `intl` extension is loaded), so a letter from another alphabet
+  cannot pass for a well-known domain. `Event::infoUrlHost()` re-checks the scheme and the
+  host on the way out and returns `null` otherwise — then no button.
+- **Nowhere else.** Not on `/t/{token}`, in the ticket email, in the reminder, in the meta
+  description, in the JSON-LD or in the sitemap.
+- **Abuse.** SPEC-abuse "Organizer links" (report + kill-switch cover it).
+- **API.** v1.3 of SPEC-integration-api (AC-API-25..27).
+
+- **AC-TICKET-19** — `events.info_url` is a nullable column; the organizer form shows the
+  labelled, described `type="url"` input after the description (es/en/pt) and saves,
+  changes and clears it (trimmed; empty → `null`).
+- **AC-TICKET-20** — The web form refuses `http`, `javascript:`, `data:`, `mailto:`,
+  `ftp`, relative, protocol-relative and scheme-less values, a value whose quotes would
+  break out of an attribute and more than 2048 characters; it accepts 2048. The error says
+  `https://`.
+- **AC-TICKET-21** — With a link, `/e/{slug}` shows the "More information" button with the
+  visible domain (lower-case, no `www.`, punycode for a non-ASCII host, the real host when
+  the URL carries credentials), `target="_blank"` and `rel="noopener noreferrer nofollow
+  ugc"`, after the description and before the registration form, also when registration is
+  closed; a killed event is still a 404. Without a link — or with a stored value that is not
+  an absolute https URL — nothing renders.
+- **AC-TICKET-22** — A stored URL containing quotes or `"><script>` is escaped inside the
+  `href` and never adds an element or an attribute.
+- **AC-TICKET-23** — The link appears exactly once on `/e/{slug}` (the button) and never
+  in its meta description, its JSON-LD, the sitemap, `/t/{token}`, the ticket email or the
+  reminder (es/en/pt).
 
 ## Guardians
 

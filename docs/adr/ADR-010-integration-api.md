@@ -99,3 +99,21 @@ multi-instance is env-configured and off by default (SSO, beacon); routes must s
   siblings (nexoagenda availability is the obvious next candidate); promotion to
   `templates/` + `nexo-doctor` waits for the **second** consumer — one consumer is a
   feature, two are a standard.
+
+## Amendment — 2026-11-22: event payload v1.3 (PLAN 10.15)
+
+The `/api/v1` surface grew by additive minor versions, each one a new optional event field
+that a body without it ignores: v1.1 (`access_info`, `payment_info`, `checked_in_count`,
+plus the opt-in `collaborators:manage` scope — ADR-011, ADR-012), v1.2 (`access_address`,
+task 10.14) and now **v1.3**: `info_url`, the event's optional public "More information"
+link, accepted on `POST /events` and `PATCH /events/{id}` and returned after
+`payment_info` (sixteen keys). Same `EventRequest` rule as the web form —
+`nullable|string|max:2048|url:https` — so an integration can no more set an `http`,
+`javascript:` or `data:` link than a person can. Scopes do not change: it is event
+metadata, written with `events:write` and read with `events:read`, and it carries nothing
+about attendees, so the blast radius in §4 is unchanged. A leaked token could point the
+button of the integration's own events somewhere else; the button always prints the
+destination's domain, and report + kill-switch (ADR-007) cover it like any other event
+content. The path stays `/api/v1`: none of these versions breaks a v1 call. Contract:
+SPEC-integration-api v1.3, AC-API-25..27; the public page: SPEC-ticket-info
+AC-TICKET-19..23.

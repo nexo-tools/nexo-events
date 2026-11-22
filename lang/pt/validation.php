@@ -34,6 +34,7 @@ return [
         'whatsapp_phone' => 'WhatsApp',
         'phone' => 'telefone',
         'access_address' => 'endereço',
+        'info_url' => 'link',
         'client_name' => 'nome',
         'client_email' => 'email',
         'client_phone' => 'telefone',

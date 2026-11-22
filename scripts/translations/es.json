@@ -287,5 +287,10 @@
     "Copy address": "Copiar dirección",
     "Address copied": "Copiada",
     "Open the address in :app (new tab)": "Abrir la dirección en :app (pestaña nueva)",
-    "Open in Google Maps": "Abrir en Google Maps"
+    "Open in Google Maps": "Abrir en Google Maps",
+    "Link for more information (optional)": "Link para ver más (opcional)",
+    "A link to your site with more information about the event. It has to start with https://. It is shown as a “More information” button.": "Un link a tu sitio con más información del evento. Tiene que empezar con https://. Se muestra como un botón «Más información».",
+    "More information": "Más información",
+    "(opens in a new tab)": "(se abre en una pestaña nueva)",
+    "The link has to be a full web address starting with https://.": "El link tiene que ser una dirección web completa que empiece con https://."
 }

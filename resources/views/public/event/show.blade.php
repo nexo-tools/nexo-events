@@ -8,6 +8,23 @@
         <p class="mb-6 whitespace-pre-line text-sm text-ink">{{ $event->description }}</p>
     @endif
 
+    {{-- PLAN 10.15: the organizer's "More information" link. Anyone can create
+         events here, so the button prints the domain it leads to instead of
+         letting the label vouch for it; nofollow ugc because the instance does
+         not endorse it. Only on this page: never on the ticket, the emails, the
+         JSON-LD or the sitemap. infoUrlHost() is null for anything that is not
+         an absolute https URL, and then nothing renders. --}}
+    @if ($event->infoUrlHost())
+        <p class="mb-6" data-info-url>
+            <a href="{{ $event->info_url }}" target="_blank" rel="noopener noreferrer nofollow ugc"
+               class="nexo-btn nexo-btn--ghost max-w-full flex-wrap">
+                <span>{{ __('More information') }}</span>
+                <span class="break-all text-xs font-normal text-muted" data-info-url-host>{{ $event->infoUrlHost() }} <span aria-hidden="true">↗</span></span>
+                <span class="sr-only">{{ __('(opens in a new tab)') }}</span>
+            </a>
+        </p>
+    @endif
+
     {{-- Price text, before anyone decides to register (ADR-012). Nothing is
          collected here: registering is a reservation. access_info is never
          rendered on this page — it is for ticket holders only. --}}

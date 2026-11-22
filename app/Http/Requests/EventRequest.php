@@ -33,12 +33,28 @@ class EventRequest extends FormRequest
             'access_address' => ['nullable', 'string', 'max:255'],
             'access_info' => ['nullable', 'string', 'max:1000'],
             'payment_info' => ['nullable', 'string', 'max:300'],
+            // PLAN 10.15: an optional "More information" link, shown on the
+            // public page as a button with its domain. Absolute https only:
+            // http, javascript:, data:, mailto: and relative paths are refused
+            // (anyone can create events, and the link opens from this domain).
+            // Trimmed and empty → null by the framework's global middleware.
+            'info_url' => ['nullable', 'string', 'max:2048', 'url:https'],
             'capacity' => ['nullable', 'integer', 'min:1', 'max:1000000'],
             // API only — the consumer's own key for the event, which is what
             // makes creation idempotent. The web form has no such field, and the
             // column is outside Event's #[Fillable], so it can only ever be set
             // by EventCreator (SPEC "Idempotent creation").
             'external_ref' => ['nullable', 'string', 'max:190'],
+        ];
+    }
+
+    /** @return array<string, string> */
+    public function messages(): array
+    {
+        // The framework's "must be a valid URL" does not say what is missing;
+        // the usual mistake is a link without https:// (or with http://).
+        return [
+            'info_url.url' => __('The link has to be a full web address starting with https://.'),
         ];
     }
 }

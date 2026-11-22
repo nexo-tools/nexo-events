@@ -35,6 +35,7 @@ return [
         'whatsapp_phone' => 'WhatsApp',
         'phone' => 'teléfono',
         'access_address' => 'dirección',
+        'info_url' => 'link',
     ],
 
 ];

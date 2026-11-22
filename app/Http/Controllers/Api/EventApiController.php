@@ -146,6 +146,8 @@ class EventApiController extends Controller
             // private the same way.
             'access_address' => $event->access_address,
             'payment_info' => $event->payment_info,
+            // v1.3 (PLAN 10.15): the public "More information" link, https only.
+            'info_url' => $event->info_url,
             'checked_in_count' => $event->checkedInCount(),
         ];
     }

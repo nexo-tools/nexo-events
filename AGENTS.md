@@ -53,6 +53,27 @@ Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./ven
 
 ## Accumulated context
 
+- **2026-11-22** — **Optional "More information" link per event, API v1.3 (PLAN 10.15), built
+  locally, not deployed.** The venue's site was pasting "Más info y flyer: https://…" into the
+  description, where `/e/{slug}` prints it as untappable text. What a future session should
+  not have to rediscover:
+  - **`events.info_url` is public, but only on `/e/{slug}`** — not on the ticket, the emails,
+    the meta, the JSON-LD or the sitemap (AC-TICKET-23 counts exactly one occurrence on the
+    page). Opposite of `access_address`, same "one surface" discipline.
+  - **Three properties keep it from being a phishing aid, each with a test that was turned
+    red on purpose**: `url:https` in `EventRequest` (web and API), the domain printed on the
+    button (`Event::infoUrlHost()`: lower case, no `www.`, punycode for non-ASCII hosts) and
+    `rel="noopener noreferrer nofollow ugc"`. `infoUrlHost()` also re-checks the scheme, so a
+    value that reached the column some other way renders nothing.
+  - **Laravel's `url` rule rejects `"` and `<` but accepts `'`**, upper-case `HTTPS://`,
+    credentials (`https://a@b`) and Cyrillic hosts. That is why the host shown is the parsed
+    one, converted to punycode — and the punycode step needs `ext-intl` (in CI and the dev
+    container; not declared in `composer.json`, not verified on the production host).
+  - No new Tailwind/CSS: the button is `nexo-btn nexo-btn--ghost` plus utilities; CI builds
+    `public/build` from source on every deploy anyway.
+  - Migration rehearsed on MariaDB 11.8.9 (up, rollback with data, up). The API consumer
+    sends `https://laherreriafloresta.com.ar/evento/<slug>`.
+
 - **2026-11-21** — **Optional attendee phone and private address (PLAN 10.13–10.14), built
   locally, not deployed.** Two asks from the same venue, both invisible to an instance that
   does not use them. What a future session should not have to rediscover:

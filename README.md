@@ -66,6 +66,8 @@ single account ([Nexo ID](https://github.com/nexo-tools/nexo-id) SSO).
   only on the ticket and its emails (the exact address — with buttons to copy it and open it
   in Google Maps or Apple Maps —, how to get in) and a free-text price ("Entry $8,000 · pay
   at the door"). Nexo Events never collects the money.
+- **A "More information" link** — an event can point to the organizer's own site with a
+  button that always shows the domain it leads to (https only).
 - **Self-hostable** — a standard Laravel app; runs on your own infrastructure.
 
 ### Collaborators

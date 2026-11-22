@@ -24,6 +24,7 @@ Source input: a pre-planning evaluation brief (2026-07-20), kept out of this rep
 - **Anti-abuse**: rate limiting on all public writes, event report mechanism, per-event kill-switch (closed decision; ADR-007).
 - **Event collaborators** *(In since 2026-10-28, ADR-011)* — the owner invites someone by email to manage one event's tickets: capacity, close/reopen, the registrations list by name (no emails), door check-in, releasing a spot. One role; acceptance bound to an account with the same verified email; access ends 7 days after the event.
 - **Ticket-holder info and payment text** *(In since 2026-10-28, ADR-012)* — `access_info` (shown only on the ticket and its emails, e.g. the exact address) and `payment_info` (price / how to pay, as display-only text). The platform still processes no payment. Since 2026-11-21 (PLAN 10.14) the exact address can also go on its own in `access_address`, private on the same terms, with copy and open-in-a-map buttons on the ticket.
+- **"More information" link** *(In since 2026-11-22, PLAN 10.15)* — one optional public `https` link per event, shown on the event page as a button that prints the domain it leads to (`rel="nofollow ugc"`). Only on the public page; not on the ticket, the emails or the structured data.
 - **Cookieless product analytics**: page views and registration counters via the VisitorHash pattern (no cookies, no raw IPs).
 - **Multi-instance attribution**: `NEXO_ATTRIBUTION_*` footer (ecosystem pattern).
 

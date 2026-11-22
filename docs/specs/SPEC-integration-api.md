@@ -1,4 +1,4 @@
-# SPEC — Integration API v1 (PLAN Phase 10, tasks 10.1–10.6) · v1.1 (tasks 10.7–10.11) · v1.2 (task 10.14)
+# SPEC — Integration API v1 (PLAN Phase 10, tasks 10.1–10.6) · v1.1 (tasks 10.7–10.11) · v1.2 (task 10.14) · v1.3 (task 10.15)
 
 > Written before the code. Governing decision: **ADR-010** (per-account hashed API tokens,
 > env-gated, no new dependencies), which puts into practice the posture **ADR-006** committed
@@ -17,6 +17,13 @@
 > (SPEC-ticket-info AC-TICKET-14..18). Accepted on `POST /events` and `PATCH /events/{id}`,
 > returned next to `access_info`. A body without it behaves exactly as in v1.1
 > (AC-API-24).
+>
+> **v1.3 (2026-11-22, task 10.15)** adds one more optional field, again without breaking
+> any call: `info_url` (≤2048, absolute `https` only), the event's public "More
+> information" link, shown on `/e/{slug}` as a button with its domain (SPEC-ticket-info
+> AC-TICKET-19..23). Accepted on `POST /events` and `PATCH /events/{id}`, returned after
+> `payment_info`. A body without it behaves exactly as in v1.2 (AC-API-25..27). Scopes are
+> unchanged: it is an event field, so `events:write` sets it and `events:read` sees it.
 
 ## Purpose
 
@@ -154,7 +161,9 @@ Base `/api/v1` · `Authorization: Bearer <token>` · JSON errors `{message, erro
 In v1.1 `POST /events` and `PATCH /events/{id}` also accept `access_info` (≤1000) and
 `payment_info` (≤300) — same `EventRequest` rules as the web form. In v1.2 they also accept
 `access_address` (≤255), same rule as the web form; leaving it out of a `PATCH` keeps it,
-`null` clears it. A consumer that owns the
+`null` clears it. In v1.3 they also accept `info_url` (≤2048, `url:https`: absolute `https`
+only — `http`, `javascript:`, `data:`, `mailto:` and relative values are a 422), same rule
+as the web form, same `PATCH` semantics; trimmed, and `""` is `null`. A consumer that owns the
 content but not the tickets (the first one) sends `capacity` only on creation and never
 sends `status`: after creation, capacity and registration state belong to whoever manages
 the tickets.
@@ -163,7 +172,8 @@ the tickets.
 `{id, slug, title, description, status, starts_at, venue, capacity, issued_tickets_count,
 is_sold_out, public_url}` in v1, plus `access_info`, `payment_info` and `checked_in_count`
 (tickets in `checked_in`) in v1.1 — fourteen keys — plus `access_address` right after
-`access_info` in v1.2: fifteen keys. One presenter, so "no attendee PII" is a property of one
+`access_info` in v1.2: fifteen keys — plus `info_url` right after `payment_info` in v1.3:
+sixteen keys. One presenter, so "no attendee PII" is a property of one
 function instead of a habit repeated in six places. Creation returns the same shape as a
 read: a superset of the `{id, slug, status, public_url}` the first consumer needs, which
 costs nothing and saves it a round trip.
@@ -207,7 +217,8 @@ costs nothing and saves it a round trip.
   10.8, together with its test): fourteen keys — the eleven above, then `access_info`,
   `payment_info`, `checked_in_count`; `checked_in_count` counts only `checked_in` tickets.
   v1.2 rewrite (task 10.14, with its test): fifteen keys — `access_address` between
-  `access_info` and `payment_info`.*
+  `access_info` and `payment_info`. v1.3 rewrite (task 10.15, with its test): sixteen keys
+  — `info_url` between `payment_info` and `checked_in_count`.*
 - **AC-API-7** — `PATCH /events/{id}` updates only the provided fields and never
   regenerates the slug, even when `title` changes. A field absent from the body keeps its
   stored value; `external_ref` is not updatable.
@@ -277,3 +288,16 @@ costs nothing and saves it a round trip.
   `access_info`; without it the event is created as in v1.1 with `access_address: null`.
   `PATCH` sets it, keeps it when the body does not mention it, clears it with `null`; more
   than 255 characters is a 422 on both, as on the web form.
+
+### v1.3 — "More information" link (task 10.15)
+
+- **AC-API-25** — `POST /events` with `info_url` stores it trimmed and returns it right
+  after `payment_info` (sixteen keys); without it the event is created as in v1.2 with
+  `info_url: null`, and `""` is stored as `null`. `GET` returns it.
+- **AC-API-26** — `PATCH` sets `info_url`, keeps it when the body does not mention it and
+  clears it with `null`; `http`, `javascript:`, `data:`, `mailto:`, relative values and more
+  than 2048 characters are a 422 on `POST` and `PATCH` alike, as on the web form, and write
+  nothing.
+- **AC-API-27** — With `NEXO_API_ENABLED=false` a `POST` or `PATCH` carrying `info_url`
+  answers 404 and writes nothing, while the web form and `/e/{slug}` keep saving and showing
+  the link exactly as with the API on.

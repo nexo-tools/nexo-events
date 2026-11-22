@@ -44,6 +44,29 @@ Sign-up was the one public write without a honeypot, and every account it create
 
 - **AC-ABUSE-6** — A sign-up that fills the honeypot is refused: no account is created, nobody is logged in and no verification mail is queued. A person who leaves it empty signs up exactly as before.
 
+### Organizer links (added 2026-11-22, PLAN 10.15)
+
+From task 10.15 an event can carry one outbound link, shown on `/e/{slug}` as a "More
+information" button (SPEC-ticket-info AC-TICKET-19..23). Anyone can create events, so the
+link is a phishing vector by construction; it gets no new moderation machinery, only
+constraints that keep it from being a good one:
+
+- **The organizer controls it, and only `https`.** `EventRequest` (web form and API alike)
+  refuses `http`, `javascript:`, `data:`, `mailto:` and relative values; the view re-checks
+  the scheme before rendering.
+- **The destination is always visible.** The button prints the domain it leads to (lower
+  case, no `www.`, punycode for a non-ASCII host), so the label "More information" never
+  vouches for a link on its own and a credential-style URL (`https://bank.example@evil.example`)
+  shows the real host.
+- **The instance does not endorse it.** `rel="noopener noreferrer nofollow ugc"`: no
+  `window.opener`, no referrer, no ranking signal passed on.
+- **It is only on the public page**: never on the ticket, in the emails, in the JSON-LD or in
+  the sitemap, so the instance's own mail never carries a third-party link.
+- **Report and kill-switch already cover it.** The link lives on the event page, next to
+  "Report this event" (AC-ABUSE-1); a killed event answers 404 (AC-KILL-2), which takes the
+  button down with it. No URL reputation check or allowlist: zero external requests at
+  runtime, and an operator can kill in one command.
+
 ### Kill-switch
 
 - **AC-KILL-1** — `events:kill <slug> --reason="…"` sets the event to `killed` and records the reason, the timestamp and the status it had before.

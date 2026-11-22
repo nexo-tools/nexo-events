@@ -277,10 +277,11 @@ test('AC-API-6c: GET /events/{id} returns exactly the agreed field set', functio
     // Enumerated, so adding or dropping a field is a deliberate contract change.
     // v1.1: the eleven v1 keys, then the three of ADR-012 / SPEC v1.1.
     // v1.2: access_address, next to access_info (PLAN 10.14, AC-API-24).
+    // v1.3: info_url, after payment_info (PLAN 10.15, AC-API-25) — sixteen keys.
     expect(array_keys($response->json()))->toBe([
         'id', 'slug', 'title', 'description', 'status', 'starts_at', 'venue',
         'capacity', 'issued_tickets_count', 'is_sold_out', 'public_url',
-        'access_info', 'access_address', 'payment_info', 'checked_in_count',
+        'access_info', 'access_address', 'payment_info', 'info_url', 'checked_in_count',
     ]);
 
     $response->assertJsonPath('issued_tickets_count', 1)
@@ -385,6 +386,120 @@ test('AC-API-24: PATCH sets, keeps and clears access_address, with the web form\
         ->assertJsonPath('access_address', null);
 
     expect($event->fresh()->access_address)->toBeNull();
+});
+
+test('AC-API-25: info_url is accepted on create and returned after payment_info; without it nothing changes', function (): void {
+    $user = User::factory()->create();
+    $raw = apiToken($user);
+    $url = 'https://laherreriafloresta.com.ar/evento/noche-de-rock';
+
+    $with = $this->postJson('/api/v1/events', [
+        'external_ref' => 'laherreria:evento:con-link',
+        'title' => 'Con link',
+        'starts_at' => now()->addWeek()->toIso8601String(),
+        'info_url' => '  '.$url.'  ',
+    ], bearer($raw))->assertCreated()
+        ->assertJsonPath('info_url', $url);
+
+    // The v1.2 body, exactly as the consumer sends it today: still a 201.
+    $without = $this->postJson('/api/v1/events', [
+        'external_ref' => 'laherreria:evento:sin-link',
+        'title' => 'Sin link',
+        'starts_at' => now()->addWeek()->toIso8601String(),
+    ], bearer($raw))->assertCreated()
+        ->assertJsonPath('info_url', null);
+
+    expect(Event::find($with->json('id'))->info_url)->toBe($url)
+        ->and(Event::find($without->json('id'))->info_url)->toBeNull()
+        ->and(count($with->json()))->toBe(16);
+
+    $keys = array_keys($with->json());
+    expect(array_search('info_url', $keys, true))->toBe(array_search('payment_info', $keys, true) + 1);
+
+    $this->getJson('/api/v1/events/'.$with->json('id'), bearer($raw))
+        ->assertOk()
+        ->assertJsonPath('info_url', $url);
+
+    // An empty string is a cleared field, as on the web form.
+    $this->postJson('/api/v1/events', [
+        'title' => 'Vacío',
+        'starts_at' => now()->addWeek()->toIso8601String(),
+        'info_url' => '',
+    ], bearer($raw))->assertCreated()->assertJsonPath('info_url', null);
+});
+
+test('AC-API-26: PATCH sets, keeps and clears info_url, and refuses what the web form refuses', function (): void {
+    $user = User::factory()->create();
+    $raw = apiToken($user);
+    $event = Event::factory()->for($user, 'organizer')->create(['external_ref' => 'laherreria:evento:10']);
+    $url = 'https://laherreriafloresta.com.ar/evento/otra-noche';
+
+    $this->patchJson("/api/v1/events/{$event->id}", ['info_url' => $url], bearer($raw))
+        ->assertOk()
+        ->assertJsonPath('info_url', $url);
+
+    // A PATCH that does not mention it keeps it (AC-API-7).
+    $this->patchJson("/api/v1/events/{$event->id}", ['title' => 'Otro título'], bearer($raw))
+        ->assertOk()
+        ->assertJsonPath('info_url', $url);
+
+    foreach ([
+        'http://laherreriafloresta.com.ar/evento/x',
+        'javascript:alert(1)',
+        'data:text/html,hola',
+        'mailto:hola@example.com',
+        '/evento/x',
+        'https://example.com/'.str_repeat('a', 2049 - strlen('https://example.com/')),
+    ] as $bad) {
+        $this->patchJson("/api/v1/events/{$event->id}", ['info_url' => $bad], bearer($raw))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['info_url']);
+
+        $this->postJson('/api/v1/events', [
+            'title' => 'Mal link',
+            'starts_at' => now()->addWeek()->toIso8601String(),
+            'info_url' => $bad,
+        ], bearer($raw))->assertUnprocessable()->assertJsonValidationErrors(['info_url']);
+    }
+
+    expect($event->fresh()->info_url)->toBe($url)
+        ->and(Event::where('title', 'Mal link')->exists())->toBeFalse();
+
+    $this->patchJson("/api/v1/events/{$event->id}", ['info_url' => null], bearer($raw))
+        ->assertOk()
+        ->assertJsonPath('info_url', null);
+
+    expect($event->fresh()->info_url)->toBeNull();
+});
+
+test('AC-API-27: with the API disabled info_url changes nothing — 404, nothing written, the panel and the page as before', function (): void {
+    config(['nexo.api.enabled' => false]);
+
+    $user = User::factory()->create();
+    $raw = apiToken($user);
+    $event = Event::factory()->for($user, 'organizer')->create(['info_url' => 'https://example.com/antes']);
+
+    $this->postJson('/api/v1/events', [
+        'title' => 'Fantasma',
+        'starts_at' => now()->addDay()->toIso8601String(),
+        'info_url' => 'https://example.com/fantasma',
+    ], bearer($raw))->assertNotFound();
+
+    $this->patchJson("/api/v1/events/{$event->id}", ['info_url' => null], bearer($raw))->assertNotFound();
+
+    expect(Event::count())->toBe(1)
+        ->and($event->fresh()->info_url)->toBe('https://example.com/antes');
+
+    // The web form and the public page do not depend on the flag.
+    $this->actingAs($user)->put(route('events.update', $event), [
+        'title' => $event->title,
+        'starts_at' => $event->starts_at->format('Y-m-d\TH:i'),
+        'info_url' => 'https://example.com/despues',
+    ])->assertSessionHasNoErrors();
+
+    $this->get(route('public.event', $event))->assertOk()
+        ->assertSee('href="https://example.com/despues"', false)
+        ->assertSee('rel="noopener noreferrer nofollow ugc"', false);
 });
 
 test('AC-API-7: PATCH updates only what it is sent and never regenerates the slug', function (): void {

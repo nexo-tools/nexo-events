@@ -4,6 +4,11 @@
 
 <x-textarea :label="__('Description')" name="description" :value="$e?->description" />
 
+{{-- PLAN 10.15: an optional link for more information, shown on the public
+     page as a button with the domain it leads to. https only (EventRequest). --}}
+<x-field :label="__('Link for more information (optional)')" name="info_url" type="url" :value="$e?->info_url" maxlength="2048" placeholder="https://"
+         :hint="__('A link to your site with more information about the event. It has to start with https://. It is shown as a “More information” button.')" />
+
 <x-field :label="__('Date and time')" name="starts_at" type="datetime-local" required
          :value="$e?->starts_at?->format('Y-m-d\TH:i')" />
 
