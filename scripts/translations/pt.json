@@ -279,7 +279,6 @@
     "Your ticket QR code": "O código QR do seu ingresso",
     "WhatsApp or phone (optional)": "WhatsApp ou telefone (opcional)",
     "Only the organizer sees it, in case they need to reach you.": "Só quem organiza vê, caso precise falar com você.",
-    "The phone needs at least :count digits.": "O telefone precisa ter pelo menos :count dígitos.",
     "Use only digits, spaces, parentheses, dashes, dots and an optional + at the start.": "Use só números, espaços, parênteses, hifens, pontos e um + opcional no começo.",
     "Address (only for ticket holders, optional)": "Endereço (só para quem tem ingresso, opcional)",
     "Shown on the ticket and in the emails, with buttons to copy it and open it in a map. It is not published on the event page.": "Aparece no ingresso e nos emails, com botões para copiá-lo e abri-lo num mapa. Não é publicado na página do evento.",
@@ -292,5 +291,9 @@
     "A link to your site with more information about the event. It has to start with https://. It is shown as a “More information” button.": "Um link para o seu site com mais informações sobre o evento. Tem que começar com https://. Aparece como um botão “Mais informações”.",
     "More information": "Mais informações",
     "(opens in a new tab)": "(abre em uma nova aba)",
-    "The link has to be a full web address starting with https://.": "O link tem que ser um endereço web completo, começando com https://."
+    "The link has to be a full web address starting with https://.": "O link tem que ser um endereço web completo, começando com https://.",
+    "Phone country": "País do telefone",
+    "All countries": "Todos os países",
+    "That doesn't look like a valid phone number. Check the country code and the area code.": "Esse número não parece válido. Confira o código do país e o de área.",
+    "That doesn't look like a valid number for :country. Check the area code, or choose another country.": "Esse número não parece válido no país escolhido (:country). Confira o código de área ou escolha outro país."
 }

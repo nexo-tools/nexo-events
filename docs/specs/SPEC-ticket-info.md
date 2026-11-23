@@ -1,4 +1,4 @@
-# SPEC — Ticket-holder info and payment text (PLAN Phase 10, tasks 10.7–10.8 and 10.12) · optional attendee phone (10.13) · private address (10.14) · "More information" link (10.15)
+# SPEC — Ticket-holder info and payment text (PLAN Phase 10, tasks 10.7–10.8 and 10.12) · optional attendee phone (10.13, country and format 10.16) · private address (10.14) · "More information" link (10.15)
 
 > Written before the code. Governing decision: **ADR-012** (ticket-holder info and payment
 > text), which amends ADR-001 §1 narrowly — the product still processes no payment — and
@@ -85,7 +85,7 @@ rules for the web form and the API (ADR-010 §6).
 ## Acceptance criteria
 
 AC-TICKET-1..7 landed with task 10.8 and AC-TICKET-8 with task 10.12 (bold is what the
-traceability guardian reads). AC-TICKET-9..13 (task 10.13), AC-TICKET-14..18 (task 10.14) and AC-TICKET-19..23 (task 10.15) are in their own sections below.
+traceability guardian reads). AC-TICKET-9..13 (task 10.13), AC-TICKET-14..18 (task 10.14), AC-TICKET-19..23 (task 10.15) and AC-TICKET-24..27 (task 10.16) are in their own sections below.
 
 - **AC-TICKET-1** — With `access_info` set, `/t/{token}` shows it under "Only for ticket
   holders", together with "Where" (`venue`, which the ticket page did not show before).
@@ -128,14 +128,16 @@ ADR-003 on 2026-11-21.
   required, wired through `x-field` (label `for`, hint in `aria-describedby`).
 - **Validation** (`RegisterAttendeeRequest`). `off`: no rule at all and nothing stored even
   if posted. `optional`: nullable, string, max 30, only an optional leading `+`, digits,
-  spaces, `()`, `-` and `.`, and at least 6 digits. Trimmed; empty is `null`.
+  spaces, `()`, `-` and `.`. Trimmed; empty is `null`. *Amended by 10.16:* the "at least 6
+  digits" check gave way to "a number its country hands out" (section below).
 - **Storage.** `tickets.attendee_phone`, nullable `varchar(30)`, next to `attendee_email`.
-  A duplicate registration (same email) does not overwrite it.
+  A duplicate registration (same email) does not overwrite it. *Since 10.16* the value is
+  E.164 (`+5491123456789`); rows from before keep what was typed.
 - **Visibility: the event owner only**, in the registrations list next to the email — the
-  same `showEmails` condition (ADR-011 §2). A number starting with `+` links to
-  `https://wa.me/<digits>` ("WhatsApp", new tab); any other to `tel:<digits>`.
-  Collaborators never see it; it is in no email, on no public page (`/e/{slug}`, `/t/{token}`,
-  sitemap) and in no API answer (AC-API-11).
+  same `showEmails` condition (ADR-011 §2). *Since 10.16* formatted, dialling and opening
+  WhatsApp as the section below says (until then: `wa.me` for a number starting with `+`,
+  `tel:` for any other). Collaborators never see it; it is in no email, on no public page
+  (`/e/{slug}`, `/t/{token}`, sitemap) and in no API answer (AC-API-11).
 - **Retention.** There is no purge or anonymization job: tickets live and die with their
   event (cascade). The phone is a column of the ticket, so it follows the name and email.
 - **Privacy page.** With `optional`, a section right after "what we store about attendees"
@@ -146,13 +148,15 @@ ADR-003 on 2026-11-21.
   validated nor stored.
 - **AC-TICKET-10** — With `optional` the field follows the email with the label, hint and
   attributes above, is not required, and registering without it still works; the stored
-  value is trimmed and an empty one is `null`.
-- **AC-TICKET-11** — Letters, a `+` anywhere but the start, fewer than 6 digits and more
-  than 30 characters are refused; the usual ways of writing a number are accepted.
+  value is trimmed — and since 10.16 in E.164 — and an empty one is `null`.
+- **AC-TICKET-11** — Letters, a `+` anywhere but the start and more than 30 characters are
+  refused, and since 10.16 so is anything that is not a number its country hands out (no
+  area code, a local number alone, thirty ones, a `+` code with too few digits); the usual
+  ways of writing an Argentine number are accepted and stored in E.164.
 - **AC-TICKET-12** — The owner's registrations list shows the phone next to the email,
-  linked to `wa.me` when it starts with `+` and to `tel:` otherwise; an accepted
-  collaborator's list does not contain it; neither do `/e/{slug}`, `/t/{token}`, the
-  sitemap, the ticket email or the reminder.
+  formatted, as a `tel:` link and with a WhatsApp link (10.16); an accepted collaborator's
+  list does not contain it; neither do `/e/{slug}`, `/t/{token}`, the sitemap, the ticket
+  email or the reminder.
 - **AC-TICKET-13** — The privacy page carries the phone section, in es, en and pt, only
   while the switch is `optional`, placed right after the attendee section.
 
@@ -258,6 +262,65 @@ button. Unlike `access_address` it is **public** — but only on `/e/{slug}`.
 - **AC-TICKET-23** — The link appears exactly once on `/e/{slug}` (the button) and never
   in its meta description, its JSON-LD, the sitemap, `/t/{token}`, the ticket email or the
   reminder (es/en/pt).
+
+## Attendee phone: country and format (task 10.16, 2026-11-23)
+
+The owner saw two registrations side by side: one typed with `+54` (shown with a WhatsApp
+link) and one without (shown as typed, a plain `tel:`). Nothing was wrong with either
+number — the list just showed whatever each person typed. This section gives the phone a
+country and shows every number the way its country writes it. Amends ADR-003 (2026-11-23).
+
+- **Reading a number.** libphonenumber (`giggsey/libphonenumber-for-php-lite`, Google's
+  metadata, bundled, no request at runtime) through `App\Support\AttendeePhone`. A number is
+  read as one of the chosen country's unless it starts with `+`, which brings its own code.
+  It has to be **valid** — a length and an area code that country hands out — not merely
+  possible.
+- **Form.** A country selector before the number, under the same visible label; its own
+  accessible name ("Phone country", `sr-only` label). It starts on the instance's country —
+  `NEXO_ATTENDEE_PHONE_COUNTRY` → `config('nexo.attendee_phone_country')`, ISO 3166-1
+  alpha-2, default `AR`; an unknown code falls back to `AR` — followed by an "All countries"
+  `optgroup` with every other country in the visitor's language and alphabetical order,
+  each as "Name (+code)". Stacked on a phone, side by side from `sm` up. No JavaScript.
+- **Country names.** `lang/{en,es,pt}/countries.php`, generated by
+  `scripts/generate-countries.php` from libphonenumber's regions and ICU's names, already
+  sorted per language — so the app needs no `ext-intl` at runtime. 245 countries.
+- **Validation.** `phone_country`: nullable, one of the listed codes. `phone`: the 10.13
+  rules (with `bail`), then valid for the country. A refused national number says so naming
+  the country ("…valid number for Argentina. Check the area code, or choose another
+  country."); a refused `+` number asks to check the country and area codes. A missing or
+  unknown `phone_country` reads as the instance's country. After an error the form keeps the
+  chosen country and what was typed.
+- **Storage.** E.164. Rows stored before 10.16 are not migrated: the list reads them with
+  the instance's country when it shows them.
+- **The owner's list.** International format ("+54 9 11 2345-6789", "+55 21 99876-5432"), as a
+  `tel:+<E.164>` link, then "WhatsApp" (`https://wa.me/<E.164 digits>`, new tab) for anything
+  that may be a mobile — a plain landline gets none. A country other than the instance's is
+  named after the number ("(Brasil)"). **An Argentine number without its 9 or 15 is shown and
+  linked as a mobile** (`+54 9 …`): WhatsApp only finds Argentine mobiles that way and, in a
+  field that asks for a WhatsApp, the number is almost always one — the owner's decision on
+  2026-11-23; a real landline gets a 9 it does not have, the accepted cost. A stored value
+  that still does not read as a number is shown as typed, `tel:` its digits, no WhatsApp.
+- **Unchanged.** Owner only; no email, public page or API answer carries it (AC-TICKET-12,
+  AC-API-11); the privacy page section of 10.13.
+
+- **AC-TICKET-24** — With `optional`, `/e/{slug}` has the labelled country selector after
+  the email and before the number, starting (selected) on the instance's country, then every
+  other listed country once, in the visitor's language and order, as "Name (+code)" (es and
+  pt checked); `NEXO_ATTENDEE_PHONE_COUNTRY` moves the start (lower case accepted, `AR` when
+  unset or unknown). A national number is read with the chosen country, a `+` number with
+  its own code, a post without the selector with the instance's country; an unlisted
+  country code is refused; the two refusal messages are the ones above; after a refusal the
+  form keeps the country and the number, marks the input invalid and describes it with the
+  error.
+- **AC-TICKET-25** — The owner's list shows an Argentine number stored without its 9 as
+  `+54 9 …`, with `tel:` and `wa.me` both carrying the 9; a Brazilian mobile, a US number
+  and a Spanish landline in their own formats, each followed by its country's name; no
+  WhatsApp link for the landline; no country name for Argentine numbers.
+- **AC-TICKET-26** — Numbers stored as typed before 10.16 (`+54 9 11 …`, `(011) …`,
+  `11 15 …`) are shown formatted like new ones; values that still are not numbers
+  (`123456`, `+999 …`) are shown as typed with a `tel:` of their digits and no WhatsApp.
+- **AC-TICKET-27** — `lang/{en,es,pt}/countries.php` list the same codes, each one a region
+  libphonenumber reads and each with a name (Brazil/Brasil/Brasil, Germany/Alemania/Alemanha).
 
 ## Guardians
 

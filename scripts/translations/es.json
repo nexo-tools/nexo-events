@@ -279,7 +279,6 @@
     "Your ticket QR code": "Código QR de tu entrada",
     "WhatsApp or phone (optional)": "WhatsApp o teléfono (opcional)",
     "Only the organizer sees it, in case they need to reach you.": "Solo lo ve quien organiza, por si necesita avisarte algo.",
-    "The phone needs at least :count digits.": "El teléfono necesita al menos :count dígitos.",
     "Use only digits, spaces, parentheses, dashes, dots and an optional + at the start.": "Usa solo números, espacios, paréntesis, guiones, puntos y un + opcional al principio.",
     "Address (only for ticket holders, optional)": "Dirección (solo para quien tiene entrada, opcional)",
     "Shown on the ticket and in the emails, with buttons to copy it and open it in a map. It is not published on the event page.": "Se muestra en la entrada y en los correos, con botones para copiarla y abrirla en un mapa. No se publica en la página del evento.",
@@ -292,5 +291,9 @@
     "A link to your site with more information about the event. It has to start with https://. It is shown as a “More information” button.": "Un link a tu sitio con más información del evento. Tiene que empezar con https://. Se muestra como un botón «Más información».",
     "More information": "Más información",
     "(opens in a new tab)": "(se abre en una pestaña nueva)",
-    "The link has to be a full web address starting with https://.": "El link tiene que ser una dirección web completa que empiece con https://."
+    "The link has to be a full web address starting with https://.": "El link tiene que ser una dirección web completa que empiece con https://.",
+    "Phone country": "País del teléfono",
+    "All countries": "Todos los países",
+    "That doesn't look like a valid phone number. Check the country code and the area code.": "Ese número no parece válido. Revisa el código de país y el de área.",
+    "That doesn't look like a valid number for :country. Check the area code, or choose another country.": "Ese número no parece válido para :country. Revisa el código de área o elige otro país."
 }

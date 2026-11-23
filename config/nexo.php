@@ -62,6 +62,12 @@ return [
     // emails, public pages or the integration API.
     'attendee_phone' => env('NEXO_ATTENDEE_PHONE', 'off') === 'optional' ? 'optional' : 'off',
 
+    // The country the phone's selector starts on (PLAN 10.16), ISO 3166-1
+    // alpha-2. A number typed without "+" is read as one of this country's,
+    // and the owner's list names any other country next to its number. An
+    // unknown code falls back to AR (AttendeePhone::defaultCountry()).
+    'attendee_phone_country' => strtoupper((string) env('NEXO_ATTENDEE_PHONE_COUNTRY', 'AR')),
+
     // Deploy freeze window around an event's start (see events:door-guard).
     // There is no `ends_at` column, so the window is inferred: long enough
     // before for doors opening, long enough after to cover the event itself.

@@ -56,3 +56,30 @@ may additionally ask for **an optional WhatsApp or phone** by setting
 **Consequences.** "Attendee PII is minimal" now reads: name + email, plus a phone only where
 the operator turned it on and the person chose to leave it. Still no attendee account, no
 password, no login. Contract and tests: SPEC-ticket-info AC-TICKET-9..13, AC-API-11.
+
+## Amendment — 2026-11-23: the phone has a country and a format (PLAN 10.16)
+
+**Context.** The owner's list showed each number as typed: "+54 9 11 …" got a WhatsApp link,
+"11 …" a bare `tel:`, and nothing could tell a typo from a number. WhatsApp needs the full
+international number, and an Argentine mobile is only found as `+54 9 …`.
+
+**Decision.**
+
+- Numbers are read with **libphonenumber** (`giggsey/libphonenumber-for-php-lite`): Google's
+  per-country metadata, bundled with the package, no request at runtime (the Nexo rule
+  holds), `php ^8.1` and nothing else. The *lite* build — no geocoding or carrier data — is
+  all this needs (~2.5 MB). A hand-written rule set would be wrong for most countries.
+- The form gains a **country selector that starts on the instance's country**
+  (`NEXO_ATTENDEE_PHONE_COUNTRY`, default `AR`): people from that country never touch it, and
+  anyone else picks theirs. A number typed with `+` brings its own code. The number must be
+  one its country hands out; the person is still on the form to fix it, and it stays optional.
+- Stored as **E.164**. No migration: rows from before are read with the instance's country.
+- The owner sees the **international format**, a `tel:` link and a WhatsApp link (none for a
+  plain landline), with the country named when it is not the instance's. **An Argentine number
+  without its 9 is shown and linked as a mobile** — the owner's decision: in a field that asks
+  for a WhatsApp it almost always is one, and a real landline getting a 9 is the accepted cost.
+
+**Consequences.** One runtime dependency more, updated with the rest (its metadata changes
+every few weeks). Country names are a generated file per language, so no `ext-intl` at
+runtime. Still owner-only; nothing new leaves the instance. Contract and tests:
+SPEC-ticket-info AC-TICKET-10..12 (amended), AC-TICKET-24..27.

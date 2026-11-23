@@ -27,8 +27,9 @@ class EventRegistrar
      *   existing ticket, no new token).
      *
      * `$phone` is the optional attendee phone (PLAN 10.13), already normalized
-     * by the request — null whenever the instance does not collect it. A
-     * duplicate registration does not overwrite the one already stored.
+     * by the request — E.164 since 10.16, null whenever the instance does not
+     * collect it. A duplicate registration does not overwrite the one already
+     * stored.
      *
      * @return array{result: string, ticket: ?Ticket, token: ?string}
      *                                                                `token` is the raw opaque QR token — returned ONCE, never stored.

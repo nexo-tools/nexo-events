@@ -21,15 +21,20 @@
                     <span class="block text-xs text-muted">@if ($showEmails){{ $ticket->attendee_email }} · @endif{{ $ticket->status->label() }}</span>
                     {{-- PLAN 10.13: the optional phone sits with the email, so
                          it rides the same owner-only condition. Collaborators
-                         never get it. --}}
+                         never get it. 10.16: formatted the way its country
+                         writes it, the number dials and WhatsApp opens the chat. --}}
                     @if ($showEmails && $ticket->attendee_phone)
-                        @php($phoneLink = \App\Support\AttendeePhone::link($ticket->attendee_phone))
-                        <span class="block text-xs text-muted" data-attendee-phone>
-                            @if ($phoneLink['whatsapp'])
-                                {{ $ticket->attendee_phone }} ·
-                                <a href="{{ $phoneLink['href'] }}" target="_blank" rel="noopener noreferrer" class="text-link underline">WhatsApp</a>
-                            @else
-                                <a href="{{ $phoneLink['href'] }}" class="text-link underline">{{ $ticket->attendee_phone }}</a>
+                        {{-- Pieces that wrap whole (never mid-number) and no
+                             separator left dangling at a line end — the
+                             column is narrow next to the door buttons. --}}
+                        @php($phone = \App\Support\AttendeePhone::present($ticket->attendee_phone))
+                        <span class="flex flex-wrap gap-x-2 text-xs text-muted" data-attendee-phone>
+                            <a href="{{ $phone['tel'] }}" class="whitespace-nowrap text-link underline">{{ $phone['display'] }}</a>
+                            @if ($phone['country'])
+                                <span class="whitespace-nowrap">({{ $phone['country'] }})</span>
+                            @endif
+                            @if ($phone['whatsapp'])
+                                <a href="{{ $phone['whatsapp'] }}" target="_blank" rel="noopener noreferrer" class="whitespace-nowrap text-link underline">WhatsApp</a>
                             @endif
                         </span>
                     @endif

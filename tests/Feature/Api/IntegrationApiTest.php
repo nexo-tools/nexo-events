@@ -630,6 +630,7 @@ test('AC-API-11: no answer of this API carries attendee names, emails, phones or
         expect($body)->not->toContain('Ana Pérez')
             ->and($body)->not->toContain('ana.perez@example.com')
             ->and($body)->not->toContain('2345-6789')
+            ->and($body)->not->toContain('5491123456789')
             ->and($body)->not->toContain('attendee_phone')
             ->and($body)->not->toContain($issued['token'])
             ->and($body)->not->toContain($issued['ticket']->token_hash);

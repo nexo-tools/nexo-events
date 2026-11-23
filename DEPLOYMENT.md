@@ -169,11 +169,14 @@ WhatsApp or phone number (PLAN 10.13, ADR-003 amendment 2026-11-21).
 | Variable | Default | What it does |
 | --- | --- | --- |
 | `NEXO_ATTENDEE_PHONE` | `off` | `off`: name and email only, and a phone posted anyway is ignored. `optional`: the field appears after the email, never required. Any other value reads as `off`. |
+| `NEXO_ATTENDEE_PHONE_COUNTRY` | `AR` | The country the phone's selector starts on (ISO code, PLAN 10.16). A number typed without `+` is read as one of this country's; people elsewhere pick theirs. An unknown code reads as `AR`. |
 
-Only the **event owner** sees the number, next to the email in the registrations list (a
-WhatsApp link when it starts with `+`, a `tel:` link otherwise). Collaborators, emails,
-public pages and the integration API never carry it, and the privacy page describes it only
-while the switch is `optional`. Turning it on is an `.env` edit plus `php artisan config:cache`.
+Only the **event owner** sees the number, next to the email in the registrations list:
+formatted the way its country writes it (`+54 9 11 2345-6789`), as a `tel:` link, with a
+WhatsApp link unless it is a plain landline, and the country named when it is not the
+instance's. Collaborators, emails, public pages and the integration API never carry it, and
+the privacy page describes it only while the switch is `optional`. Turning it on is an
+`.env` edit plus `php artisan config:cache`.
 
 ## Post-deploy smoke
 

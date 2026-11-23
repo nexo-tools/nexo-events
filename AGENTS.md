@@ -53,8 +53,27 @@ Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./ven
 
 ## Accumulated context
 
-- **2026-11-22** — **Optional "More information" link per event, API v1.3 (PLAN 10.15), built
-  locally, not deployed.** The venue's site was pasting "Más info y flyer: https://…" into the
+- **2026-11-23** — **The attendee phone gets a country and a format (PLAN 10.16).** The owner
+  saw "+54 …" numbers with a WhatsApp link and "11 …" ones as bare text, side by side. What a
+  future session should not have to rediscover:
+  - **libphonenumber-lite is the only reader of numbers** (`App\Support\AttendeePhone`):
+    `parse()` demands a *valid* number (area code and length the country hands out), not a
+    *possible* one — that is what refuses "15 2345-6789" without an area code.
+  - **An Argentine mobile typed without 9/15 parses as a landline** (`FIXED_LINE`,
+    `+54 11 …`). `present()` shows and links it as `+54 9 …` — the owner's decision; WhatsApp
+    only finds Argentine mobiles with the 9. Storage keeps what was typed (E.164 without the
+    9), so the rule lives in one display method and can be revisited.
+  - **Stored as E.164 since 10.16; older rows are raw** and read with the instance country
+    on display (no migration). Unreadable leftovers show as typed, `tel:` only.
+  - **Country names are generated files** (`lang/{en,es,pt}/countries.php`,
+    `scripts/generate-countries.php`, run in the Sail container — it needs `ext-intl`, the
+    app does not). Re-run it only if AC-TICKET-27 says a code is no longer supported.
+  - Locked at 9.0.43 on purpose (newest release ≥ 2 weeks old, 2026-11-23); `^9.0` lets the
+    usual dependency updates move it. No migration, no new env var required in production
+    (`NEXO_ATTENDEE_PHONE_COUNTRY` defaults to `AR`).
+
+- **2026-11-22** — **Optional "More information" link per event, API v1.3 (PLAN 10.15),
+  deployed 2026-11-22.** The venue's site was pasting "Más info y flyer: https://…" into the
   description, where `/e/{slug}` prints it as untappable text. What a future session should
   not have to rediscover:
   - **`events.info_url` is public, but only on `/e/{slug}`** — not on the ticket, the emails,
