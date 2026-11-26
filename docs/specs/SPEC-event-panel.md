@@ -80,7 +80,7 @@ SPEC with the prefix `AC-PANEL-`).
   below the tickets already issued (revoked ones do not count) with the summary's message
   and change nothing; the same value as stored is accepted; a body without `capacity`
   leaves it alone; a new event has no floor.
-- AC-PANEL-7 (10.20) — No "Aforo" in `lang/` or `resources/views`; the Spanish capacity
+- **AC-PANEL-7** (10.20) — No "Aforo" in `lang/` or `resources/views`; the Spanish capacity
   strings all say "cupo", the Portuguese ones "vagas".
 - AC-PANEL-8 (10.22) — In the registrations list the email and the status are two pieces of
   a wrapping row with no separator character between them, for the owner and for a

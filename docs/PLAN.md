@@ -245,7 +245,10 @@ sends, the check-in endpoint or any stored row.
   phase before the double-submit guard; verified in the browser (dialog shown, POST only on
   accept). AC-VERIFY-5 reworded (an unverified organizer deletes a draft). AC-PANEL-4, 5, 10.
   Deliberate violation: the cancel guard removed → three AC-PANEL-5 tests red.
-- [ ] 10.20 One word for the capacity: "Cupo" / "Vagas" (AC-PANEL-7).
+- [x] 10.20 One word for the capacity (H-nexoevents-14): Spanish «Cupo» everywhere (the summary
+  said «Aforo» for the number the edit form called «Cupo»), Portuguese «Vagas» (was «Lotação»,
+  «Capacidade» and «Vagas»); the door is «Puerta», one name since 10.18. `CapacityWordingTest`
+  scans `lang/` and the views and renders both forms. AC-PANEL-7.
 - [ ] 10.21 The edit form's capacity floor, web and API (AC-PANEL-6).
 - [ ] 10.22 Registration lines that wrap whole, no dangling separator (AC-PANEL-8).
 - [ ] 10.23 The scanner says when the session ended (AC-PANEL-9).
