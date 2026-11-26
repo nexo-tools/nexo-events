@@ -19,6 +19,8 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <!-- The suite never depends on the developer's .env: AC-LINK-4 builds its expected message with __() in the test process (TestCase sends Accept-Language: es). -->
+        <env name="APP_LOCALE" value="es"/>
         <!-- Pinned to the .env.example value CI copies: the sso-client tests
              build same-origin headers from http://localhost. -->
         <env name="APP_URL" value="http://localhost"/>
