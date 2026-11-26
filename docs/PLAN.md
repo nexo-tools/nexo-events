@@ -263,6 +263,16 @@ sends, the check-in endpoint or any stored row.
   dashboard, summary and collaborator meta lines. Checked at 390 and 320 px in Chromium: no
   separator node, page width = viewport, capture kept with the owner's planning notes.
   AC-PANEL-8.
-- [ ] 10.23 The scanner says when the session ended (AC-PANEL-9).
+- [x] 10.23 The scanner says when the session ended (owner-approved, ahead of the Nexo ID
+  session guard's `401 {"reason":"signed_out"}`): `outcomeOf()` in `scanner.js` reads a 401, a
+  419 or an unfollowed redirect (`redirect: 'manual'`; today a signed-out JSON request on a web
+  route is sent to `/login`, and following it ended in "No connection") as a closed session —
+  camera off, «Tu sesión se cerró…» and a «Volver a entrar» link to the scanner page. Same
+  request, same endpoint, every other answer unchanged. Node test (`tests/js/scanner.test.mjs`,
+  run from `ScannerSessionTest`), labels in es/en/pt, and a Chromium pass against the local app
+  with a canvas as the camera and the native detector stubbed: a real ticket → valid; cookies
+  cleared → 419 → session message, camera off; «Volver a entrar» → login → back at the door;
+  401 `signed_out`, the redirect, 429 and 500 each with their message; no console errors.
+  WebKit could not open the stubbed camera headless (harness limit). AC-PANEL-9.
 
 **Gate 10:** per integration — real cross-tool flow exercised, **standalone mode still green** (self-host story intact), owner sign-off.

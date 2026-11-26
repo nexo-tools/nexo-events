@@ -87,3 +87,11 @@ Record the outcome here with a date when it runs.
 - **iOS requires Safari** for camera access in most embedded/in-app browsers; a link opened inside Instagram or Gmail may not get `getUserMedia`. The page tells the organizer to open it in Safari rather than failing silently.
 - **One scanner per event** in v1: the organizer's own account (ADR-004 §7). Two people scanning means sharing a login, which is exactly why staff roles are v2.
   *Superseded 2026-10-28 by [ADR-011](../adr/ADR-011-event-collaborators.md): invited collaborators scan with their own accounts. The scanner page also shows the event's `payment_info` as a fixed note (ADR-012), so whoever is at the door can collect before scanning.*
+
+## Amendment 2026-11-26 — a session that ends at the door (PLAN 10.23)
+
+`scanner.js` posts with `redirect: 'manual'` and reads a 401, a 419 or an unfollowed redirect
+as "the session ended" (`outcomeOf()`, tested in node by `tests/js/scanner.test.mjs`): the
+camera goes off and the result box offers "Sign in again", a link to this same page, which
+goes through sign-in and comes back to the door. What it posts, the endpoint and every other
+answer are unchanged. SPEC-event-panel AC-PANEL-9.

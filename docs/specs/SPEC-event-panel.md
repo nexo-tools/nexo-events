@@ -44,9 +44,11 @@ line on a phone. And at the door, a session that ended mid-event made the scanne
 - **Lines that wrap whole.** In the registrations list (and in the dashboard and summary
   meta lines) the pieces wrap as units with a gap between them and no printed separator —
   the fix the phone line got in 10.16.
-- **The scanner and a closed session.** A 401 or a 419 from the check-in endpoint says
-  "Your session ended." with a "Sign in again" link back to the scanner page, and turns the
-  camera off. Every other answer keeps its current message.
+- **The scanner and a closed session.** A 401, a 419 or a redirect to sign in from the
+  check-in endpoint says "Your session ended." with a "Sign in again" link back to the
+  scanner page, and turns the camera off. Before, a 401/419 said "we could not validate the
+  ticket" and the redirect — followed by fetch onto the login page — ended in "No
+  connection". Every other answer keeps its current message.
 - **Confirmations that run.** The CSP has no `'unsafe-inline'` for scripts, so an inline
   `onsubmit="return confirm(…)"` never ran — "Cancel event", "Release spot", "Remove
   access" and "Revoke" submitted without asking. Destructive forms declare `data-confirm`
@@ -85,10 +87,12 @@ SPEC with the prefix `AC-PANEL-`).
 - **AC-PANEL-8** (10.22) — In the registrations list the email and the status are two pieces of
   a wrapping row with no separator character between them, for the owner and for a
   collaborator; the dashboard and summary meta lines follow the same rule.
-- AC-PANEL-9 (10.23) — The scanner classifies a 401 or a 419 as a closed session and shows
-  "Your session ended." with a "Sign in again" link to the scanner page; 429 keeps
-  "Too many attempts", any other failure keeps "We could not validate the ticket", and a
-  200 keeps its result (node test of `scanner.js`, plus a browser pass).
+- **AC-PANEL-9** (10.23) — The scanner classifies a 401, a 419 or a redirect it does not
+  follow (today's "sign in first" for a signed-out web request) as a closed session: it
+  turns the camera off and shows "Your session ended." with a "Sign in again" link to the
+  scanner page; 429 keeps "Too many attempts", any other failure keeps "We could not
+  validate the ticket", and a 200 keeps its result (node test of `scanner.js`, the door
+  page's labels in three languages, plus a browser pass).
 - **AC-PANEL-10** (10.19) — No view carries an inline event handler (`on…=`); every form that
   deletes, cancels, releases or revokes declares `data-confirm`.
 

@@ -16,6 +16,30 @@
 
 const COOLDOWN_MS = 2500 // how long the same code is ignored after a result
 
+/**
+ * What an answer from the check-in endpoint means at the door. Pure, so its
+ * test can run it in node (tests/js/scanner.test.mjs).
+ *
+ * A 401 (with the Nexo ID session guard the body says {"reason":"signed_out"}),
+ * a 419 (the CSRF token died with the session) or a redirect (today a
+ * signed-out web request is sent to the login page; the fetch does not follow
+ * it, see `redirect: 'manual'`) all mean the SESSION ended, not that the
+ * ticket is bad: "we could not validate the ticket" — or "no connection", which
+ * is what following the redirect used to end in — sends the door person to
+ * argue with an attendee whose ticket is fine (SPEC-event-panel AC-PANEL-9).
+ *
+ * @param {number} status
+ * @param {{result?: unknown}|null} body  the parsed JSON of a 2xx answer
+ * @param {string} [type]  Response.type; 'opaqueredirect' for a redirect not followed
+ * @returns {'signedOut'|'throttled'|'failed'|string} a key of the labels
+ */
+export function outcomeOf(status, body, type = 'basic') {
+    if (type === 'opaqueredirect' || status === 401 || status === 419) return 'signedOut'
+    if (status === 429) return 'throttled'
+    if (status < 200 || status >= 300) return 'failed'
+    return typeof body?.result === 'string' ? body.result : 'unknown'
+}
+
 export function initScanner() {
     const root = document.querySelector('[data-scanner]')
     if (!root) return
@@ -72,20 +96,26 @@ export function initScanner() {
                     'X-Requested-With': 'XMLHttpRequest',
                 },
                 body: JSON.stringify({ token: code }),
+                // The only redirect this endpoint answers a JSON request with is
+                // "sign in first". Followed, it lands on an HTML page (or on
+                // another origin, which fetch reports as a network error).
+                redirect: 'manual',
             })
 
-            if (response.status === 429) {
-                show('error', labels.throttled)
+            const data = response.ok ? await response.json() : null
+            const outcome = outcomeOf(response.status, data, response.type)
+
+            if (outcome === 'signedOut') {
+                showSignedOut()
                 return
             }
-            if (!response.ok) {
-                show('error', labels.failed)
+            if (outcome === 'throttled' || outcome === 'failed') {
+                show('error', labels[outcome])
                 return
             }
 
-            const data = await response.json()
-            const label = labels[data.result] ?? labels.unknown
-            show(data.result === 'ok' ? 'ok' : 'error', data.name ? `${label} — ${data.name}` : label)
+            const label = labels[outcome] ?? labels.unknown
+            show(outcome === 'ok' ? 'ok' : 'error', data?.name ? `${label} — ${data.name}` : label)
         } catch {
             // Offline at the door is a real scenario (ADR-002: v1 is online-only).
             // Say so plainly instead of looking like a rejected ticket.
@@ -93,6 +123,29 @@ export function initScanner() {
         } finally {
             busy = false
         }
+    }
+
+    // The session is gone: no scan can work until whoever is at the door signs
+    // in again, so the camera goes off (and its LED with it) and the only
+    // thing offered is the way back in — to this same page, which takes them
+    // through sign-in and returns them to the door.
+    const showSignedOut = () => {
+        stopCamera()
+        startBtn.hidden = true
+        if (!resultBox) return
+
+        const message = document.createElement('p')
+        message.textContent = labels.signedOut
+        const again = document.createElement('a')
+        again.href = window.location.href
+        again.className = 'nexo-btn nexo-btn--primary mt-3'
+        again.textContent = labels.signIn
+        again.dataset.scannerSignIn = ''
+
+        resultBox.replaceChildren(message, again)
+        resultBox.className = 'nexo-flash nexo-flash--warning mt-3 block'
+        resultBox.hidden = false
+        again.focus()
     }
 
     const handleCode = (code) => {
@@ -173,14 +226,18 @@ export function initScanner() {
         requestAnimationFrame(tick)
     }
 
-    const stop = () => {
+    const stopCamera = () => {
         scanning = false
         stream?.getTracks().forEach((track) => track.stop())
         stream = null
         video.hidden = true
         video.srcObject = null
-        startBtn.hidden = false
         stopBtn.hidden = true
+    }
+
+    const stop = () => {
+        stopCamera()
+        startBtn.hidden = false
         show('info', labels.stopped)
     }
 

@@ -37,6 +37,9 @@ class CheckinController extends Controller
                 'offline' => __('No connection. Check the signal and try again.'),
                 'throttled' => __('Too many attempts in a row. Wait a few seconds.'),
                 'failed' => __('We could not validate the ticket. Try again.'),
+                // A 401/419: the session ended, not the ticket (AC-PANEL-9).
+                'signedOut' => __('Your session ended. Sign in again to keep scanning.'),
+                'signIn' => __('Sign in again'),
             ],
         ]);
     }
