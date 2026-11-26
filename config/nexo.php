@@ -10,6 +10,14 @@ return [
         'url' => env('NEXO_ATTRIBUTION_URL'),
     ],
 
+    // Shared chrome v2 (templates/nexo-ui, App\Support\NexoChrome): the route
+    // of this app's panel — where the wordmark goes with a session and what the
+    // account menu calls «Tus eventos» (lang nexo.app.panel). D9: the route
+    // itself does not change.
+    'chrome' => [
+        'panel_route' => 'dashboard',
+    ],
+
     // Help center contact target. A support URL (e.g. a form) wins; otherwise the
     // help page links a mailto: to this address.
     // Who answers for THIS instance on the legal pages. No default on purpose:

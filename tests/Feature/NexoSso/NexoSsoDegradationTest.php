@@ -44,3 +44,14 @@ test('AC-DEGRADE-2: a provider that dies mid-flow aborts the callback with a saf
         ->assertSessionHasErrors('nexo_sso');
     $this->assertGuest();
 });
+
+test('AC-DEGRADE-2: a token endpoint returning a non-2xx status aborts the callback with a safe error, no session', function (int $status): void {
+    // Provider reachable but the code exchange fails; ->throw() surfaces a
+    // Throwable, which the controller catches into a safe login redirect.
+    nexoSsoFakeProvider(['error' => 'invalid_grant'], [], $status);
+
+    nexoSsoCallback($this)
+        ->assertRedirect(route('login'))
+        ->assertSessionHasErrors('nexo_sso');
+    $this->assertGuest();
+})->with([400, 500]);

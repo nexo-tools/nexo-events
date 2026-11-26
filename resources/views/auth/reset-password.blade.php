@@ -1,4 +1,4 @@
-<x-guest-layout :auth-card="true" :noindex="true">
+<x-guest-layout :auth-card="true" :noindex="true" :title="__('New password')">
     <h1 class="mb-6 text-xl font-semibold">{{ __('New password') }}</h1>
 
     <form method="POST" action="{{ route('password.store') }}" class="space-y-4">

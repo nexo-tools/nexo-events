@@ -2,10 +2,14 @@
 
 use App\Http\Middleware\NexoSsoSilentLogin;
 use App\Models\User;
+use App\Services\NexoSso\NexoSsoFlows;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\MessageBag;
+use Illuminate\Support\ViewErrorBag;
 
 require_once __DIR__.'/NexoSsoTestSupport.php';
 
@@ -33,50 +37,54 @@ function nexoSsoWithSessionCookie(TestCase $test): TestCase
 }
 
 test('AC-SILENT-1: a guest page hands an eligible visitor to the silent attempt, marking it once-per-session', function (): void {
-    $response = nexoSsoWithSessionCookie($this)->get('/nexo-sso-tests/probe');
+    $response = nexoSsoWithSessionCookie($this)->get('/nexo-sso-tests/probe?tab=2');
 
-    $response->assertRedirect(route('nexo-sso.silent'));
+    // The page travels with the attempt, so the visitor returns exactly there;
+    // url.intended is left alone (it belongs to `auth`).
+    $response->assertRedirect(route('nexo-sso.silent', ['to' => '/nexo-sso-tests/probe?tab=2']));
     $response->assertSessionHas('nexo_sso.silent_attempted', true);
-    // The visitor returns exactly where they were going.
-    expect(session('url.intended'))->toBe(url('/nexo-sso-tests/probe'));
+    expect(session('url.intended'))->toBeNull();
 });
 
 test('AC-SILENT-1: the silent authorize request is the standard one (PKCE+state+nonce) plus prompt=none', function (): void {
     nexoSsoFakeProvider();
 
-    $response = $this->get(route('nexo-sso.silent'));
+    $response = $this->get(route('nexo-sso.silent', ['to' => '/nexo-sso-tests/probe']));
 
     $response->assertRedirect();
-    parse_str((string) parse_url((string) $response->headers->get('Location'), PHP_URL_QUERY), $query);
+    $query = nexoSsoAuthorizeQuery($response);
+    $flow = nexoSsoStoredFlow($query['state']);
 
     expect($query['prompt'])->toBe('none')
         ->and($query['response_type'])->toBe('code')
         ->and($query['redirect_uri'])->toBe(route('nexo-sso.callback'))
-        ->and($query['state'])->toBe(session('nexo_sso.state'))
-        ->and($query['nonce'])->toBe(session('nexo_sso.nonce'))
+        ->and($query['nonce'])->toBe($flow['nonce'])
         ->and($query['code_challenge_method'])->toBe('S256')
         ->and($query['code_challenge'])->toBe(
-            rtrim(strtr(base64_encode(hash('sha256', session('nexo_sso.verifier'), true)), '+/', '-_'), '=')
+            rtrim(strtr(base64_encode(hash('sha256', $flow['verifier'], true)), '+/', '-_'), '=')
         );
 
-    // The attempt is marked as silent, so the callback picks the silent UX.
-    $response->assertSessionHas('nexo_sso.silent', true);
+    // The flow is saved as silent, so the callback picks the silent UX, and
+    // it remembers the page it started from.
+    expect($flow['mode'])->toBe(NexoSsoFlows::SILENT)
+        ->and($flow['return'])->toBe('/nexo-sso-tests/probe');
     $response->assertSessionHas('nexo_sso.silent_attempted', true);
 });
 
-test('AC-SILENT-1: a silent callback carrying a code signs the user in and returns to the destination', function (): void {
+test('AC-SILENT-1: an unsafe `to` never reaches the silent flow', function (): void {
+    nexoSsoFakeProvider();
+
+    $query = nexoSsoAuthorizeQuery($this->get(route('nexo-sso.silent', ['to' => '//evil.test/x'])));
+
+    expect(nexoSsoStoredFlow($query['state'])['return'])->toBeNull();
+});
+
+test('AC-SILENT-1: a silent callback carrying a code signs the user in and returns to the page it started from', function (): void {
     nexoSsoFakeProvider(); // default id_token echoes the session nonce
 
     $response = $this
-        ->withSession([
-            'nexo_sso.state' => str_repeat('s', 40),
-            'nexo_sso.verifier' => str_repeat('v', 64),
-            'nexo_sso.nonce' => nexoSsoNonce(),
-            'nexo_sso.silent' => true,
-            'nexo_sso.silent_attempted' => true,
-            'url.intended' => url('/target-page'),
-        ])
-        ->get(route('nexo-sso.callback', ['code' => 'auth-code', 'state' => str_repeat('s', 40)]));
+        ->withSession(nexoSsoFlowSession(NexoSsoFlows::SILENT, '/target-page') + ['nexo_sso.silent_attempted' => true])
+        ->get(route('nexo-sso.callback', ['code' => 'auth-code', 'state' => nexoSsoState()]));
 
     $this->assertAuthenticated();
     $response->assertRedirect(url('/target-page'));
@@ -86,15 +94,8 @@ test('AC-SILENT-2: login_required after a silent attempt stays guest, shows no e
     Http::fake();
 
     $response = $this
-        ->withSession([
-            'nexo_sso.state' => str_repeat('s', 40),
-            'nexo_sso.verifier' => str_repeat('v', 64),
-            'nexo_sso.nonce' => nexoSsoNonce(),
-            'nexo_sso.silent' => true,
-            'nexo_sso.silent_attempted' => true,
-            'url.intended' => url('/target-page'),
-        ])
-        ->get(route('nexo-sso.callback', ['error' => 'login_required', 'state' => str_repeat('s', 40)]));
+        ->withSession(nexoSsoFlowSession(NexoSsoFlows::SILENT, '/target-page') + ['nexo_sso.silent_attempted' => true])
+        ->get(route('nexo-sso.callback', ['error' => 'login_required', 'state' => nexoSsoState()]));
 
     $this->assertGuest();
     $response->assertRedirect(url('/target-page'));
@@ -108,8 +109,8 @@ test('AC-SILENT-2: interaction_required is handled the same silent way', functio
     Http::fake();
 
     $response = $this
-        ->withSession(['nexo_sso.silent' => true, 'nexo_sso.silent_attempted' => true, 'url.intended' => url('/target-page')])
-        ->get(route('nexo-sso.callback', ['error' => 'interaction_required']));
+        ->withSession(nexoSsoFlowSession(NexoSsoFlows::SILENT, '/target-page') + ['nexo_sso.silent_attempted' => true])
+        ->get(route('nexo-sso.callback', ['error' => 'interaction_required', 'state' => nexoSsoState()]));
 
     $this->assertGuest();
     $response->assertRedirect(url('/target-page'));
@@ -126,9 +127,7 @@ test('AC-SILENT-2: the next pageload after a failed attempt does not redirect ag
 });
 
 test('AC-SILENT-2: an interactive (non-silent) error callback still surfaces the error', function (): void {
-    $this
-        ->withSession(['nexo_sso.state' => str_repeat('s', 40)])
-        ->get(route('nexo-sso.callback', ['error' => 'access_denied', 'state' => str_repeat('s', 40)]))
+    nexoSsoErrorCallback($this, 'access_denied', NexoSsoFlows::INTERACTIVE)
         ->assertRedirect(route('login'))
         ->assertSessionHasErrors('nexo_sso');
     $this->assertGuest();
@@ -189,14 +188,115 @@ test('AC-SILENT-4: excluded route NAMES never attempt (slug catch-alls)', functi
         ->assertSessionMissing('nexo_sso.silent_attempted');
 });
 
+test('AC-SILENT-11: the fallback route (an unknown URL, the 404 page) never attempts, with no config at all', function (): void {
+    config(['nexo-sso.silent_excluded' => [], 'nexo-sso.silent_excluded_routes' => []]);
+    Route::fallback(fn () => response('fallback-404', 404))->middleware(['web', NexoSsoSilentLogin::class]);
+
+    $response = nexoSsoWithSessionCookie($this)->get('/nexo-sso-tests/no/such/page');
+
+    $response->assertNotFound()->assertSessionMissing('nexo_sso.silent_attempted');
+    expect($response->headers->get('Location'))->toBeNull();
+
+    // Control: a real page of the same shape does attempt.
+    nexoSsoWithSessionCookie($this)->get('/nexo-sso-tests/probe')->assertRedirect();
+});
+
 test('AC-SILENT-5: logout marks the fresh session so silent SSO cannot immediately sign the user back in', function (): void {
     nexoSsoFakeProvider();
 
-    $response = $this->actingAs(User::factory()->create())->post(route('nexo-sso.logout'));
+    $response = $this->withSession(nexoSsoSignedIn($this, User::factory()->create()))->post(route('nexo-sso.logout'));
 
     $response->assertRedirect(); // RP-initiated logout redirect (end_session)
     $this->assertGuest();
     // The fresh (post-invalidate) session already carries the mark: the next
     // guest pageload serves plainly instead of silently re-authenticating.
     $response->assertSessionHas('nexo_sso.silent_attempted', true);
+});
+
+test('AC-SILENT-6: an intended destination already saved (the deep link auth stored) is kept, not replaced by this page', function (): void {
+    $response = nexoSsoWithSessionCookie($this)
+        ->withSession(['url.intended' => url('/deep/link?tab=2')])
+        ->get('/nexo-sso-tests/probe');
+
+    $response->assertRedirect(route('nexo-sso.silent', ['to' => '/nexo-sso-tests/probe']));
+    expect(session('url.intended'))->toBe(url('/deep/link?tab=2'));
+});
+
+test('AC-SILENT-6: the silent round trip then lands on that saved destination', function (): void {
+    nexoSsoFakeProvider();
+
+    $this->withSession(nexoSsoFlowSession(NexoSsoFlows::SILENT, '/nexo-sso-tests/probe') + ['url.intended' => url('/deep/link')])
+        ->get(route('nexo-sso.callback', ['code' => 'auth-code', 'state' => nexoSsoState()]))
+        ->assertRedirect(url('/deep/link'));
+    $this->assertAuthenticated();
+});
+
+test('AC-SILENT-10: a failed attempt returns to the page it started from and keeps a saved destination for the real sign-in', function (string $error): void {
+    Http::fake();
+
+    // The guest abandoned a sign-in (auth saved /deep/link) and opened a public
+    // page: no Nexo ID session must not send them to that deep link — it is
+    // protected, so they would be bounced straight into a sign-in.
+    $this->withSession(nexoSsoFlowSession(NexoSsoFlows::SILENT, '/nexo-sso-tests/probe') + ['url.intended' => url('/deep/link')])
+        ->get(route('nexo-sso.callback', ['error' => $error, 'state' => nexoSsoState()]))
+        ->assertRedirect(url('/nexo-sso-tests/probe'));
+
+    $this->assertGuest();
+    expect(session('url.intended'))->toBe(url('/deep/link'));
+})->with(['login_required', 'interaction_required', 'server_error']);
+
+test('AC-SILENT-10: with the provider unreachable the attempt goes back to the page, no error UI', function (): void {
+    Http::fake(fn () => throw new ConnectionException('provider down'));
+
+    $this->withSession(['url.intended' => url('/deep/link')])
+        ->get(route('nexo-sso.silent', ['to' => '/nexo-sso-tests/probe']))
+        ->assertRedirect(url('/nexo-sso-tests/probe'))
+        ->assertSessionHasNoErrors();
+
+    expect(session('url.intended'))->toBe(url('/deep/link'));
+});
+
+test('AC-SILENT-10: a direct hit without `to` that fails lands on the public root, never the panel', function (): void {
+    Http::fake();
+
+    $this->withSession(nexoSsoFlowSession(NexoSsoFlows::SILENT))
+        ->get(route('nexo-sso.callback', ['error' => 'login_required', 'state' => nexoSsoState()]))
+        ->assertRedirect(url('/'));
+});
+
+test('AC-SILENT-7: the auth screens never attempt (login, register, password.*, verification.*, auth/nexo/*)', function (string $name): void {
+    Route::middleware(['web', NexoSsoSilentLogin::class])
+        ->get('/nexo-sso-tests/auth-screen-'.str_replace('.', '-', $name), fn () => response('auth-screen-ok'))
+        ->name($name);
+    app('router')->getRoutes()->refreshNameLookups();
+
+    nexoSsoWithSessionCookie($this)->get('/nexo-sso-tests/auth-screen-'.str_replace('.', '-', $name))
+        ->assertOk()
+        ->assertSessionMissing('nexo_sso.silent_attempted');
+})->with(['login', 'register', 'password.request', 'password.reset', 'verification.notice', 'nexo-sso.signed-out']);
+
+test('AC-SILENT-8: a request carrying validation errors back to a form never attempts', function (): void {
+    nexoSsoWithSessionCookie($this)
+        ->withSession(['errors' => (new ViewErrorBag)->put('default', new MessageBag(['email' => 'wrong']))])
+        ->get('/nexo-sso-tests/probe')
+        ->assertOk()
+        ->assertSessionMissing('nexo_sso.silent_attempted');
+});
+
+// One request per case: test headers persist across requests in a test, so
+// two cases in one test would let the first header mask the second.
+test('AC-SILENT-9: a prefetch or a non-navigation fetch never attempts', function (string $header, string $value): void {
+    nexoSsoWithSessionCookie($this)->withHeader($header, $value)->get('/nexo-sso-tests/probe')
+        ->assertOk()
+        ->assertSessionMissing('nexo_sso.silent_attempted');
+})->with([
+    'speculative prefetch' => ['Sec-Purpose', 'prefetch'],
+    'legacy prefetch' => ['Purpose', 'prefetch'],
+    'fetch()' => ['Sec-Fetch-Mode', 'cors'],
+    'subresource' => ['Sec-Fetch-Mode', 'no-cors'],
+]);
+
+test('AC-SILENT-9: a real navigation (Sec-Fetch-Mode: navigate) does attempt', function (): void {
+    nexoSsoWithSessionCookie($this)->withHeader('Sec-Fetch-Mode', 'navigate')->get('/nexo-sso-tests/probe')
+        ->assertRedirect(route('nexo-sso.silent', ['to' => '/nexo-sso-tests/probe']));
 });

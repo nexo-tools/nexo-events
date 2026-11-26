@@ -1,5 +1,10 @@
 import Alpine from 'alpinejs';
-import './nexo-ui.js'; // registers the shared chrome Alpine data (nexoTheme, nexoMenu)
+// The shared chrome's Alpine data (nexoTheme, nexoMenu) and the data-confirm
+// handler: a destructive <form data-confirm="…"> asks before it submits. It
+// lives in nexo-ui.js since v2.1 (it was here, and moved to the template); it
+// listens in the capture phase and stops a declined submit, so the
+// double-submit guard below never sees it.
+import './nexo-ui.js';
 import './nexo-beacon.js'; // no-op unless NEXO_BEACON_ENABLED renders its metas
 import { initScanner } from './scanner.js'; // no-op unless the door scanner is on the page
 
@@ -7,19 +12,6 @@ window.Alpine = Alpine;
 Alpine.start();
 
 initScanner();
-
-// Confirmation before a destructive submit: <form data-confirm="…">. It has to
-// live here, not in an inline onsubmit="return confirm(…)": the CSP allows no
-// inline script, so the browser refused those handlers and "Cancel event",
-// "Release spot", "Remove access" and "Revoke" submitted without asking.
-// Capture phase, so it runs before the double-submit guard below, which reads
-// defaultPrevented to leave a declined form's button usable.
-document.addEventListener('submit', (event) => {
-    const message = event.target instanceof HTMLFormElement ? event.target.dataset.confirm : undefined;
-    if (message && !window.confirm(message)) {
-        event.preventDefault();
-    }
-}, true);
 
 // Double-submit guard. Every form here writes a row — a registration, an
 // event, a check-in — and on a slow connection nothing on screen said the

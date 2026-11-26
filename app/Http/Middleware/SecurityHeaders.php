@@ -57,13 +57,19 @@ class SecurityHeaders
         // If you edit that snippet, recompute the hash (and mirror it in public/.htaccess).
         $script = "'self' 'unsafe-eval' 'sha256-QY4re+NFw+ChK0c8H/EaTpktoUisSWU0fL7V6J43umM='";
         $style = "'self' 'unsafe-inline'";
-        // The one permitted external host: the Nexo Tools hub, so the opt-in
-        // cookieless pageview beacon (navigator.sendBeacon) is not blocked. Without
-        // it the emitter renders and the browser silently drops every POST — the
-        // failure mode of sendBeacon is no error, so this tool's visits simply
+        // The one permitted external host: the beacon's hub, so the opt-in
+        // cookieless pageview beacon is not blocked. Without it the emitter
+        // renders and the browser drops every POST — this tool's visits simply
         // never arrived. It only ever fires when NEXO_BEACON_ENABLED renders the
-        // beacon metas; the permission is harmless otherwise. Mirror in .htaccess.
-        $connect = "'self' ".rtrim((string) config('nexo-ecosystem.hub_url', 'https://nexotools.alvarocdev.com'), '/');
+        // beacon metas; the permission is harmless otherwise. The origin comes
+        // from NEXO_BEACON_ENDPOINT (the URL the beacon posts to), never from a
+        // fixed host, so a self-hosted or local hub is not blocked
+        // (BeaconClientTest). Mirror in .htaccess, which carries the default
+        // endpoint's origin literally.
+        $connect = "'self'";
+        if (($hub = $this->beaconOrigin()) !== null) {
+            $connect .= " {$hub}";
+        }
 
         // Allow the Vite dev server (and its websocket) while running HMR locally.
         if ($dev = $this->viteDevServer()) {
@@ -75,7 +81,7 @@ class SecurityHeaders
         return implode('; ', [
             "default-src 'self'",
             "base-uri 'self'",
-            "form-action 'self'",
+            "form-action {$this->formAction()}",
             "frame-ancestors 'none'",
             "object-src 'none'",
             "img-src 'self' data:",
@@ -84,6 +90,45 @@ class SecurityHeaders
             "style-src {$style}",
             "connect-src {$connect}",
         ]);
+    }
+
+    /**
+     * `form-action` also governs the redirects that FOLLOW a form POST. With SSO
+     * on, «Cerrar sesión» posts here and is redirected to Nexo ID's end_session:
+     * with 'self' alone the browser silently dropped that hop (Chrome and Safari),
+     * so nothing happened on screen and Nexo ID stayed signed in (H-nexoevents-01).
+     * The issuer's origin is allowed only while SSO is on; standalone stays
+     * same-origin. public/.htaccess carries the production issuer
+     * (CspFormActionTest + the sync test in SecurityHeadersTest).
+     */
+    private function formAction(): string
+    {
+        $issuer = (string) config('nexo-sso.issuer', '');
+        if (! config('nexo-sso.enabled') || $issuer === '') {
+            return "'self'";
+        }
+
+        $parts = parse_url($issuer);
+        if (! is_array($parts) || empty($parts['host'])) {
+            return "'self'";
+        }
+
+        $origin = ($parts['scheme'] ?? 'https').'://'.$parts['host'].(isset($parts['port']) ? ':'.$parts['port'] : '');
+
+        return "'self' {$origin}";
+    }
+
+    /** scheme://host[:port] of the configured beacon endpoint, or null if it is not an http(s) URL. */
+    private function beaconOrigin(): ?string
+    {
+        $parts = parse_url((string) config('nexo.beacon.endpoint', ''));
+
+        if (! is_array($parts) || ! isset($parts['scheme'], $parts['host'])
+            || ! in_array(strtolower($parts['scheme']), ['http', 'https'], true)) {
+            return null;
+        }
+
+        return strtolower($parts['scheme'].'://'.$parts['host']).(isset($parts['port']) ? ':'.$parts['port'] : '');
     }
 
     private function viteDevServer(): ?string

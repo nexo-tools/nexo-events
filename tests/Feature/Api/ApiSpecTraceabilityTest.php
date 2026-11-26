@@ -29,6 +29,7 @@ function traceableSpecs(): array
         'docs/specs/SPEC-event-collaborators.md' => 'AC-COLLAB-',
         'docs/specs/SPEC-ticket-info.md' => 'AC-TICKET-',
         'docs/specs/SPEC-event-panel.md' => 'AC-PANEL-',
+        'docs/specs/SPEC-nexo-session.md' => 'AC-SESSION-',
     ];
 }
 

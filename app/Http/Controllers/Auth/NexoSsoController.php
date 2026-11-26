@@ -5,29 +5,49 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Services\NexoSso\NexoAuthMode;
+use App\Services\NexoSso\NexoSsoFlows;
+use App\Services\NexoSso\NexoSsoLinkConflictException;
 use App\Services\NexoSso\NexoSsoLinkRefusedException;
+use App\Services\NexoSso\NexoSsoNewAccount;
+use App\Services\NexoSso\NexoSsoPendingLink;
+use App\Services\NexoSso\NexoSsoRequest;
+use App\Services\NexoSso\NexoSsoRevocations;
 use App\Services\NexoSso\NexoSsoService;
+use App\Services\NexoSso\NexoSsoSession;
 use App\Services\NexoSso\NexoSsoUserResolver;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Throwable;
 
+/**
+ * The Nexo ID client endpoints (nexo-sso-client v2.1). Identical in every tool:
+ * what differs per tool lives in config('nexo-sso.home') and the silent
+ * exclusions (adaptation points), in NexoSsoUserResolver::newUser()/linked(),
+ * and in the layout of the signed-out and new-account views.
+ */
 class NexoSsoController extends Controller
 {
-    /** Start the flow: PKCE pair + state + nonce in session, redirect to the provider. */
-    public function redirect(NexoSsoService $sso): RedirectResponse
+    /** Provider errors that mean "there is no Nexo ID session" after prompt=none. */
+    private const NO_SESSION_ERRORS = ['login_required', 'interaction_required'];
+
+    /** Re-validation retry after a provider hiccup (seconds). */
+    private const RECHECK_RETRY = 300;
+
+    /** Interactive sign-in ("Continue with Nexo ID"). Back to url.intended, else the panel. */
+    public function redirect(Request $request, NexoSsoService $sso, NexoSsoFlows $flows): RedirectResponse
     {
         abort_unless(config('nexo-sso.enabled'), 404); // AC-CFG-1 (defense in depth)
 
         try {
-            $url = $this->buildAuthorizeRedirect($sso);
+            $url = $this->authorizeUrl($request, $sso, $flows, NexoSsoFlows::INTERACTIVE);
         } catch (Throwable) {
             // Provider unreachable: friendly failure, never a 500. (AC-DEGRADE-2)
-            return redirect()
-                ->route('login')
-                ->withErrors(['nexo_sso' => __('Sign-in with Nexo ID is temporarily unavailable. Please try again later.')]);
+            return $this->failed(__('Sign-in with Nexo ID is temporarily unavailable. Please try again later.'));
         }
 
         return redirect()->away($url);
@@ -37,133 +57,238 @@ class NexoSsoController extends Controller
      * Silent attempt (OIDC prompt=none): same authorize request plus
      * `prompt=none`, marked in the session so it runs at most once per session
      * (the NexoSsoSilentLogin middleware checks the mark BEFORE redirecting
-     * here — no retry loop). Every failure here is invisible by design: the
-     * user never asked for anything, so on any hiccup they just continue to
-     * where they were going. (AC-SILENT-1, AC-SILENT-2)
+     * here — no retry loop). `?to=` is the page the attempt started from.
+     * Every failure here is invisible by design: the user never asked for
+     * anything, so on any hiccup they stay on that page. (AC-SILENT-1, AC-SILENT-2)
      */
-    public function silent(Request $request, NexoSsoService $sso): RedirectResponse
+    public function silent(Request $request, NexoSsoService $sso, NexoSsoFlows $flows): RedirectResponse
     {
         abort_unless(config('nexo-sso.enabled') && config('nexo-sso.silent'), 404);
 
         // Idempotent (the middleware already set it); also covers direct hits.
         $request->session()->put('nexo_sso.silent_attempted', true);
 
+        $to = NexoSsoRequest::safePath($request->query('to'));
+
         try {
-            $url = $this->buildAuthorizeRedirect($sso, prompt: 'none');
+            $url = $this->authorizeUrl($request, $sso, $flows, NexoSsoFlows::SILENT, return: $to, prompt: 'none');
         } catch (Throwable) {
-            // Provider unreachable: continue to the destination, no error UI.
-            return redirect()->intended('/');
+            // Provider unreachable: back to the page, no error UI.
+            return $this->silentFallback($to);
         }
 
         return redirect()->away($url);
     }
 
-    /** Provider redirected back: verify state, exchange code, validate id_token, log in locally. */
-    public function callback(Request $request, NexoSsoService $sso, NexoSsoUserResolver $resolver): RedirectResponse
+    /**
+     * Entry from another Nexo app: GET /auth/nexo/enter?to=/path. Signed in →
+     * `to`. Guest → authorize WITHOUT prompt: 0 clicks with a live Nexo ID
+     * session, the Nexo ID login otherwise — and back to `to` either way. `to`
+     * must be a path of this origin; anything else lands on the panel.
+     *
+     * A signed-in password session (local or transition) is simply let in:
+     * joining an account to Nexo ID is only ever explicit, through
+     * nexo-sso.link. In sso mode such a session has no place (the guard closes
+     * it), so it goes through Nexo ID like a guest. (AC-ENTER)
+     */
+    public function enter(Request $request, NexoSsoService $sso, NexoSsoFlows $flows): RedirectResponse
     {
-        abort_unless(config('nexo-sso.enabled'), 404); // AC-CFG-1 (defense in depth)
+        abort_unless(config('nexo-sso.enabled'), 404);
 
-        $state = (string) $request->session()->pull('nexo_sso.state', '');
-        $verifier = (string) $request->session()->pull('nexo_sso.verifier', '');
-        $nonce = (string) $request->session()->pull('nexo_sso.nonce', '');
-        $silent = (bool) $request->session()->pull('nexo_sso.silent', false);
-        $returnedState = (string) $request->query('state', '');
+        $to = NexoSsoRequest::safePath($request->query('to')) ?? NexoSsoRequest::home();
 
-        // OIDC error response — the provider declined without issuing a code.
-        // After a silent attempt, `login_required`/`interaction_required` is the
-        // NORMAL "no Nexo ID session" answer: stay guest, keep the once-per-
-        // session mark (already set), continue to the destination with no error
-        // UI. No login happens on this path, so no state/code checks apply.
-        // (AC-SILENT-2)
-        //
-        // Silent failures fall back to '/', never to the dashboard: the visitor
-        // is still a guest, and bouncing them to an auth-only route would send
-        // them to the login screen — exactly what silent SSO must never do to
-        // someone who was just reading a public event page.
-        if ($request->filled('error')) {
-            if ($silent) {
-                return redirect()->intended('/');
-            }
-
-            return redirect()
-                ->route('login')
-                ->withErrors(['nexo_sso' => __('Sign-in with Nexo ID failed. Please try again.')]);
-        }
-
-        // CSRF check happens before any provider call. (AC-FLOW-2)
-        if ($state === '' || $returnedState === '' || ! hash_equals($state, $returnedState) || ! $request->filled('code')) {
-            if ($silent) {
-                return redirect()->intended('/'); // silent flows never surface errors
-            }
-
-            return redirect()
-                ->route('login')
-                ->withErrors(['nexo_sso' => __('The sign-in request could not be validated. Please try again.')]);
+        if (Auth::check() && (NexoSsoSession::isSso($request) || ! NexoAuthMode::isSso())) {
+            return redirect()->to(url($to));
         }
 
         try {
-            $tokens = $sso->exchangeCode((string) $request->query('code'), $verifier);
-            $claims = $sso->validateIdToken((string) ($tokens['id_token'] ?? ''), $nonce); // AC-FLOW-3, AC-NONCE-1
-            $user = $resolver->resolve($claims);
-        } catch (NexoSsoLinkRefusedException) {
-            if ($silent) {
-                return redirect()->intended('/'); // they'll see it if they sign in interactively
+            $url = $this->authorizeUrl($request, $sso, $flows, NexoSsoFlows::INTERACTIVE, return: $to);
+        } catch (Throwable) {
+            return $this->failed(__('Sign-in with Nexo ID is temporarily unavailable. Please try again later.'));
+        }
+
+        return redirect()->away($url);
+    }
+
+    /**
+     * «Link my account» (POST + CSRF, signed in): joins this local account to a
+     * Nexo ID through a `link` flow bound to the signed-in user, whatever email
+     * either side has. In transition and in local mode (never in sso, where a
+     * password session is closed anyway). `to` = where to come back. (AC-JOIN)
+     */
+    public function link(Request $request, NexoSsoService $sso, NexoSsoFlows $flows): RedirectResponse
+    {
+        abort_unless(config('nexo-sso.enabled') && ! NexoAuthMode::isSso(), 404);
+
+        $to = NexoSsoRequest::safePath($request->input('to')) ?? NexoSsoRequest::home();
+
+        if (NexoSsoSession::isSso($request)) {
+            return redirect()->to(url($to)); // already a Nexo ID session: nothing to join
+        }
+
+        try {
+            $url = $this->authorizeUrl($request, $sso, $flows, NexoSsoFlows::LINK, return: $to);
+        } catch (Throwable) {
+            NexoSsoSession::noticeError($request, __('Sign-in with Nexo ID is temporarily unavailable. Please try again later.'));
+
+            return redirect()->to(url($to));
+        }
+
+        return redirect()->away($url);
+    }
+
+    /**
+     * «First time in <App>?» (transition): a Nexo ID sign-in that matched no
+     * account waits in the session; the person chooses between creating an
+     * account and signing in with the one they already have. (AC-NEWACCOUNT)
+     */
+    public function newAccount(Request $request): Response|RedirectResponse
+    {
+        abort_unless(config('nexo-sso.enabled') && NexoAuthMode::isTransition(), 404);
+
+        $email = NexoSsoNewAccount::email($request);
+        if ($email === null) {
+            return redirect()->route('login'); // nothing waiting (or the 15 minutes passed)
+        }
+
+        return response()
+            ->view('nexo-sso.new-account', ['email' => $email, 'app' => (string) config('app.name')])
+            ->header('Cache-Control', 'no-store, private')
+            ->header('X-Robots-Tag', 'noindex');
+    }
+
+    /**
+     * The choice on «First time in <App>?» (POST + CSRF). `create`: the account
+     * is created from the waiting claims and the person is in. `existing`: the
+     * claims are armed and the person goes to the password login — signing in
+     * there within the window leads to «Link this account?», where the join is
+     * confirmed (NexoSsoLinkOnPasswordLogin).
+     */
+    public function storeNewAccount(Request $request, NexoSsoUserResolver $resolver): RedirectResponse
+    {
+        abort_unless(config('nexo-sso.enabled') && NexoAuthMode::isTransition(), 404);
+
+        $pending = NexoSsoNewAccount::pending($request);
+        if ($pending === null) {
+            return $this->failed(__('Your Nexo ID sign-in expired. Please try again.'));
+        }
+
+        if ($request->input('choice') === 'existing') {
+            NexoSsoNewAccount::arm($request);
+            if ($pending['return'] !== null && ! $request->session()->has('url.intended')) {
+                $request->session()->put('url.intended', url($pending['return']));
             }
 
-            return redirect()
-                ->route('login')
-                ->withErrors(['nexo_sso' => __('An account with this email already exists. Verify your email on Nexo ID first.')]); // AC-LINK-2
+            return redirect()->route('login');
+        }
+
+        NexoSsoNewAccount::forget($request);
+
+        try {
+            // Someone may have joined this Nexo ID (or an account with its
+            // verified email) in the meantime: that account wins over a new one.
+            $user = $resolver->find($pending['claims']) ?? $resolver->create($pending['claims']);
+        } catch (NexoSsoLinkRefusedException) {
+            return $this->failed(__('An account with this email already exists. Verify your email on Nexo ID first.'));
+        } catch (NexoSsoLinkConflictException $e) {
+            return $this->failed($e->userMessage());
         } catch (Throwable $e) {
-            // Invalid token or provider down mid-flow: safe error, no session. (AC-FLOW-3, AC-DEGRADE-2)
             report($e);
 
-            if ($silent) {
-                return redirect()->intended('/');
+            return $this->failed(__('Sign-in with Nexo ID failed. Please try again.'));
+        }
+
+        return $this->signIn($request, $user, $pending['claims'], $pending['id_token'], $pending['return'], silent: false);
+    }
+
+    /**
+     * Periodic re-validation, started by NexoSsoSessionGuard on a GET page
+     * navigation: authorize with prompt=none, back to `to`. (AC-RECHECK)
+     */
+    public function recheck(Request $request, NexoSsoService $sso, NexoSsoFlows $flows): RedirectResponse
+    {
+        abort_unless(config('nexo-sso.enabled'), 404);
+
+        $to = NexoSsoRequest::safePath($request->query('to')) ?? NexoSsoRequest::home();
+
+        if ((int) config('nexo-sso.recheck_minutes') <= 0) {
+            return redirect()->to(url($to)); // re-validation is off: nothing to do
+        }
+
+        // Other tabs navigating during this bounce wait for it instead of
+        // starting their own. (NexoSsoSessionGuard)
+        $request->session()->put(NexoSsoSession::RECHECK_STARTED_AT, now()->getTimestamp());
+
+        try {
+            $url = $this->authorizeUrl($request, $sso, $flows, NexoSsoFlows::RECHECK, return: $to, prompt: 'none');
+        } catch (Throwable) {
+            NexoSsoSession::deferRecheck($request, self::RECHECK_RETRY); // fail-open (R8)
+
+            return redirect()->to(url($to));
+        }
+
+        return redirect()->away($url);
+    }
+
+    /**
+     * Provider redirected back. Resolves by the mode saved with the state:
+     * interactive or silent sign-in, or the re-validation of a signed-in
+     * session. An unknown, replayed or foreign state never signs anyone in or
+     * out. (AC-FLOW-2, AC-RECHECK)
+     */
+    public function callback(Request $request, NexoSsoService $sso, NexoSsoFlows $flows, NexoSsoUserResolver $resolver): RedirectResponse
+    {
+        abort_unless(config('nexo-sso.enabled'), 404); // AC-CFG-1 (defense in depth)
+
+        $flow = $flows->pull($request, (string) $request->query('state', ''));
+
+        if ($flow === null) {
+            if (Auth::check()) {
+                return redirect()->to($this->home()); // a stale tab's answer: nothing changes
             }
 
-            return redirect()
-                ->route('login')
-                ->withErrors(['nexo_sso' => __('Sign-in with Nexo ID failed. Please try again.')]);
+            return $this->failed(__('The sign-in request could not be validated. Please try again.'));
         }
 
-        // Tool-owned session, independent of the provider's lifetime. (AC-SESS-1)
-        Auth::login($user);
-        $request->session()->regenerate();
-
-        // Keep the raw id_token for RP-initiated logout (id_token_hint). It lets
-        // the provider identify the session AND validate post_logout_redirect_uri
-        // against this client's registered URIs. (AC-LOGOUT-1)
-        if (! empty($tokens['id_token'])) {
-            $request->session()->put('nexo_sso.id_token', (string) $tokens['id_token']);
+        if ($flow['mode'] === NexoSsoFlows::RECHECK) {
+            return $this->completeRecheck($request, $sso, $flow);
         }
 
-        // Land on the organizer dashboard when there is no intended destination
-        // (a silent login started on a public page returns there instead).
-        return redirect()->intended(route('dashboard'));
+        if ($flow['mode'] === NexoSsoFlows::LINK) {
+            return $this->completeLink($request, $sso, $resolver, $flow);
+        }
+
+        // A new sign-in supersedes a «First time in <App>?» or a join left waiting.
+        NexoSsoNewAccount::forget($request);
+        NexoSsoPendingLink::forget($request);
+
+        return $this->completeSignIn($request, $sso, $resolver, $flow, $flow['mode'] === NexoSsoFlows::SILENT);
     }
 
     /**
      * Local logout with RP-initiated (front-channel) central logout. Ends the
      * tool session first, then — when SSO is enabled and the provider advertises
-     * an end_session_endpoint — hands the browser off to it so the Nexo ID session
-     * ends too. Best-effort: a provider hiccup never blocks the local logout that
-     * already happened, and a provider that advertises no end_session simply lands
-     * on the local post-logout page. (AC-LOGOUT-1)
+     * an end_session_endpoint — hands the browser off to it so the Nexo ID
+     * session ends too, and Nexo ID tells every other tool of this device over
+     * the back channel. Nexo ID returns the browser to post_logout_redirect_uri
+     * (default: this tool's signed-out screen). Best-effort: a provider hiccup
+     * never blocks the local logout that already happened. (AC-LOGOUT-1)
+     *
+     * A password session (local or transition, not joined to Nexo ID in this
+     * session) only ends here: there is no Nexo ID session of its own to end.
+     * A guest — the page's session already gone — never reaches this: `auth`
+     * sends it to the hint-less end_session (NexoSsoStaleLogout).
      */
     public function logout(Request $request, NexoSsoService $sso): RedirectResponse
     {
-        $idTokenHint = (string) $request->session()->pull('nexo_sso.id_token', '');
+        $idTokenHint = (string) $request->session()->get(NexoSsoSession::ID_TOKEN, '');
+        $governed = NexoSsoSession::isSso($request);
 
-        Auth::guard('web')->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        // A logout must stick: the fresh session carries the silent mark, so
+        // the next guest page doesn't sign the user straight back in. (AC-SILENT-5)
+        NexoSsoSession::end($request);
 
-        // A logout must stick: mark the FRESH session so the silent attempt
-        // doesn't immediately sign the user back in on the next guest page.
-        // (AC-SILENT-5)
-        $request->session()->put('nexo_sso.silent_attempted', true);
-
-        if (config('nexo-sso.enabled')) {
+        if (config('nexo-sso.enabled') && $governed) {
             try {
                 $endSessionUrl = $sso->buildEndSessionUrl($idTokenHint !== '' ? $idTokenHint : null);
                 if ($endSessionUrl !== null) {
@@ -179,27 +304,364 @@ class NexoSsoController extends Controller
     }
 
     /**
-     * Shared authorize-request builder: mints state/verifier/nonce, stores them
-     * in the session, returns the provider URL. (AC-FLOW-1, AC-NONCE-1)
+     * "You signed out of all of Nexo" (reason=signed_out) or "Your Nexo ID
+     * session ended" (reason=ended). Never cached (the back button must not
+     * bring a signed-in page back) and never indexed. (AC-SIGNEDOUT)
      */
-    private function buildAuthorizeRedirect(NexoSsoService $sso, ?string $prompt = null): string
+    public function signedOut(Request $request): Response
     {
-        $state = Str::random(40);
-        $verifier = Str::random(64); // 43–128 chars per RFC 7636
-        $nonce = Str::random(40); // echoed back as the id_token nonce claim (AC-NONCE-1)
-        $challenge = rtrim(strtr(base64_encode(hash('sha256', $verifier, true)), '+/', '-_'), '=');
+        abort_unless(config('nexo-sso.enabled'), 404);
 
-        session([
-            'nexo_sso.state' => $state,
-            'nexo_sso.verifier' => $verifier,
-            'nexo_sso.nonce' => $nonce,
-            // Marks THIS authorize request as silent or interactive, so the
-            // callback picks the right failure UX. Always (re)set: a stale
-            // silent mark from an abandoned attempt must not turn a later
-            // interactive flow's errors invisible.
-            'nexo_sso.silent' => $prompt === 'none',
-        ]);
+        $reason = $request->query('reason') === 'ended' ? 'ended' : 'signed_out';
 
-        return $sso->buildAuthorizeUrl($state, $challenge, $nonce, $prompt); // discovery may hit the network
+        return response()
+            ->view('nexo-sso.signed-out', ['reason' => $reason])
+            ->header('Cache-Control', 'no-store, private')
+            ->header('X-Robots-Tag', 'noindex');
+    }
+
+    /**
+     * Back-channel logout (OIDC Back-Channel Logout 1.0): Nexo ID POSTs a
+     * signed logout_token server to server. Stateless (no session, no CSRF, no
+     * cookies). 200 empty = revoked; 400 = not a valid token; 501 = switched
+     * off; 503 = valid, but the revocation could not be stored (the provider
+     * retries the same token, so its jti is released). Always no-store. (AC-BCL-C)
+     */
+    public function backchannel(Request $request, NexoSsoService $sso, NexoSsoRevocations $revocations): Response|JsonResponse
+    {
+        abort_unless(config('nexo-sso.enabled'), 404);
+
+        $headers = ['Cache-Control' => 'no-store'];
+
+        if (! config('nexo-sso.backchannel')) {
+            return response()->json(['error' => 'backchannel_logout_disabled'], 501, $headers);
+        }
+
+        try {
+            $claims = $sso->validateLogoutToken((string) $request->input('logout_token', ''));
+        } catch (Throwable) {
+            return response()->json(['error' => 'invalid_request'], 400, $headers);
+        }
+
+        $sid = is_string($claims['sid'] ?? null) ? $claims['sid'] : null;
+        $sub = is_string($claims['sub'] ?? null) ? $claims['sub'] : null;
+
+        try {
+            $revocations->revoke($sid, $sub);
+        } catch (Throwable $e) {
+            report($e);
+            $sso->releaseLogoutToken($claims);
+
+            return response()->json(['error' => 'temporarily_unavailable'], 503, $headers);
+        }
+
+        return response('', 200, $headers);
+    }
+
+    /**
+     * Interactive or silent sign-in. Interactive failures go to the login page
+     * with a `nexo_sso` error; silent ones are invisible (back to where the
+     * visitor was going).
+     *
+     * In transition, a Nexo ID that matches no account (neither by sub nor by
+     * email) doesn't create one on the spot: the interactive sign-in asks
+     * «First time in <App>?» first (/auth/nexo/new-account), and a silent one
+     * just stays a guest — nobody gets a question they didn't ask for.
+     *
+     * @param  array{mode: string, verifier: string, nonce: string, return: ?string, user: ?string}  $flow
+     */
+    private function completeSignIn(Request $request, NexoSsoService $sso, NexoSsoUserResolver $resolver, array $flow, bool $silent): RedirectResponse
+    {
+        // OIDC error response — the provider declined without issuing a code.
+        // After a silent attempt, `login_required`/`interaction_required` is the
+        // NORMAL "no Nexo ID session" answer: stay guest, keep the once-per-
+        // session mark, continue to the destination with no error UI. (AC-SILENT-2)
+        if ($request->filled('error') || ! $request->filled('code')) {
+            return $silent
+                ? $this->silentFallback($flow['return'])
+                : $this->failed(__('Sign-in with Nexo ID failed. Please try again.'));
+        }
+
+        try {
+            $tokens = $sso->exchangeCode((string) $request->query('code'), $flow['verifier']);
+            $idToken = (string) ($tokens['id_token'] ?? '');
+            $claims = $sso->validateIdToken($idToken, $flow['nonce']); // AC-FLOW-3, AC-NONCE-1
+            $user = $resolver->find($claims);
+
+            if ($user === null && NexoAuthMode::isTransition()) {
+                if ($silent) {
+                    return $this->silentFallback($flow['return']);
+                }
+
+                NexoSsoNewAccount::hold($request, $claims, $idToken, $flow['return']);
+
+                return redirect()->route('nexo-sso.new-account');
+            }
+
+            $user ??= $resolver->create($claims);
+        } catch (NexoSsoLinkRefusedException) {
+            return $silent
+                ? $this->silentFallback($flow['return']) // they'll see it if they sign in interactively
+                : $this->failed(__('An account with this email already exists. Verify your email on Nexo ID first.')); // AC-LINK-2
+        } catch (NexoSsoLinkConflictException $e) {
+            // The email matches an account joined to another Nexo ID. (AC-LINK-4)
+            return $silent ? $this->silentFallback($flow['return']) : $this->failed($e->userMessage());
+        } catch (Throwable $e) {
+            // Invalid token or provider down mid-flow: safe error, no session. (AC-FLOW-3, AC-DEGRADE-2)
+            report($e);
+
+            return $silent
+                ? $this->silentFallback($flow['return'])
+                : $this->failed(__('Sign-in with Nexo ID failed. Please try again.'));
+        }
+
+        return $this->signIn($request, $user, $claims, $idToken, $flow['return'], $silent);
+    }
+
+    /**
+     * Opens the tool session of a Nexo ID sign-in and sends the person on.
+     *
+     * @param  array<string, mixed>  $claims  the verified id_token claims
+     */
+    private function signIn(Request $request, User $user, array $claims, string $idToken, ?string $return, bool $silent): RedirectResponse
+    {
+        // Tool-owned session, never a tool "remember me": Nexo ID governs how
+        // long the person stays signed in. (AC-SESS-1)
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        // sub/sid for the guard, the raw id_token for the logout hint. (AC-LOGOUT-1)
+        NexoSsoSession::establish($request, $claims, $idToken);
+
+        // Silent: a deep link `auth` saved before (url.intended) wins over the
+        // page the attempt started from. (AC-SILENT-6)
+        if ($silent) {
+            return redirect()->intended(url($return ?? NexoSsoRequest::home()));
+        }
+
+        if ($return !== null) {
+            $request->session()->forget('url.intended');
+
+            return redirect()->to(url($return));
+        }
+
+        return redirect()->intended($this->home());
+    }
+
+    /**
+     * «Link my account» came back. Only for the user who asked (anyone else
+     * signed in now, or nobody, is refused); the Nexo ID must not belong to
+     * another account, nor this account to another Nexo ID. Then the account
+     * is joined — whatever the emails — and the session becomes a Nexo ID one.
+     * Unless Nexo ID vouched for this account's own email, the person first
+     * confirms on /auth/nexo/link/confirm, seeing both emails: the Nexo ID
+     * that answered with 0 clicks may be a session somebody else left open in
+     * this browser. Every refusal leaves the local session as it was. (AC-JOIN)
+     *
+     * @param  array{mode: string, verifier: string, nonce: string, return: ?string, user: ?string}  $flow
+     */
+    private function completeLink(Request $request, NexoSsoService $sso, NexoSsoUserResolver $resolver, array $flow): RedirectResponse
+    {
+        $return = url($flow['return'] ?? NexoSsoRequest::home());
+        $user = $request->user();
+
+        if (! $user instanceof User) {
+            return $this->failed(__('The sign-in request could not be validated. Please try again.'));
+        }
+
+        if ($flow['user'] === null || ! hash_equals($flow['user'], (string) $user->getAuthIdentifier())) {
+            return $this->linkFailed($request, $return, __('The sign-in request could not be validated. Please try again.'));
+        }
+
+        if ($request->filled('error') || ! $request->filled('code')) {
+            return $this->linkFailed($request, $return, __('Your account was not linked. Please try again.'));
+        }
+
+        try {
+            $tokens = $sso->exchangeCode((string) $request->query('code'), $flow['verifier']);
+            $idToken = (string) ($tokens['id_token'] ?? '');
+            $claims = $sso->validateIdToken($idToken, $flow['nonce']);
+
+            if ($resolver->needsConfirmation($user, $claims)) {
+                $resolver->assertLinkable($user, $claims); // nothing to confirm if it can't happen
+                NexoSsoPendingLink::hold($request, $user, $claims, $idToken, $flow['return']);
+
+                return redirect()->route('nexo-sso.link.confirm');
+            }
+
+            $resolver->link($user, $claims);
+        } catch (NexoSsoLinkConflictException $e) {
+            return $this->linkFailed($request, $return, $e->userMessage());
+        } catch (Throwable $e) {
+            report($e);
+
+            return $this->linkFailed($request, $return, __('Your account was not linked. Please try again.'));
+        }
+
+        return $this->joined($request, $claims, $idToken, $return);
+    }
+
+    /**
+     * «Link this account?» (GET, signed in): the join waiting for this user,
+     * with both emails side by side — this account's and the Nexo ID's.
+     * Nothing waiting (or the window passed) → back to the panel. (AC-JOIN-CONFIRM)
+     */
+    public function linkConfirm(Request $request): Response|RedirectResponse
+    {
+        abort_unless(config('nexo-sso.enabled') && ! NexoAuthMode::isSso(), 404);
+
+        $user = $request->user();
+        $pending = NexoSsoPendingLink::for($request, $user);
+        if ($pending === null || ! $user instanceof User) {
+            return redirect()->to($this->home());
+        }
+
+        return response()
+            ->view('nexo-sso.link-confirm', [
+                'app' => (string) config('app.name'),
+                'localEmail' => (string) $user->getAttribute('email'),
+                'nexoEmail' => (string) ($pending['claims']['email'] ?? ''),
+            ])
+            ->header('Cache-Control', 'no-store, private')
+            ->header('X-Robots-Tag', 'noindex');
+    }
+
+    /**
+     * The answer (POST + CSRF). `link`: joined now — if it still can be (the
+     * Nexo ID may have been joined to another account meanwhile). Anything
+     * else: nothing joined, the password session goes on. Single use either
+     * way, and only for the user it was held for. (AC-JOIN-CONFIRM)
+     */
+    public function storeLinkConfirm(Request $request, NexoSsoUserResolver $resolver): RedirectResponse
+    {
+        abort_unless(config('nexo-sso.enabled') && ! NexoAuthMode::isSso(), 404);
+
+        $user = $request->user();
+        $pending = NexoSsoPendingLink::for($request, $user);
+        NexoSsoPendingLink::forget($request);
+
+        if ($pending === null || ! $user instanceof User) {
+            return $this->linkFailed($request, $this->home(), __('Your Nexo ID sign-in expired. Please try again.'));
+        }
+
+        $return = url($pending['return'] ?? NexoSsoRequest::home());
+
+        if ($request->input('choice') !== 'link') {
+            return redirect()->to($return); // «Not now»: nothing joined, nothing to say
+        }
+
+        try {
+            $resolver->link($user, $pending['claims']);
+        } catch (NexoSsoLinkConflictException $e) {
+            return $this->linkFailed($request, $return, $e->userMessage());
+        } catch (Throwable $e) {
+            report($e);
+
+            return $this->linkFailed($request, $return, __('Your account was not linked. Please try again.'));
+        }
+
+        return $this->joined($request, $pending['claims'], $pending['id_token'], $return);
+    }
+
+    /**
+     * The account was just joined: the session becomes a Nexo ID one (a fresh
+     * id, sub/sid/id_token) and the next page says so once.
+     *
+     * @param  array<string, mixed>  $claims  the verified id_token claims
+     */
+    private function joined(Request $request, array $claims, string $idToken, string $return): RedirectResponse
+    {
+        $request->session()->regenerate();
+        NexoSsoSession::establish($request, $claims, $idToken);
+        NexoSsoSession::noticeLinked($request);
+
+        return redirect()->to($return);
+    }
+
+    /**
+     * Re-validation result: same person → renew the check and adopt the sid;
+     * no Nexo ID session or another person → close the local session ("Your
+     * Nexo ID session ended"); anything else (the provider misbehaving) keeps
+     * the session and retries later — fail-open. (AC-RECHECK)
+     *
+     * @param  array{mode: string, verifier: string, nonce: string, return: ?string, user: ?string}  $flow
+     */
+    private function completeRecheck(Request $request, NexoSsoService $sso, array $flow): RedirectResponse
+    {
+        $return = url($flow['return'] ?? NexoSsoRequest::home());
+
+        if (in_array((string) $request->query('error'), self::NO_SESSION_ERRORS, true)) {
+            NexoSsoSession::end($request);
+
+            return redirect()->route('nexo-sso.signed-out', ['reason' => 'ended']);
+        }
+
+        // Any other error, or no code at all: the provider misbehaved, not the
+        // session. Keep it and try again later.
+        if ($request->filled('error') || ! $request->filled('code')) {
+            NexoSsoSession::deferRecheck($request, self::RECHECK_RETRY);
+
+            return redirect()->to($return);
+        }
+
+        try {
+            $tokens = $sso->exchangeCode((string) $request->query('code'), $flow['verifier']);
+            $idToken = (string) ($tokens['id_token'] ?? '');
+            $claims = $sso->validateIdToken($idToken, $flow['nonce']);
+        } catch (Throwable $e) {
+            report($e);
+            NexoSsoSession::deferRecheck($request, self::RECHECK_RETRY);
+
+            return redirect()->to($return);
+        }
+
+        $expected = NexoSsoSession::sub($request);
+        if ($expected === null || ! hash_equals($expected, (string) ($claims['sub'] ?? ''))) {
+            // Nexo ID is now signed in as somebody else: this session is not theirs.
+            NexoSsoSession::end($request);
+
+            return redirect()->route('nexo-sso.signed-out', ['reason' => 'ended']);
+        }
+
+        NexoSsoSession::renew($request, $claims, $idToken);
+
+        return redirect()->to($return);
+    }
+
+    /** Starts a flow (state + PKCE + nonce + mode) and returns the provider URL. (AC-FLOW-1) */
+    private function authorizeUrl(Request $request, NexoSsoService $sso, NexoSsoFlows $flows, string $mode, ?string $return = null, ?string $prompt = null): string
+    {
+        $flow = $flows->start($request, $mode, $return);
+
+        return $sso->buildAuthorizeUrl($flow['state'], $flow['challenge'], $flow['nonce'], $prompt); // discovery may hit the network
+    }
+
+    /**
+     * A silent attempt that didn't sign anyone in: back to the page it started
+     * from (the public root for a direct hit — the panel would bounce a guest
+     * straight into a sign-in). Never spends url.intended: a deep link saved
+     * before stays for the real sign-in. (AC-SILENT-10)
+     */
+    private function silentFallback(?string $return): RedirectResponse
+    {
+        return redirect()->to(url($return ?? '/'));
+    }
+
+    private function failed(string $message): RedirectResponse
+    {
+        return redirect()->route('login')->withErrors(['nexo_sso' => $message]);
+    }
+
+    /** «Link my account» didn't happen: back where it started, the session untouched, with the reason. */
+    private function linkFailed(Request $request, string $return, string $message): RedirectResponse
+    {
+        NexoSsoSession::noticeError($request, $message);
+
+        return redirect()->to($return);
+    }
+
+    private function home(): string
+    {
+        return url(NexoSsoRequest::home());
     }
 }

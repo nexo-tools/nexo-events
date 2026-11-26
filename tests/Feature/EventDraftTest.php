@@ -187,8 +187,14 @@ it('AC-PANEL-10: every form that deletes, cancels, releases or revokes asks firs
             ->and(collect($forms[0])->every(fn (string $form): bool => str_contains($form, 'data-confirm="')))->toBeTrue("{$page}: a destructive form without data-confirm");
     }
 
-    // The bundle is what asks: the handler lives in app.js, in the capture
-    // phase so it runs before the double-submit guard.
-    $js = (string) file_get_contents(resource_path('js/app.js'));
-    expect($js)->toContain('dataset.confirm')->and($js)->toContain('window.confirm(');
+    // The bundle is what asks: since nexo-ui v2.1 the handler is the shared
+    // one in nexo-ui.js (capture phase, so it runs before app.js's
+    // double-submit guard), and app.js imports it and no longer carries its
+    // own copy — with both, every confirmation would ask twice.
+    $ui = (string) file_get_contents(resource_path('js/nexo-ui.js'));
+    expect($ui)->toContain('dataset.confirm')->and($ui)->toContain('window.confirm(');
+
+    $app = (string) file_get_contents(resource_path('js/app.js'));
+    expect($app)->toContain("import './nexo-ui.js';")
+        ->and(str_contains($app, 'window.confirm('))->toBeFalse('app.js asks again: a second data-confirm handler');
 });

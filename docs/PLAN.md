@@ -282,4 +282,32 @@ sends, the check-in endpoint or any stored row.
   FAQ says how a draft is deleted and a published event cancelled (es/en/pt).
   `OwnFindingsTest`.
 
+### Unified Nexo experience — session v2.1 and chrome v2.1 (opened 2026-11-26)
+
+**Objective:** port the shared templates `nexo-sso-client` v2.1 and `nexo-ui` v2.1 (owner
+decisions D1–D10 of the unified experience, `NEXO_AUTH_MODE=sso` here by D2), the public event
+page without the tool chrome (D8), and what tasks 10.17–10.24 left for this port
+(H-nexoevents-12 signed-out half, H-16 titles, H-17 in the shared CSS). Governing doc:
+[SPEC-nexo-session](specs/SPEC-nexo-session.md). The 28-Nov door must not move: the
+check-in endpoint, what the scanner sends and the Integration API are unchanged.
+
+- [x] 10.25 Session v2.1 from the template (byte-identical files; adaptation: `home` `/app`, the
+  attendee exclusions plus `fallback`, the resolver's `linked()` — marks the email verified when
+  Nexo ID vouched for it and queues `NexoIdLinked` with the mode-aware text — and the layout of
+  the three nexo-sso screens); guard, no-store and guest redirect in `bootstrap/app.php`, the
+  419 «Cerrar sesión» render callback, `EnsureLocalAuth` on login/register/reset, the
+  `LoginRequest` remember/linked rules, the transition reset filter, `nexo-sso:prune` daily
+  inline; CSP `form-action` with the issuer (middleware and `.htaccess`). The existing
+  `add_nexo_id_sub` migration keeps its 2026-07-23 name (same content as the template's,
+  already run in production). AC-SESSION-1..5.
+- [x] 10.26 Chrome v2.1 from the template (byte-identical components, `NexoChrome`,
+  `NexoNoStore`, CSS/JS, beacon emitter and partial, error layout, registry with `entry`, 12
+  guardians): one header on every layout with «Tus eventos», the phone sheet, tab titles
+  (H-nexoevents-16), landing doors per mode (H-nexoevents-12), `connect-src` from
+  `NEXO_BEACON_ENDPOINT`, the 404 inside `web` (`Route::fallback`), app.js's own `data-confirm`
+  handler and app.css's `color-scheme` dropped for the shared ones. AC-SESSION-7..8.
+- [x] 10.27 D8, the public event page (H-nexoevents-18): `x-public-layout`, no tool header, the
+  public footer with the «Editar» chip for the owner (→ edit) or a collaborator inside their
+  window (→ summary); forms unchanged. AC-SESSION-6.
+
 **Gate 10:** per integration — real cross-tool flow exercised, **standalone mode still green** (self-host story intact), owner sign-off.

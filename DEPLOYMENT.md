@@ -120,6 +120,36 @@ The integration API below is deliberately built the other way round — its rout
 on is one `.env` edit and a `config:cache`, with no route surprise. Re-caching after any
 `.env` edit is still the rule.
 
+## Nexo ID controls the session (`NEXO_AUTH_MODE=sso`)
+
+Since PLAN 10.25 (template `nexo-sso-client` v2.1) Nexo ID owns the organizer session:
+back-channel logout, a re-check with Nexo ID every `NEXO_SSO_RECHECK_MINUTES` (page loads
+only — the door scanner's JSON check-in is never bounced) and, in `sso` mode, no local
+password, sign-up or reset at all. Contract and reasons: [SPEC-nexo-session](docs/specs/SPEC-nexo-session.md).
+
+| Variable | Hosted instance | Default | Effect |
+|---|---|---|---|
+| `NEXO_AUTH_MODE` | `sso` | `local` | `local` · `transition` · `sso` (only with `NEXO_SSO_ENABLED=true`) |
+| `NEXO_AUTH_TRANSITION_UNTIL` | empty | empty | last day of `transition` |
+| `NEXO_SSO_BACKCHANNEL` | `true` | `true` | `false` → the back-channel endpoint answers 501 |
+| `NEXO_SSO_RECHECK_MINUTES` | `15` | `15` | `0` = off; fail-open if Nexo ID is down |
+| `NEXO_SSO_POST_LOGOUT_REDIRECT_URI` | empty | empty | empty = `{APP_URL}/auth/nexo/signed-out` |
+
+On the Nexo ID side (operator), once this deploy is live:
+
+```bash
+php artisan nexo:sso-client:update <client_id> \
+    --add-redirect=https://nexoevents.alvarocdev.com/auth/nexo/signed-out \
+    --backchannel=https://nexoevents.alvarocdev.com/auth/nexo/backchannel-logout
+```
+
+Before flipping to `sso`, the people who run a door must be able to sign in to Nexo ID with
+the **same email** as their local account: that account joins itself on the first Nexo ID
+sign-in. A password session open when the flag flips is closed on its next request (the
+scanner says «Tu sesión se cerró» and «Volver a entrar» goes through Nexo ID back to the
+door), so the flip respects the door window like any deploy (`events:door-guard`).
+The migration `nexo_sso_revocations` is additive; until it runs the guard fails open.
+
 ## Integration API (optional, off by default)
 
 Lets an organizer connect an external system — their own website, typically — to their

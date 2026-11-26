@@ -1,4 +1,4 @@
-<x-guest-layout :auth-card="true" :noindex="true">
+<x-guest-layout :auth-card="true" :noindex="true" :title="__('Create account')">
     <h1 class="mb-1 text-xl font-semibold">{{ __('Create your account') }}</h1>
     <p class="mb-6 text-sm text-muted">{{ __('Create and manage your events in minutes.') }}</p>
 

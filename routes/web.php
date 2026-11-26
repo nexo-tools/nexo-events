@@ -19,6 +19,7 @@ use App\Http\Controllers\PublicEventController;
 use App\Http\Controllers\SeoController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TicketReleaseController;
+use App\Http\Middleware\EnsureLocalAuth;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
@@ -36,20 +37,30 @@ Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
 Route::get('/privacidad', [LegalController::class, 'privacy'])->name('legal.privacy');
 Route::get('/terminos', [LegalController::class, 'terms'])->name('legal.terms');
 
+// Local credentials, gated by the auth mode (NEXO_AUTH_MODE, nexo-sso-client):
+// local = as always; transition = Nexo ID first, passwords only for accounts not
+// linked yet, registration → Nexo ID's sign-up; sso = Nexo ID only, every local
+// credential surface 404s. GET /login stays in every mode: it hosts «Continuar
+// con Nexo ID». With NEXO_SSO_ENABLED=false the mode is always local.
 Route::middleware('guest')->group(function () {
-    Route::get('register', [RegisteredUserController::class, 'create'])->name('register');
-    Route::post('register', [RegisteredUserController::class, 'store'])->middleware('throttle:10,1');
+    Route::middleware(EnsureLocalAuth::class.':register')->group(function () {
+        Route::get('register', [RegisteredUserController::class, 'create'])->name('register');
+        Route::post('register', [RegisteredUserController::class, 'store'])->middleware('throttle:10,1');
+    });
 
     Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('login');
-    Route::post('login', [AuthenticatedSessionController::class, 'store'])->middleware('throttle:20,1');
+    Route::post('login', [AuthenticatedSessionController::class, 'store'])
+        ->middleware([EnsureLocalAuth::class, 'throttle:20,1']);
 
-    Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])->name('password.request');
-    Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
-        ->middleware('throttle:5,1')->name('password.email');
+    Route::middleware(EnsureLocalAuth::class.':password')->group(function () {
+        Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])->name('password.request');
+        Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
+            ->middleware('throttle:5,1')->name('password.email');
 
-    Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])->name('password.reset');
-    Route::post('reset-password', [NewPasswordController::class, 'store'])
-        ->middleware('throttle:5,1')->name('password.store');
+        Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])->name('password.reset');
+        Route::post('reset-password', [NewPasswordController::class, 'store'])
+            ->middleware('throttle:5,1')->name('password.store');
+    });
 });
 
 // Organizer area.
@@ -147,3 +158,11 @@ Route::post('e/{event:slug}/reportar', [EventReportController::class, 'store'])
 // is not the threat this defends against (40 random chars) — absorbing scan-spam is.
 Route::get('t/{token}', [TicketController::class, 'show'])
     ->middleware('throttle:60,1')->name('ticket.show');
+
+// Last route, on purpose. An unmatched URL used to 404 BEFORE the `web` group
+// ran, so the error page had no session and showed a signed-in organizer a
+// guest header (chrome v2: the header knows who you are on every page, the 404
+// included — HeaderEverywhereTest). Inside `web`, the 404 gets the session, the
+// locale, the security headers and no-store like any other page. A POST to a
+// URL that does not exist still answers 405, on purpose.
+Route::fallback(fn () => abort(404))->name('fallback');

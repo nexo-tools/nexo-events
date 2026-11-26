@@ -1,7 +1,9 @@
 <?php
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Route;
 
 require_once __DIR__.'/NexoSsoTestSupport.php';
 
@@ -21,7 +23,24 @@ test('AC-CFG-1: with SSO disabled the endpoints return 404 and no network is tou
 
     $this->get('/auth/nexo/redirect')->assertNotFound();
     $this->get('/auth/nexo/callback')->assertNotFound();
+    $this->get('/auth/nexo/enter')->assertNotFound();
+    $this->get('/auth/nexo/signed-out')->assertNotFound();
+    $this->post('/auth/nexo/backchannel-logout', ['logout_token' => 'x'])->assertNotFound();
+    $this->get('/auth/nexo/new-account')->assertNotFound();
+    $this->post('/auth/nexo/new-account', ['choice' => 'create'])->assertNotFound();
+    $this->actingAs(User::factory()->create())->post('/auth/nexo/link')->assertNotFound();
+    $this->get('/auth/nexo/link/confirm')->assertNotFound();
+    $this->post('/auth/nexo/link/confirm', ['choice' => 'link'])->assertNotFound();
     Http::assertNothingSent();
+});
+
+test('AC-CFG-1: with SSO disabled the routes file registers no route at all', function (): void {
+    config(['nexo-sso.enabled' => false]);
+    $before = count(Route::getRoutes()->getRoutes());
+
+    require base_path('routes/nexo-sso.php');
+
+    expect(count(Route::getRoutes()->getRoutes()))->toBe($before);
 });
 
 test('AC-CFG-2: endpoints come from the discovery document and the document is cached', function (): void {

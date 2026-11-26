@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\NexoSso\NexoSsoFlows;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 
@@ -21,24 +22,39 @@ test('AC-FLOW-1: the authorize redirect carries code+PKCE(S256)+state and the ex
     $response = $this->get(route('nexo-sso.redirect'));
 
     $response->assertRedirect();
-    parse_str((string) parse_url((string) $response->headers->get('Location'), PHP_URL_QUERY), $query);
+    $query = nexoSsoAuthorizeQuery($response);
+    $flow = nexoSsoStoredFlow($query['state']);
 
-    expect($query['response_type'])->toBe('code')
+    expect($flow)->not->toBeNull()
+        ->and($flow['mode'])->toBe(NexoSsoFlows::INTERACTIVE)
+        ->and($query['response_type'])->toBe('code')
         ->and($query['client_id'])->toBe(config('nexo-sso.client_id'))
         ->and($query['redirect_uri'])->toBe(route('nexo-sso.callback'))
         ->and($query['scope'])->toBe('openid profile email')
-        ->and($query['state'])->toBe(session('nexo_sso.state'))
-        ->and($query['nonce'])->toBe(session('nexo_sso.nonce'))
+        ->and($query['nonce'])->toBe($flow['nonce'])
         ->and($query['code_challenge_method'])->toBe('S256')
         ->and($query['code_challenge'])->toBe(
-            rtrim(strtr(base64_encode(hash('sha256', session('nexo_sso.verifier'), true)), '+/', '-_'), '=')
-        );
+            rtrim(strtr(base64_encode(hash('sha256', $flow['verifier'], true)), '+/', '-_'), '=')
+        )
+        ->and($query)->not->toHaveKey('prompt');
 
-    // The nonce is a fresh random value, not a fixed constant. (AC-NONCE-1)
-    expect($query['nonce'])->not->toBe('')->and(strlen((string) $query['nonce']))->toBeGreaterThanOrEqual(32);
+    // The state and nonce are fresh random values, not fixed constants. (AC-NONCE-1)
+    expect(strlen($query['state']))->toBeGreaterThanOrEqual(32)
+        ->and(strlen((string) $query['nonce']))->toBeGreaterThanOrEqual(32);
 });
 
-test('AC-NONCE-1: an id_token whose nonce does not match the session is rejected', function (): void {
+test('AC-FLOW-1: each authorize request keeps its own state, so two tabs never overwrite each other', function (): void {
+    nexoSsoFakeProvider();
+
+    $first = nexoSsoAuthorizeQuery($this->get(route('nexo-sso.redirect')));
+    $second = nexoSsoAuthorizeQuery($this->get(route('nexo-sso.redirect')));
+
+    expect($first['state'])->not->toBe($second['state'])
+        ->and(nexoSsoStoredFlow($first['state']))->not->toBeNull()
+        ->and(nexoSsoStoredFlow($second['state']))->not->toBeNull();
+});
+
+test('AC-NONCE-1: an id_token whose nonce does not match the flow is rejected', function (): void {
     nexoSsoFakeProvider([
         'access_token' => 'fake', 'token_type' => 'Bearer',
         'id_token' => nexoSsoIdToken(['nonce' => 'a-different-nonce']),
@@ -59,7 +75,7 @@ test('AC-NONCE-1: an id_token carrying no nonce claim is rejected', function ():
 });
 
 test('AC-NONCE-1: a matching nonce completes the login', function (): void {
-    nexoSsoFakeProvider(); // default id_token echoes the session nonce
+    nexoSsoFakeProvider(); // default id_token echoes the flow nonce
 
     nexoSsoCallback($this)->assertRedirect();
     $this->assertAuthenticated();
@@ -68,18 +84,57 @@ test('AC-NONCE-1: a matching nonce completes the login', function (): void {
 test('AC-FLOW-2: a mismatched or missing state is rejected before any provider call', function (): void {
     Http::fake();
 
-    // Mismatched state
-    $this->withSession(['nexo_sso.state' => str_repeat('s', 40), 'nexo_sso.verifier' => str_repeat('v', 64)])
+    // A state this browser never sent.
+    $this->withSession(nexoSsoFlowSession())
         ->get(route('nexo-sso.callback', ['code' => 'auth-code', 'state' => 'evil-state']))
         ->assertRedirect(route('login'))
         ->assertSessionHasErrors('nexo_sso');
     $this->assertGuest();
 
-    // No state in session at all
-    $this->get(route('nexo-sso.callback', ['code' => 'auth-code', 'state' => str_repeat('s', 40)]))
+    // No state at all.
+    $this->get(route('nexo-sso.callback', ['code' => 'auth-code']))
         ->assertRedirect(route('login'));
     $this->assertGuest();
 
+    Http::assertNothingSent();
+});
+
+test('AC-FLOW-2: a state is single use — replaying the callback is rejected', function (): void {
+    nexoSsoFakeProvider();
+
+    nexoSsoCallback($this)->assertRedirect();
+    $this->assertAuthenticated();
+
+    auth()->logout();
+    $this->get(route('nexo-sso.callback', ['code' => 'auth-code', 'state' => nexoSsoState()]))
+        ->assertRedirect(route('login'))
+        ->assertSessionHasErrors('nexo_sso');
+    $this->assertGuest();
+});
+
+test('AC-FLOW-2: a flow older than 10 minutes is expired — its callback is rejected before any provider call', function (): void {
+    Http::fake();
+    $session = nexoSsoFlowSession();
+
+    $this->travel(601)->seconds();
+
+    $this->withSession($session)
+        ->get(route('nexo-sso.callback', ['code' => 'auth-code', 'state' => nexoSsoState()]))
+        ->assertRedirect(route('login'))
+        ->assertSessionHasErrors('nexo_sso');
+    $this->assertGuest();
+    Http::assertNothingSent();
+});
+
+test('AC-FLOW-2: the user denying consent (provider error, no code) redirects to login with a safe error and no session', function (): void {
+    Http::fake();
+
+    nexoSsoErrorCallback($this, 'access_denied')
+        ->assertRedirect(route('login'))
+        ->assertSessionHasErrors('nexo_sso');
+    $this->assertGuest();
+
+    // Denial short-circuits before any token exchange.
     Http::assertNothingSent();
 });
 
@@ -98,7 +153,7 @@ test('AC-FLOW-3: a tampered id_token signature aborts login with a safe error', 
 test('AC-FLOW-3: an expired id_token aborts login with a safe error', function (): void {
     nexoSsoFakeProvider([
         'access_token' => 'fake', 'token_type' => 'Bearer',
-        'id_token' => nexoSsoIdToken(['exp' => time() - 120]),
+        'id_token' => nexoSsoIdToken(['exp' => now()->getTimestamp() - 120]),
     ]);
 
     nexoSsoCallback($this)->assertRedirect(route('login'))->assertSessionHasErrors('nexo_sso');

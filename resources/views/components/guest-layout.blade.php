@@ -17,6 +17,9 @@
     // page and the ticket are a settled surface and this pass does not redesign
     // them — isolate, don't repaint.
     'authCard' => false,
+    // The slot brings its own card (the nexo-sso screens: «Cerraste sesión en
+    // todo Nexo», «¿Primera vez…?», «¿Unir esta cuenta…?»).
+    'bare' => false,
 ])
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -35,10 +38,12 @@
             {{ __('Skip to content') }}
         </a>
 
-        <x-nexo-header brand="Nexo Events" mark="/ecosystem/nexoevents.svg" :home="route('home')" />
+        <x-nexo-header />
 
         <main id="contenido" class="flex flex-1 flex-col items-center justify-center px-4 py-10">
-            @if ($authCard)
+            @if ($bare)
+                {{ $slot }}
+            @elseif ($authCard)
                 <x-nexo-auth-card>
                     {{ $slot }}
                 </x-nexo-auth-card>

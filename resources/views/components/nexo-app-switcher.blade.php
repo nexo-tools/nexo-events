@@ -1,14 +1,22 @@
 {{-- Ecosystem app-switcher. Source: config/nexo-ecosystem.php. Marks the current
      tool, and carries the "discover all on nexotools" invite + the developers
      (GitHub org) link — the standing bridge from every panel to the hub.
-     Needs nexo-ui.js (Alpine `nexoMenu`). i18n: nexo.switcher.* --}}
+     Needs nexo-ui.js (Alpine `nexoMenu`). i18n: nexo.switcher.*, nexo.ecosystem.*
+
+     Chrome v2 (2026-11-26):
+       - with a session and SSO on, each row opens that tool's panel already
+         signed in (`url + entry`, NexoChrome::switcherHref); a visitor still
+         lands on the tool's page. Switching used to cost 3-4 clicks and always
+         ended on a marketing page (H-cruce-04).
+       - the descriptions come translated (nexo.ecosystem.<key>).
+       - on phones the panel opens edge to edge (.nexo-menu--wide). --}}
 @php
     $eco = config('nexo-ecosystem', []);
     $current = $eco['current'] ?? null;
     $tools = $eco['tools'] ?? [];
 @endphp
 
-<div class="nexo-menu" x-data="nexoMenu" @keydown="onKeydown($event)" @click.outside="close({ restoreFocus: false })">
+<div class="nexo-menu nexo-menu--wide" data-nexo-app-switcher x-data="nexoMenu" @keydown="onKeydown($event)" @click.outside="close({ restoreFocus: false })">
     <button
         type="button"
         class="nexo-btn nexo-btn--ghost nexo-btn--icon"
@@ -28,7 +36,7 @@
 
         @foreach ($tools as $key => $tool)
             <a
-                href="{{ $tool['url'] }}"
+                href="{{ \App\Support\NexoChrome::switcherHref($key, $tool) }}"
                 class="nexo-menu__item {{ $key === $current ? 'nexo-menu__item--current' : '' }}"
                 role="menuitem"
                 @if ($key === $current) aria-current="true" @endif
@@ -36,7 +44,7 @@
                 <img src="{{ $tool['mark'] }}" alt="" width="24" height="24" />
                 <span>
                     {{ $tool['name'] }}
-                    <small>{{ $tool['tagline'] }}</small>
+                    <small>{{ \App\Support\NexoChrome::tagline($key, $tool) }}</small>
                 </span>
                 @if (($tool['status'] ?? 'live') === 'soon')
                     <span class="nexo-badge-soon">{{ __('nexo.switcher.soon') }}</span>

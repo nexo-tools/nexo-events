@@ -25,13 +25,10 @@
             {{ __('Skip to content') }}
         </a>
 
-        {{-- The wordmark goes to the panel, not to the public landing: inside
-             the app it is the way back to your events. --}}
-        <x-nexo-header brand="Nexo Events" mark="/ecosystem/nexoevents.svg" :home="route('dashboard')">
-            <x-slot:actions>
-                <x-nexo-account-menu />
-            </x-slot:actions>
-        </x-nexo-header>
+        {{-- The canonical v2 header, the same on every layout: with a session
+             the wordmark goes to the panel and the account menu (and the phone
+             sheet) carries «Tus eventos» and «Cerrar sesión». --}}
+        <x-nexo-header />
 
         <main id="contenido" class="flex-1 px-4 py-8">
             <div class="mx-auto w-full max-w-3xl rounded-2xl bg-surface p-6 shadow-sm sm:p-8">

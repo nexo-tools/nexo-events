@@ -40,3 +40,11 @@ Schedule::call(fn () => Artisan::call('queue:work --stop-when-empty --tries=3 --
 Schedule::call(fn () => Artisan::call('events:send-reminders'))
     ->name('send-reminders')
     ->hourly();
+
+/*
+ * Nexo ID back-channel revocations expire after 24 h; this deletes them
+ * (nexo-sso-client v2). Inline for the same reason as the drain above.
+ */
+Schedule::call(fn () => Artisan::call('nexo-sso:prune'))
+    ->name('nexo-sso-prune')
+    ->daily();

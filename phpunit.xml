@@ -19,6 +19,9 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <!-- Pinned to the .env.example value CI copies: the sso-client tests
+             build same-origin headers from http://localhost. -->
+        <env name="APP_URL" value="http://localhost"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
@@ -30,6 +33,16 @@
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="NEXO_SSO_ENABLED" value="true"/>
+        <!-- Pinned so the suite never depends on the developer's .env: CI copies
+             .env.example (issuer set) while a developer .env may not, and the CSP
+             form-action follows the issuer. Issuer/client_id are faked per test. -->
+        <env name="NEXO_SSO_ISSUER" value=""/>
+        <env name="NEXO_SSO_CLIENT_ID" value=""/>
+        <env name="NEXO_SSO_POST_LOGOUT_REDIRECT_URI" value=""/>
+        <env name="NEXO_AUTH_MODE" value="local"/>
+        <env name="NEXO_AUTH_TRANSITION_UNTIL" value=""/>
+        <env name="NEXO_ECOSYSTEM_CURRENT" value="nexoevents"/>
+        <env name="NEXO_BEACON_ENDPOINT" value="https://nexotools.alvarocdev.com/beacon"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>

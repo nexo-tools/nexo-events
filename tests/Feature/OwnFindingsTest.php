@@ -25,8 +25,14 @@ it('H-nexoevents-12: signed in, the landing hero leads into the panel instead of
 });
 
 it('H-nexoevents-17: native controls follow the stamped theme (the date picker icon on a dark form)', function (): void {
-    $css = (string) file_get_contents(resource_path('css/app.css'));
+    // Since nexo-ui v2.1 the rule ships in the shared nexo-ui.css (identical in
+    // the 6 apps), which app.css imports; the app's own patch is gone so the
+    // two can never disagree.
+    $ui = (string) file_get_contents(resource_path('css/nexo-ui.css'));
+    $app = (string) file_get_contents(resource_path('css/app.css'));
 
-    expect($css)->toMatch("#:root\\[data-theme='dark'\\]\\s*\\{\\s*color-scheme:\\s*dark;#")
-        ->and($css)->toMatch("#:root\\[data-theme='light'\\]\\s*\\{\\s*color-scheme:\\s*light;#");
+    expect($ui)->toMatch('#:root\\[data-theme="dark"\\]\\s*\\{\\s*color-scheme:\\s*dark;#')
+        ->and($ui)->toMatch('#:root\\[data-theme="light"\\]\\s*\\{\\s*color-scheme:\\s*light;#')
+        ->and($app)->toContain("@import './nexo-ui.css';")
+        ->and(preg_match('#color-scheme:\\s*(dark|light)#', $app))->toBe(0);
 });

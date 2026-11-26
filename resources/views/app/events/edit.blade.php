@@ -1,7 +1,7 @@
 {{-- Edit: the owner's screen for the content and the event's life (publish,
      cancel). Registrations, the door, capacity and collaborators live under
      the other tabs of the event navigation (SPEC-event-panel). --}}
-<x-app-layout>
+<x-app-layout :title="__('Edit').' · '.$event->title">
     @include('app.events._header', ['event' => $event, 'current' => 'edit'])
 
     {{-- Content is last-write-wins from whatever system created the event

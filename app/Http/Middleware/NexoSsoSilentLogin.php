@@ -4,16 +4,28 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Services\NexoSso\NexoSsoRequest;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Silent SSO trigger (OIDC prompt=none). On a guest HTML navigation, hand the
- * browser once per session to the silent authorize attempt: a visitor with a
- * live Nexo ID session comes back logged in without clicking anything; anyone
- * else comes straight back untouched (the provider answers `login_required`
- * without rendering any UI). (AC-SILENT-1..5)
+ * Silent SSO trigger (OIDC prompt=none). On a guest PUBLIC page navigation,
+ * hand the browser once per session to the silent authorize attempt: a visitor
+ * with a live Nexo ID session comes back logged in without clicking anything;
+ * anyone else comes straight back untouched (the provider answers
+ * `login_required` without rendering any UI). (AC-SILENT-1..5)
+ *
+ * It never steals a destination (AC-SILENT-6): the page it starts from travels
+ * with the flow (`?to=`), so `url.intended` — the deep link `auth` stored before
+ * sending the guest to sign in — is neither replaced by this page nor spent on
+ * a failed attempt: with a live Nexo ID session the person lands on that saved
+ * deep link, without one they stay on this page (AC-SILENT-10). It never acts
+ * on the auth screens (login,
+ * register, password.*, verification.*, auth/nexo/*) nor on a request that is
+ * carrying validation errors back to a form (AC-SILENT-7, AC-SILENT-8): those
+ * belong to a person in the middle of signing in, and bouncing them would
+ * swallow the error or the destination.
  *
  * Loop guard: the attempt is marked in the session BEFORE redirecting, and the
  * redirect-back lands in that same session, so a second attempt never fires —
@@ -33,9 +45,8 @@ final class NexoSsoSilentLogin
     {
         if ($this->shouldAttempt($request)) {
             $request->session()->put('nexo_sso.silent_attempted', true);
-            redirect()->setIntendedUrl($request->fullUrl());
 
-            return redirect()->route('nexo-sso.silent');
+            return redirect()->route('nexo-sso.silent', ['to' => NexoSsoRequest::currentPath($request)]);
         }
 
         return $next($request);
@@ -45,24 +56,13 @@ final class NexoSsoSilentLogin
     {
         return config('nexo-sso.enabled')
             && config('nexo-sso.silent')
-            && $request->isMethod('GET')
-            && ! $request->expectsJson()
+            && NexoSsoRequest::isPageNavigation($request)
             && $request->hasSession()
             && ! $request->session()->get('nexo_sso.silent_attempted', false)
+            && ! $request->session()->has('errors')
             && auth()->guest()
             && $request->cookies->has((string) config('session.cookie'))
-            && ! $this->isExcluded($request);
-    }
-
-    /** Surfaces where a bounce is never acceptable: paths and named routes from config. */
-    private function isExcluded(Request $request): bool
-    {
-        if ($request->is('auth/nexo/*') || $request->is(config('nexo-sso.silent_excluded', []))) {
-            return true;
-        }
-
-        $routes = config('nexo-sso.silent_excluded_routes', []);
-
-        return $routes !== [] && $request->routeIs($routes);
+            && ! NexoSsoRequest::isAuthSurface($request)
+            && ! NexoSsoRequest::isExcluded($request);
     }
 }

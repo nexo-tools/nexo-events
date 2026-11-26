@@ -1,4 +1,8 @@
-<x-app-layout>
+<x-app-layout :title="__('Your events')">
+    {{-- nexo-sso-client: the one-time outcome of linking the account to Nexo
+         ID, and in transition mode the «Unir mi cuenta» offer. Nothing otherwise. --}}
+    <x-nexo-sso.transition-banner class="mb-4" />
+
     @unless (auth()->user()->hasVerifiedEmail())
         <div class="nexo-flash nexo-flash--warning mb-4" role="status">
             <span>

@@ -30,6 +30,17 @@
     // The same answers the help center gives, in the same words — the landing
     // does not get a marketing rewrite of them.
     $faqs = array_slice((array) __('help.faqs'), 0, 4);
+
+    // A visitor's two doors go where the header's do (chrome v2, H-nexoevents-12).
+    // NEXO_AUTH_MODE=sso: «Create an event» enters through Nexo ID (whose sign-in
+    // offers «Crear cuenta») and lands on the new-event form; «Sign in» enters to
+    // the panel. transition: Nexo ID's sign-up. local / standalone: the local
+    // /register and /login, as always.
+    $createUrl = \App\Support\NexoChrome::authMode() === 'sso'
+        ? \App\Support\NexoChrome::signInUrl(route('events.create', absolute: false))
+        : \App\Support\NexoChrome::signUpUrl();
+    $createUrl ??= route('register');
+    $signInUrl = \App\Support\NexoChrome::signInUrl() ?? route('login');
 @endphp
 
 <x-landing-layout :title="__('Create free events and validate tickets with QR.')"
@@ -46,8 +57,8 @@
                     <a class="nexo-btn nexo-btn--primary" href="{{ route('events.create') }}">{{ __('Create an event') }}</a>
                     <a class="nexo-btn nexo-btn--ghost" href="{{ route('dashboard') }}">{{ __('Go to your events') }}</a>
                 @else
-                    <a class="nexo-btn nexo-btn--primary" href="{{ route('register') }}">{{ __('Create an event') }}</a>
-                    <a class="nexo-btn nexo-btn--ghost" href="{{ route('login') }}">{{ __('Sign in') }}</a>
+                    <a class="nexo-btn nexo-btn--primary" href="{{ $createUrl }}">{{ __('Create an event') }}</a>
+                    <a class="nexo-btn nexo-btn--ghost" href="{{ $signInUrl }}">{{ __('Sign in') }}</a>
                 @endauth
             </div>
         </div>
@@ -124,7 +135,11 @@
 
     <section data-landing-section="cierre">
         <div class="mx-auto max-w-4xl px-6">
-            <a class="nexo-btn nexo-btn--primary" href="{{ route('register') }}">{{ __('Create an event') }}</a>
+            @auth
+                <a class="nexo-btn nexo-btn--primary" href="{{ route('events.create') }}">{{ __('Create an event') }}</a>
+            @else
+                <a class="nexo-btn nexo-btn--primary" href="{{ $createUrl }}">{{ __('Create an event') }}</a>
+            @endauth
         </div>
     </section>
 </x-landing-layout>

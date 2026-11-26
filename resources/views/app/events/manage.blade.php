@@ -1,7 +1,7 @@
 {{-- The event's summary (SPEC-event-panel): where every event opens, for the
      owner and for a collaborator (ADR-011), designed for a phone at the door.
      Content is read-only here — it belongs to the owner, under Edit. --}}
-<x-app-layout :title="__('Ticket management')">
+<x-app-layout :title="__('Summary').' · '.$event->title">
     @include('app.events._header', ['event' => $event, 'current' => 'summary'])
 
     @if (session('status'))

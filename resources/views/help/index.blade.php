@@ -10,7 +10,7 @@
             {{ __('Skip to content') }}
         </a>
 
-        <x-nexo-header brand="Nexo Events" mark="/ecosystem/nexoevents.svg" :home="route('home')" />
+        <x-nexo-header />
 
         <main id="contenido" class="flex-1">
             <div class="nexo-help">

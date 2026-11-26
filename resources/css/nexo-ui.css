@@ -8,6 +8,17 @@
  *   @import 'nexo-ui/css/nexo-ui.css';
  */
 
+/* ---- Native controls follow the theme (v2.1) --------------------------- */
+/* The date and time pickers, selects, checkboxes and scrollbars are drawn by
+   the browser from `color-scheme`, not from the tokens: without this a dark
+   page got a black calendar icon on a dark field and white scrollbars
+   (H-nexoevents-17). theme-init stamps data-theme before the first paint; the
+   :not([data-theme]) line covers a page without it (JS off), where the tokens
+   follow the OS preference and so do the controls. */
+:root:not([data-theme]) { color-scheme: light dark; }
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+
 /* ---- Base / buttons -------------------------------------------------- */
 .nexo-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
@@ -35,25 +46,70 @@
 /* Small only in padding — the 44px touch target is not negotiable. */
 .nexo-btn--sm { padding: 0.25rem 0.6rem; font-size: 0.8125rem; }
 
-/* ---- Header ---------------------------------------------------------- */
+/* ---- Header (chrome v2, 2026-11-26) ----------------------------------- */
+/* One header for every layout of an app, signed in or not (STANDARD «Header»).
+   Desktop (>= 768px): wordmark · own nav · Help · switcher · language · theme ·
+   account. Phone (< 768px): wordmark · switcher · ONE button that opens the
+   sheet with everything else (D6). It must fit 320px with nothing clipped:
+   wordmark icon (32) + two 44px buttons + gutters leaves room to spare. */
 .nexo-header {
-  display: flex; align-items: center; gap: 1rem;
-  padding: 0.75rem 1rem; min-height: 60px;
+  position: relative; /* containing block of the phone-wide switcher panel */
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.5rem 1rem; min-height: 60px;
   background: var(--nexo-surface); border-bottom: 1px solid var(--nexo-border);
   color: var(--nexo-text);
 }
-.nexo-header__brand { display: inline-flex; align-items: center; gap: 0.6rem; text-decoration: none; color: inherit; font-weight: 700; white-space: nowrap; }
-.nexo-header__brand img, .nexo-header__brand svg { width: 32px; height: 32px; display: block; }
-.nexo-header__nav { display: none; gap: 0.25rem; margin-inline-start: 0.5rem; }
+.nexo-header__brand {
+  display: inline-flex; align-items: center; gap: 0.6rem; min-height: 44px; min-width: 0;
+  text-decoration: none; color: inherit; font-weight: 700; white-space: nowrap;
+  border-radius: var(--nexo-radius-md);
+}
+.nexo-header__brand:focus-visible { outline: 2px solid var(--nexo-ring); outline-offset: 2px; }
+.nexo-header__brand img, .nexo-header__brand svg { width: 32px; height: 32px; display: block; flex: none; }
+/* Under 360px only the tile stays; the anchor keeps its aria-label. */
+@media (max-width: 359.98px) {
+  .nexo-header__brand { min-width: 44px; justify-content: center; }
+  .nexo-header__brand span {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+  }
+}
+.nexo-header__nav { display: none; align-items: center; gap: 0.25rem; min-width: 0; }
 .nexo-header__spacer { flex: 1; }
-.nexo-header__actions { display: flex; align-items: center; gap: 0.25rem; }
-/* The landing's auth ghost yields the phone header to the brand: at 375px the
-   header cannot hold wordmark + switchers + a text button (the wordmark alone
-   is ~94-115px on one line), and the hero repeats the same action a thumb's
-   reach below. From sm up there is room and it returns. */
+.nexo-header__actions { display: flex; align-items: center; gap: 0.25rem; flex: none; }
+/* The desktop-only group (Help, language, theme, extra, account). */
+.nexo-header__desktop { display: none; align-items: center; gap: 0.25rem; }
+/* Help in the header: a quiet text link, 44px tall like every other control. */
+.nexo-header__link {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0 0.75rem;
+  border-radius: var(--nexo-radius-md); font-size: 0.875rem; font-weight: 500;
+  color: var(--nexo-text-muted); text-decoration: none; white-space: nowrap;
+}
+.nexo-header__link:hover { background: var(--nexo-bg-subtle); color: var(--nexo-text); }
+.nexo-header__link:focus-visible { outline: 2px solid var(--nexo-ring); outline-offset: 2px; }
+.nexo-header__link[aria-current="page"] { color: var(--nexo-text); }
+@media (min-width: 768px) {
+  .nexo-header__nav, .nexo-header__desktop { display: flex; }
+  .nexo-header__mobile { display: none; }
+}
+/* Kept for the v1 landing markup some apps still ship (removed with the port). */
 .nexo-header__auth { display: none; }
 @media (min-width: 640px) { .nexo-header__auth { display: inline-flex; } }
-@media (min-width: 768px) { .nexo-header__nav { display: flex; } }
+
+/* ---- Account (desktop menu + avatar) ----------------------------------- */
+.nexo-avatar {
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: 32px; height: 32px; border-radius: var(--nexo-radius-full);
+  background: var(--nexo-primary-subtle); color: var(--nexo-primary-subtle-fg);
+  font-size: 0.75rem; font-weight: 700; letter-spacing: .02em; line-height: 1;
+}
+.nexo-account__trigger { padding-inline: 0.375rem 0.5rem; gap: 0.25rem; }
+.nexo-account__chevron { width: 16px; height: 16px; color: var(--nexo-text-muted); }
+.nexo-menu__panel--account { min-width: 16rem; }
+.nexo-menu__identity { display: block; padding: 0.5rem 0.5rem 0.25rem; overflow-wrap: anywhere; }
+.nexo-menu__identity strong { display: block; font-weight: 600; color: var(--nexo-text); }
+.nexo-menu__identity small { display: block; font-size: 0.8125rem; color: var(--nexo-text-muted); }
+.nexo-menu__form { margin: 0; }
 
 /* ---- Dropdown menus (app-switcher, locale, account) ------------------ */
 .nexo-menu { position: relative; }
@@ -67,8 +123,8 @@
 /* text-muted, not text-subtle: subtle is a large-text token (3:1 contract). */
 .nexo-menu__label { padding: 0.25rem 0.5rem; font-size: 0.72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--nexo-text-muted); }
 .nexo-menu__item {
-  display: flex; align-items: center; gap: 0.6rem; width: 100%;
-  padding: 0.5rem; border-radius: var(--nexo-radius-md);
+  display: flex; align-items: center; gap: 0.6rem; width: 100%; min-height: 44px;
+  padding: 0.5rem; border-radius: var(--nexo-radius-md); font: inherit;
   color: var(--nexo-text); text-decoration: none; background: none; border: 0; cursor: pointer; text-align: start;
 }
 .nexo-menu__item:hover { background: var(--nexo-bg-subtle); }
@@ -82,6 +138,123 @@
 .nexo-menu__foot a { color: var(--nexo-link); text-decoration: none; }
 .nexo-menu__foot a:hover { color: var(--nexo-link-hover); text-decoration: underline; }
 .nexo-badge-soon { font-size: 0.62rem; text-transform: uppercase; letter-spacing: .05em; padding: 1px 6px; border-radius: 999px; background: var(--nexo-bg-subtle); color: var(--nexo-text-muted); }
+
+/* The app-switcher opens edge to edge on phones (a 15rem panel anchored to a
+   button 100px from the edge got clipped at 320px, H-nexotools-02). The menu
+   drops its own positioning so the panel hangs from the header instead. */
+@media (max-width: 767.98px) {
+  .nexo-menu--wide { position: static; }
+  .nexo-menu--wide .nexo-menu__panel {
+    inset-inline: 0.5rem; top: calc(100% - 0.25rem);
+    min-width: 0; max-width: none; max-height: calc(100dvh - 5rem); overflow-y: auto;
+  }
+}
+
+/* ---- Phone sheet (D6: one button, everything inside) ------------------- */
+.nexo-sheet {
+  position: fixed; inset: 0; z-index: 70;
+  display: flex; flex-direction: column;
+  background: var(--nexo-surface); color: var(--nexo-text);
+  overflow-y: auto; overscroll-behavior: contain;
+}
+.nexo-sheet__bar {
+  position: sticky; top: 0; z-index: 1;
+  display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+  min-height: 60px; padding: 0.5rem 1rem;
+  background: var(--nexo-surface); border-bottom: 1px solid var(--nexo-border);
+}
+/* The sheet's own lockup (not .nexo-header__brand: under 360px that one hides
+   its text, and the sheet has the whole width to spare). */
+.nexo-sheet__brand { display: inline-flex; align-items: center; gap: 0.6rem; min-width: 0; font-weight: 700; }
+.nexo-sheet__brand img { width: 32px; height: 32px; display: block; flex: none; }
+.nexo-sheet__title { font-weight: 700; overflow-wrap: anywhere; }
+/* The panel takes focus (tabindex=-1) when a person taps plain text inside it,
+   so Tab and Escape keep working; that focus is not a control and shows no ring. */
+.nexo-sheet:focus { outline: none; }
+.nexo-sheet__body { display: flex; flex-direction: column; gap: 0.125rem; padding: 0.75rem 1rem 2rem; }
+.nexo-sheet__identity { padding: 0.5rem 0.75rem 0.75rem; overflow-wrap: anywhere; }
+.nexo-sheet__identity strong { display: block; font-weight: 600; }
+.nexo-sheet__identity small { display: block; font-size: 0.875rem; color: var(--nexo-text-muted); }
+.nexo-sheet__section { margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--nexo-border); }
+.nexo-sheet__section--first { margin-top: 0; padding-top: 0; border-top: 0; }
+.nexo-sheet__section > .nexo-btn--primary { width: 100%; margin-bottom: 0.5rem; }
+.nexo-sheet__label {
+  padding: 0.5rem 0.75rem 0.25rem; font-size: 0.72rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .06em; color: var(--nexo-text-muted);
+}
+.nexo-sheet__item, .nexo-sheet__nav a {
+  display: flex; align-items: center; justify-content: flex-start; gap: 0.75rem; width: 100%; min-height: 48px;
+  padding: 0 0.75rem; border-radius: var(--nexo-radius-md);
+  font: inherit; font-weight: 500; color: var(--nexo-text); text-decoration: none;
+  background: none; border: 0; cursor: pointer; text-align: start;
+}
+.nexo-sheet__item:hover, .nexo-sheet__nav a:hover { background: var(--nexo-bg-subtle); }
+.nexo-sheet__item:focus-visible, .nexo-sheet__nav a:focus-visible { outline: 2px solid var(--nexo-ring); outline-offset: -2px; }
+.nexo-sheet__item[aria-current="page"], .nexo-sheet__nav a[aria-current="page"] { background: var(--nexo-primary-subtle); color: var(--nexo-primary-subtle-fg); }
+.nexo-sheet__item svg { width: 20px; height: 20px; flex: none; color: var(--nexo-text-muted); }
+.nexo-sheet__nav { display: flex; flex-direction: column; gap: 0.125rem; }
+.nexo-sheet__row { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; padding: 0.25rem 0.75rem; }
+.nexo-sheet__form { margin: 0; }
+.nexo-sheet__item--danger { color: var(--nexo-danger); }
+.nexo-sheet__item--danger svg { color: currentColor; }
+/* While the sheet is open the page underneath does not scroll — on phones
+   only: a tablet rotated past 768px hides the sheet, and the page must not stay
+   locked under a sheet nobody can see. */
+@media (max-width: 767.98px) { html.nexo-sheet-open { overflow: hidden; } }
+
+/* ---- Inline language list (phone sheet, public footer) ----------------- */
+.nexo-locale-list { display: flex; flex-wrap: wrap; gap: 0.25rem; margin: 0; padding: 0; list-style: none; }
+.nexo-locale-list a {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 44px; min-width: 44px; padding: 0 0.75rem;
+  border-radius: var(--nexo-radius-md); border: 1px solid var(--nexo-border-control);
+  color: var(--nexo-text); text-decoration: none; font-size: 0.875rem; font-weight: 500;
+}
+.nexo-locale-list a:hover { background: var(--nexo-bg-subtle); }
+.nexo-locale-list a:focus-visible { outline: 2px solid var(--nexo-ring); outline-offset: 2px; }
+.nexo-locale-list a[aria-current="true"] {
+  background: var(--nexo-primary-subtle); color: var(--nexo-primary-subtle-fg); border-color: var(--nexo-primary);
+}
+
+/* ---- Public content pages (D8): no tool chrome, just this footer ------- */
+.nexo-public-footer {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.5rem 1rem;
+  padding: 1rem; border-top: 1px solid var(--nexo-border);
+  color: var(--nexo-text-muted); font-size: 0.875rem;
+}
+.nexo-public-footer__made { display: inline-flex; align-items: center; min-height: 44px; color: var(--nexo-text-muted); text-decoration: none; }
+.nexo-public-footer__made:hover { color: var(--nexo-link); text-decoration: underline; }
+.nexo-public-footer__made:focus-visible { outline: 2px solid var(--nexo-ring); outline-offset: 2px; }
+/* The owner's «Editar» chip: discreet, but a real 44px target. */
+.nexo-chip {
+  display: inline-flex; align-items: center; gap: 0.375rem; min-height: 44px; padding: 0 0.9rem;
+  border-radius: var(--nexo-radius-full); border: 1px solid var(--nexo-border-control);
+  background: var(--nexo-surface); color: var(--nexo-text);
+  font-size: 0.875rem; font-weight: 600; text-decoration: none;
+}
+.nexo-chip:hover { background: var(--nexo-bg-subtle); }
+.nexo-chip:focus-visible { outline: 2px solid var(--nexo-ring); outline-offset: 2px; }
+.nexo-chip svg { width: 16px; height: 16px; }
+
+/* ---- Sign-in options (Nexo ID first, STANDARD «Login») ----------------- */
+.nexo-divider {
+  display: flex; align-items: center; gap: 0.75rem; margin: 1.25rem 0;
+  color: var(--nexo-text-muted); font-size: 0.8125rem;
+}
+.nexo-divider::before, .nexo-divider::after { content: ""; flex: 1; height: 1px; background: var(--nexo-border); }
+.nexo-disclosure { margin-top: 1.25rem; border-top: 1px solid var(--nexo-border); padding-top: 0.5rem; }
+.nexo-disclosure > summary {
+  display: flex; align-items: center; min-height: 44px; cursor: pointer;
+  font-size: 0.875rem; font-weight: 500; color: var(--nexo-link);
+}
+.nexo-disclosure > summary:focus-visible { outline: 2px solid var(--nexo-ring); outline-offset: 2px; }
+.nexo-disclosure[open] > summary { margin-bottom: 0.75rem; }
+.nexo-btn--block { display: flex; width: 100%; }
+.nexo-auth-alert { margin-bottom: 1rem; }
+.nexo-auth-note { margin-bottom: 0.75rem; font-size: 0.8125rem; color: var(--nexo-text-muted); }
+.nexo-auth-foot { margin-top: 1.25rem; text-align: center; font-size: 0.875rem; color: var(--nexo-text-muted); }
+.nexo-auth-foot a { display: inline-flex; align-items: center; min-height: 44px; font-weight: 500; color: var(--nexo-link); text-decoration: none; }
+.nexo-auth-foot a:hover { color: var(--nexo-link-hover); text-decoration: underline; }
 
 /* ---- Footer ---------------------------------------------------------- */
 .nexo-footer {

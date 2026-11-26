@@ -1,4 +1,4 @@
-<x-guest-layout :title="$title" :description="$description" :seo-type="$seoType" :seo-json-ld="$seoJsonLd">
+<x-public-layout :title="$title" :description="$description" :seo-type="$seoType" :seo-json-ld="$seoJsonLd" :edit-url="$editUrl">
     <h1 class="mb-1 text-2xl font-bold">{{ $event->title }}</h1>
     <p class="mb-4 text-sm text-muted">
         {{ $event->starts_at->translatedFormat(__('app.datetime')) }}@if ($event->venue) · {{ $event->venue }}@endif
@@ -113,4 +113,4 @@
     @else
         <p class="nexo-flash nexo-flash--info" role="status">{{ __('Registration for this event is closed.') }}</p>
     @endif
-</x-guest-layout>
+</x-public-layout>

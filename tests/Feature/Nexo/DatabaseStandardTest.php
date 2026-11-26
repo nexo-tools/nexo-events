@@ -35,6 +35,8 @@ const EXPECTED_TABLES = [
     'failed_jobs',
     'job_batches',
     'jobs',
+    // Nexo ID back-channel revocations (nexo-sso-client v2), 24 h, pruned daily.
+    'nexo_sso_revocations',
     'password_reset_tokens',
     'sessions',
     'tickets',

@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout :title="__('Registrations').' · '.$event->title">
     @include('app.events._header', ['event' => $event, 'current' => 'registrations'])
 
     <p class="mb-4 text-sm text-muted" data-registrations-count>{{ trans_choice('app.tickets', $tickets->count()) }}</p>

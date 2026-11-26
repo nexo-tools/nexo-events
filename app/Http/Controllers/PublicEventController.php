@@ -7,6 +7,7 @@ use App\Http\Requests\RegisterAttendeeRequest;
 use App\Http\Requests\ResendTicketRequest;
 use App\Mail\TicketIssued;
 use App\Models\Event;
+use App\Models\User;
 use App\Services\EventRegistrar;
 use App\Services\EventViewCounter;
 use App\Services\TicketResender;
@@ -34,7 +35,28 @@ class PublicEventController extends Controller
             'seoType' => 'article',
             'seoJsonLd' => $this->eventJsonLd($event),
             'askPhone' => AttendeePhone::enabled(),
+            'editUrl' => $this->editUrl($event, $request),
         ]);
+    }
+
+    /**
+     * The «Editar» chip of the public footer (D8): the owner goes to the
+     * event's editor, a collaborator who can manage it right now to its
+     * summary (the screen they work from; editing the content is the owner's).
+     * Anybody else — and every guest — gets no chip at all.
+     */
+    private function editUrl(Event $event, Request $request): ?string
+    {
+        $user = $request->user();
+        if (! $user instanceof User) {
+            return null;
+        }
+
+        if ($event->organizer_id === $user->id) {
+            return route('events.edit', $event);
+        }
+
+        return $event->canBeManagedBy($user) ? route('events.manage', $event) : null;
     }
 
     public function register(RegisterAttendeeRequest $request, Event $event, EventRegistrar $registrar): RedirectResponse

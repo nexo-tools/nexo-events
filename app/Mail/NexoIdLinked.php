@@ -14,18 +14,26 @@ use Illuminate\Queue\SerializesModels;
 
 /**
  * "Nexo ID was linked to your account" — sent the first time an existing local
- * account is claimed through single sign-on (family rule C5).
+ * account is claimed through single sign-on (family rule C5): by its verified
+ * email, or by «Link my account» from a session opened with its password.
  *
  * The tool where the link happens sends it, never nexo-id: this is the app that
- * knows which account was just connected. Linking only happens on a
- * provider-verified email (AC-LINK-2), so this mail is not an authorization
- * step — it is the notice that lets the owner notice something they did not do.
+ * knows which account was just connected. Linking needs a provider-verified
+ * email (AC-LINK-2) or the account's own password (AC-JOIN), so this mail is
+ * not an authorization step — it is the notice that lets the owner notice
+ * something they did not do.
  */
 class NexoIdLinked extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
-    public function __construct(public User $user) {}
+    /**
+     * @param  string  $how  NexoSsoUserResolver::BY_EMAIL (Nexo ID vouched for
+     *                       the email) or ::EXPLICIT (someone signed in here
+     *                       with the password asked for it, maybe with another
+     *                       email) — the "if you did not do this" line differs.
+     */
+    public function __construct(public User $user, public string $how = 'email') {}
 
     public function envelope(): Envelope
     {

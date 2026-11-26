@@ -1,7 +1,7 @@
 {{-- Door: the scanner, under the event navigation (SPEC-event-panel). The
      form, the endpoint and scanner.js's contract are what they were; the
      door of a live event depends on them. --}}
-<x-app-layout>
+<x-app-layout :title="__('Door').' · '.$event->title">
     @include('app.events._header', ['event' => $event, 'current' => 'door'])
 
     {{-- Whoever is at the door collects (or checks a transfer receipt) before

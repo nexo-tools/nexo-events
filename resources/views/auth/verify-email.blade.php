@@ -1,4 +1,4 @@
-<x-guest-layout :auth-card="true" :noindex="true">
+<x-guest-layout :auth-card="true" :noindex="true" :title="__('Verify your email')">
     <h1 class="mb-2 text-xl font-semibold">{{ __('Verify your email') }}</h1>
 
     <p class="mb-4 text-sm text-muted">

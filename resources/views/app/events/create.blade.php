@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout :title="__('New event')">
     <h1 class="mb-4 text-xl font-bold">{{ __('New event') }}</h1>
 
     <form method="POST" action="{{ route('events.store') }}" class="space-y-4">

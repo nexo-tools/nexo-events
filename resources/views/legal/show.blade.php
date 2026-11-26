@@ -8,7 +8,7 @@
             {{ __('Skip to content') }}
         </a>
 
-        <x-nexo-header brand="Nexo Events" mark="/ecosystem/nexoevents.svg" :home="route('home')" />
+        <x-nexo-header />
 
         <main id="contenido" class="flex-1 px-4 py-10">
             <article class="mx-auto w-full max-w-2xl rounded-2xl bg-surface p-6 shadow-sm sm:p-8">

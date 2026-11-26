@@ -1,12 +1,31 @@
-{{-- Shared shell for every error page. It used to be a bare document — favicon,
-     app name, message — with no header and no footer, so an error page was the
-     one surface where a person lost the theme toggle, the language switcher and
-     every link out (audit 2026-08-02). A 404 is where those are needed more,
-     not less. It also went out without a noindex: the pages nobody should reach
-     from a search result were the only ones inviting the crawler in.
+{{-- Shared shell for every error page. Keeps the tool's chrome so a 404 still
+     feels like the product — and, just as much, so the person who landed on it
+     keeps the controls the rest of the site gives them: theme, language, the
+     way back home. The 2026-08-02 audit found the inverse drift on both sides
+     of the same system: nexoagenda and nexoevents served errors as a bare
+     document with the favicon and the app name (no header, no footer, no
+     toggles), while nexolinks served its auth pages that way and its errors
+     with full chrome.
 
-     `code`, `title` and `message` come from the per-code views in
-     resources/views/errors/, so adding a status code is still a one-liner. --}}
+     Copy to resources/views/components/error-layout.blade.php. Since chrome v2
+     the header takes no props (brand and mark come from the registry), so the
+     only line an app may still adapt is the head include below (how its
+     partial takes noindex). Adding a status code is one line in
+     resources/views/errors/.
+
+     The 404 must know who is signed in (HeaderEverywhereTest): an unmatched URL
+     renders BEFORE the `web` group runs, with no session. The last route of
+     routes/web.php is therefore `Route::fallback(fn () => abort(404))->name('fallback')`,
+     excluded from the silent SSO attempt (see pages/legal/routes-snippet.php).
+
+     noindex: an error page must never be indexed. It goes to partials.head,
+     which forwards it to <x-nexo-seo>; a tool whose head partial does not
+     accept $noindex adds it there — StaticPagesTest asserts the rendered meta,
+     not the include, so a partial that ignores the flag is caught.
+
+     Exception — isolated hosts (the nxo.li short host): their 404 uses the
+     self-contained minimal shell instead, with no chrome, tokens or build.
+     Guarded by HostChromeIsolationTest. --}}
 @props(['code', 'title', 'message'])
 
 <!DOCTYPE html>
@@ -19,7 +38,7 @@
             {{ __('Skip to content') }}
         </a>
 
-        <x-nexo-header brand="Nexo Events" mark="/ecosystem/nexoevents.svg" :home="route('home')" />
+        <x-nexo-header />
 
         <main id="contenido" class="flex flex-1 flex-col items-center justify-center px-4 py-10 text-center">
             <p class="text-6xl font-bold tabular-nums text-primary">{{ $code }}</p>
@@ -29,6 +48,8 @@
             <a href="{{ url('/') }}" class="nexo-btn nexo-btn--primary mt-8">
                 {{ __('Back to home') }}
             </a>
+
+            {{ $slot }}
         </main>
 
         <x-nexo-footer />

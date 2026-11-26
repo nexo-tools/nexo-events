@@ -95,5 +95,5 @@ test('AC-API-14: the integration API never bounces a machine through a login pag
 test('AC-SILENT-EVENTS-4: an organizer-facing guest page DOES attempt, so the exclusions above are what protect attendees', function (): void {
     $this->withCookies(nexoEventsReturningGuest())
         ->get(route('home'))
-        ->assertRedirect(route('nexo-sso.silent'));
+        ->assertRedirect(route('nexo-sso.silent', ['to' => '/']));
 });

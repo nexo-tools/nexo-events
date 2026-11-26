@@ -5,8 +5,11 @@
      for every page (nexo-ui standard), which is what stops the per-page drift
      this file used to have. Pages set $title/$description/$seo* before including
      the layout; private pages pass $noindex. --}}
+{{-- Tab title (STANDARD «Títulos», PageTitleTest): «<Página> — Nexo Events»,
+     and the landing passes its own full «Nexo Events — <tagline>» as
+     $fullTitle. The brand is the registry name, never APP_NAME. --}}
 <x-nexo-seo
-    :title="isset($title) ? $title.' — '.config('app.name') : config('app.name')"
+    :title="$fullTitle ?? \App\Support\NexoChrome::pageTitle($title ?? null)"
     :description="$description ?? __('Create free events, take registrations by email and validate tickets with a QR code at the door.')"
     :image="$seoImage ?? '/og-image.png'"
     :type="$seoType ?? 'website'"

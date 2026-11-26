@@ -18,8 +18,9 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
+        {{-- «Nexo Events — <tagline>» (STANDARD «Títulos»). --}}
         @include('partials.head', array_filter([
-            'title' => $title,
+            'fullTitle' => \App\Support\NexoChrome::homeTitle($title),
             'description' => $description,
         ], fn ($value) => $value !== null))
     </head>
@@ -28,17 +29,9 @@
             {{ __('Skip to content') }}
         </a>
 
-        {{-- Only the hero carries a primary CTA (design.md, "CTA voice"), so the
-             header's action is the ghost sign-in. --}}
-        <x-nexo-header brand="Nexo Events" mark="/ecosystem/nexoevents.svg" :home="route('home')">
-            <x-slot:actions>
-                @auth
-                    <x-nexo-account-menu />
-                @else
-                    <a href="{{ route('login') }}" class="nexo-btn nexo-btn--ghost nexo-header__auth">{{ __('Sign in') }}</a>
-                @endauth
-            </x-slot:actions>
-        </x-nexo-header>
+        {{-- The same header as every other layout (chrome v2). Its sign-in is a
+             ghost: only the hero carries a primary CTA (design.md, "CTA voice"). --}}
+        <x-nexo-header />
 
         <main id="contenido" class="flex-1">
             {{ $slot }}

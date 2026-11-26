@@ -51,10 +51,11 @@ it('sends a self-contained content-security-policy', function () {
         ->toContain("base-uri 'self'")
         ->toContain("form-action 'self'");
 
-    // The only permitted external host is the Nexo Tools hub (opt-in cookieless
-    // beacon in connect-src). Without it the emitter renders and the browser
-    // drops every sendBeacon silently — this tool's visits simply never arrived.
-    // No other external host leaks into the policy.
+    // The only permitted external host here is the beacon's hub (opt-in
+    // cookieless beacon in connect-src, taken from NEXO_BEACON_ENDPOINT). The
+    // suite pins NEXO_SSO_ISSUER empty, so form-action stays 'self'; with an
+    // issuer it gains that one origin (CspFormActionTest). No other external
+    // host leaks into the policy.
     expect($csp)->toContain("connect-src 'self' https://nexotools.alvarocdev.com");
     expect(str_replace('https://nexotools.alvarocdev.com', '', $csp))
         ->not->toContain('http://')
@@ -70,6 +71,12 @@ it('does not advertise HSTS over plain http', function () {
 it('keeps the .htaccess CSP in sync with the middleware CSP', function () {
     // On LiteSpeed the web server strips the PHP-sent CSP (Force-HTTPS), so it is
     // re-asserted in public/.htaccess. The two must match or prod silently weakens.
+    // Compared as production runs it: SSO on, against the production issuer,
+    // and the default beacon endpoint.
+    config()->set('nexo-sso.enabled', true);
+    config()->set('nexo-sso.issuer', 'https://nexoid.alvarocdev.com');
+    config()->set('nexo.beacon.endpoint', 'https://nexotools.alvarocdev.com/beacon');
+
     $middlewareCsp = $this->get('/')->headers->get('Content-Security-Policy');
 
     $htaccess = file_get_contents(public_path('.htaccess'));

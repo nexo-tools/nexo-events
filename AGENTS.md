@@ -53,6 +53,43 @@ Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./ven
 
 ## Accumulated context
 
+- **2026-11-26** — **Nexo ID controls the session; shared chrome v2.1; the public event page
+  without the tool chrome (PLAN 10.25–10.27, [SPEC-nexo-session](docs/specs/SPEC-nexo-session.md)).**
+  Production runs `NEXO_AUTH_MODE=sso` (owner decision D2: 133 local accounts, 1 verified).
+  What a future session should not have to rediscover:
+  - **The template files are byte-identical** to `alvaro/templates/nexo-sso-client` and
+    `nexo-ui` (`cmp`; `nexo-doctor` checks it). Edit them there, never here. This app's own
+    pieces live only in the adaptation points: `config/nexo-sso.php` (`home` = `/app`, the
+    attendee exclusions `e/*`, `t/*`, `public.*`, `ticket.*` plus `fallback`), the resolver's
+    `linked()` (email marked verified when Nexo ID vouched for it — the publish gate and the
+    invitation need it — and the `NexoIdLinked` mail), the layout line of the three
+    `nexo-sso/*` screens (`<x-guest-layout bare>`), `config/nexo.php → chrome.panel_route`
+    and `lang/*/nexo.php → app.panel` («Tus eventos»).
+  - **The `add_nexo_id_sub` migration keeps its 2026-07-23 name**: same content as the
+    template's `2026_01_01_…`, already run in production; renaming it would run it twice.
+  - **The door is safe by construction**: the re-validation bounces only GET page
+    navigations, so the scanner's JSON check-in (and the list's form POST) never leave for Nexo
+    ID; a session Nexo ID ended gets `401 {"reason":"signed_out"}`, which `scanner.js` already
+    shows as «Tu sesión se cerró». Its «Volver a entrar» reloads the door, which in sso mode
+    goes through `/auth/nexo/enter` and back. The Integration API has no session at all.
+  - **Collaborator invitations in sso mode**: the mailed link is a protected deep link, so a
+    signed-out band goes through `/auth/nexo/enter?to=/app/invitaciones/<token>` to Nexo ID
+    (where they create an account if they have none) and comes back to accept. The «same
+    email» rule is unchanged: Nexo ID's email is the account's.
+  - **`/e/{slug}` has no tool header** (D8, `x-public-layout`): the page and
+    `<x-nexo-public-footer>`; the «Editar» chip is decided in `PublicEventController::editUrl()`.
+    The ticket page `/t/{token}` kept its layout on purpose (it is opened at the door).
+  - `data-confirm` and `color-scheme` now come from the shared `nexo-ui.js`/`nexo-ui.css`;
+    app.js and app.css no longer carry their own (two confirm handlers would ask twice).
+  - `phpunit.xml` pins `APP_URL=http://localhost` (the template tests build same-origin
+    headers from it; a developer `.env` with `:8103` broke AC-LOGOUT-4) and the SSO/auth-mode
+    env, so the suite never depends on the local `.env`.
+  - Booted with `NEXO_SSO_ENABLED=false` only the `tests/Feature/NexoSso/` files fail (they
+    need the routes registered at boot, by design); everything else is green standalone.
+  - Deploy: migration `nexo_sso_revocations` (additive), env `NEXO_AUTH_MODE=sso`, the Nexo ID
+    client update (`--add-redirect …/auth/nexo/signed-out --backchannel …/backchannel-logout`),
+    `events:door-guard` first — see DEPLOYMENT.md «Nexo ID controls the session».
+
 - **2026-11-26** — **Unified Nexo experience, this tool's own fixes (PLAN 10.17–10.23,
   [SPEC-event-panel](docs/specs/SPEC-event-panel.md)).** The header, account menu, login and
   tab titles are NOT here: they arrive with the shared chrome/session v2. What a future session
