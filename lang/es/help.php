@@ -17,7 +17,7 @@ return [
         ],
         [
             'q' => '¿Cómo valido las entradas en la puerta?',
-            'a' => 'Desde el panel del evento escaneas o ingresas el código de la entrada. El check-in es atómico: cada entrada se marca ingresada una sola vez.',
+            'a' => 'Abre el evento y entra a «Puerta»: escaneas el QR con la cámara o escribes el código de la entrada. El check-in es atómico: cada entrada se marca ingresada una sola vez.',
         ],
         [
             'q' => '¿Puedo alojarlo en mi propio servidor?',
@@ -26,6 +26,10 @@ return [
         [
             'q' => 'No me llegó mi entrada por email.',
             'a' => 'Revisa las carpetas de spam o promociones. Si no aparece, contacta al organizador del evento.',
+        ],
+        [
+            'q' => '¿Cómo borro o cancelo un evento?',
+            'a' => 'Un borrador nunca fue público: se borra desde «Editar» con «Borrar borrador». Un evento publicado se cancela desde «Editar» con «Cancelar evento», y se les avisa por email a quienes tienen entrada.',
         ],
     ],
 ];

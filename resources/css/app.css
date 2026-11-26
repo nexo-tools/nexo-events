@@ -16,6 +16,17 @@
     display: none !important;
 }
 
+/* Native controls follow the stamped theme too: without it the date and time
+   pickers drew a black calendar icon on the dark surface of the event form
+   (H-nexoevents-17). theme-init always stamps data-theme before first paint. */
+:root[data-theme='dark'] {
+    color-scheme: dark;
+}
+
+:root[data-theme='light'] {
+    color-scheme: light;
+}
+
 /* Respect users who ask the OS to reduce motion (WCAG 2.3.3). */
 @media (prefers-reduced-motion: reduce) {
     *,

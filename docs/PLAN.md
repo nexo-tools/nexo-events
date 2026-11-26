@@ -274,5 +274,12 @@ sends, the check-in endpoint or any stored row.
   cleared → 419 → session message, camera off; «Volver a entrar» → login → back at the door;
   401 `signed_out`, the redirect, 429 and 500 each with their message; no console errors.
   WebKit could not open the stubbed camera headless (harness limit). AC-PANEL-9.
+- [x] 10.24 Two smaller own findings and the help: signed in, the landing hero offers "Create an
+  event" (→ new event) and «Ir a tus eventos» instead of "Sign in" (H-nexoevents-12; the
+  signed-out CTAs stay for the auth-mode work of chrome/session v2); `color-scheme` follows the
+  stamped theme in `app.css`, so the date picker's icon is light on the dark form
+  (H-nexoevents-17, checked in Chromium); the help's door answer points to «Puerta» and a new
+  FAQ says how a draft is deleted and a published event cancelled (es/en/pt).
+  `OwnFindingsTest`.
 
 **Gate 10:** per integration — real cross-tool flow exercised, **standalone mode still green** (self-host story intact), owner sign-off.

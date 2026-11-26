@@ -39,9 +39,16 @@
         <div class="mx-auto max-w-4xl px-6">
             <h1 class="max-w-2xl text-4xl font-semibold tracking-tight text-ink sm:text-5xl">{{ __('Create free events and validate tickets with QR.') }}</h1>
             <p class="mt-5 max-w-xl text-lg text-muted">{{ __('Attendees register with just their email — no account, no app.') }}</p>
-            <div class="mt-8 flex flex-wrap gap-3">
-                <a class="nexo-btn nexo-btn--primary" href="{{ route('register') }}">{{ __('Create an event') }}</a>
-                <a class="nexo-btn nexo-btn--ghost" href="{{ route('login') }}">{{ __('Sign in') }}</a>
+            {{-- Signed in, the hero leads into the panel instead of offering to
+                 sign in again (H-nexoevents-12). --}}
+            <div class="mt-8 flex flex-wrap gap-3" data-hero-actions>
+                @auth
+                    <a class="nexo-btn nexo-btn--primary" href="{{ route('events.create') }}">{{ __('Create an event') }}</a>
+                    <a class="nexo-btn nexo-btn--ghost" href="{{ route('dashboard') }}">{{ __('Go to your events') }}</a>
+                @else
+                    <a class="nexo-btn nexo-btn--primary" href="{{ route('register') }}">{{ __('Create an event') }}</a>
+                    <a class="nexo-btn nexo-btn--ghost" href="{{ route('login') }}">{{ __('Sign in') }}</a>
+                @endauth
             </div>
         </div>
     </section>

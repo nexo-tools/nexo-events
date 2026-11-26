@@ -17,7 +17,7 @@ return [
         ],
         [
             'q' => 'Como valido os ingressos na porta?',
-            'a' => 'No painel do evento você escaneia ou digita o código do ingresso. O check-in é atômico: cada ingresso é marcado como admitido uma única vez.',
+            'a' => 'Abra o evento e entre em “Porta”: escaneie o QR com a câmera ou digite o código do ingresso. O check-in é atômico: cada ingresso é marcado como admitido uma única vez.',
         ],
         [
             'q' => 'Posso hospedar no meu próprio servidor?',
@@ -26,6 +26,10 @@ return [
         [
             'q' => 'Meu ingresso não chegou por e-mail.',
             'a' => 'Verifique as pastas de spam ou promoções. Se não aparecer, entre em contato com o organizador do evento.',
+        ],
+        [
+            'q' => 'Como excluo ou cancelo um evento?',
+            'a' => 'Um rascunho nunca foi público: exclua em “Editar” com “Excluir rascunho”. Um evento publicado é cancelado em “Editar” com “Cancelar evento”, e quem tem ingresso recebe um aviso por e-mail.',
         ],
     ],
 ];

@@ -17,7 +17,7 @@ return [
         ],
         [
             'q' => 'How do I validate tickets at the door?',
-            'a' => 'From the event panel you scan or type the ticket code. Check-in is atomic: each ticket is marked as admitted exactly once.',
+            'a' => 'Open the event and go to “Door”: scan the QR with the camera or type the ticket code. Check-in is atomic: each ticket is marked as admitted exactly once.',
         ],
         [
             'q' => 'Can I host it on my own server?',
@@ -26,6 +26,10 @@ return [
         [
             'q' => "My ticket didn't arrive by email.",
             'a' => 'Check your spam or promotions folders. If it is not there, contact the event organizer.',
+        ],
+        [
+            'q' => 'How do I delete or cancel an event?',
+            'a' => 'A draft was never public: delete it from “Edit” with “Delete draft”. A published event is cancelled from “Edit” with “Cancel event”, and everyone holding a ticket is told by email.',
         ],
     ],
 ];
