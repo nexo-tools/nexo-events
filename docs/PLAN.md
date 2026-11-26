@@ -249,7 +249,13 @@ sends, the check-in endpoint or any stored row.
   said «Aforo» for the number the edit form called «Cupo»), Portuguese «Vagas» (was «Lotação»,
   «Capacidade» and «Vagas»); the door is «Puerta», one name since 10.18. `CapacityWordingTest`
   scans `lang/` and the views and renders both forms. AC-PANEL-7.
-- [ ] 10.21 The edit form's capacity floor, web and API (AC-PANEL-6).
+- [x] 10.21 The edit form's capacity floor (owner-approved loose end): `EventRequest` refuses a
+  capacity below the tickets issued (revoked ones excluded) with the summary's message, web and
+  API `PATCH` alike; only when editing and only when the value changes, so older rows under the
+  floor stay editable; on the API the event is looked up among the token owner's only (no
+  floor leaks for somebody else's id — still 404). The first consumer sends `capacity` only on
+  creation, so its flow is untouched. AC-PANEL-6. Deliberate violation: the rule removed → two
+  tests red.
 - [ ] 10.22 Registration lines that wrap whole, no dangling separator (AC-PANEL-8).
 - [ ] 10.23 The scanner says when the session ended (AC-PANEL-9).
 

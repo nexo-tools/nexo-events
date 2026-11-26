@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Event;
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -39,7 +41,11 @@ class EventRequest extends FormRequest
             // (anyone can create events, and the link opens from this domain).
             // Trimmed and empty → null by the framework's global middleware.
             'info_url' => ['nullable', 'string', 'max:2048', 'url:https'],
-            'capacity' => ['nullable', 'integer', 'min:1', 'max:1000000'],
+            // The same floor as the summary's capacity form
+            // (EventManagementController::capacity): lowering it under the
+            // tickets already out would not un-issue anybody's ticket, only
+            // make the counters lie (SPEC-event-panel AC-PANEL-6).
+            'capacity' => ['nullable', 'integer', 'min:1', 'max:1000000', $this->capacityFloor()],
             // API only — the consumer's own key for the event, which is what
             // makes creation idempotent. The web form has no such field, and the
             // column is outside Event's #[Fillable], so it can only ever be set
@@ -56,5 +62,50 @@ class EventRequest extends FormRequest
         return [
             'info_url.url' => __('The link has to be a full web address starting with https://.'),
         ];
+    }
+
+    /**
+     * Not below the tickets already issued (revoked ones do not count) — only
+     * when editing an existing event, and only when the value changes: the
+     * edit form always posts the stored capacity back, and an event whose
+     * older data sits under the floor must still be editable.
+     */
+    private function capacityFloor(): Closure
+    {
+        return function (string $attribute, mixed $value, Closure $fail): void {
+            $event = $this->editedEvent();
+
+            if ($event === null || ! is_numeric($value) || (int) $value === $event->capacity) {
+                return;
+            }
+
+            $issued = $event->issuedTicketsCount();
+
+            if ((int) $value < $issued) {
+                $fail(__('The capacity cannot be lower than the :count tickets already issued.', ['count' => $issued]));
+            }
+        };
+    }
+
+    /**
+     * The event being edited: bound by the web route, or by id on the API —
+     * looked up among the caller's own events only, so validation never
+     * reveals anything about somebody else's (the controller answers 404).
+     */
+    private function editedEvent(): ?Event
+    {
+        $param = $this->route('event');
+
+        if ($param instanceof Event) {
+            return $param;
+        }
+
+        $user = $this->user();
+
+        if (is_string($param) && $user !== null) {
+            return Event::query()->where('organizer_id', $user->getAuthIdentifier())->whereKey($param)->first();
+        }
+
+        return null;
     }
 }

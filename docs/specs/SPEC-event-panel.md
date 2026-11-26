@@ -76,7 +76,7 @@ SPEC with the prefix `AC-PANEL-`).
   leaves its status as it was, its public page answering 404 and no mail queued; the edit
   screen of a draft offers "Delete draft" and no "Cancel event", and a cancelled or blocked
   event offers neither.
-- AC-PANEL-6 (10.21) — The edit form and `PATCH /api/v1/events/{id}` refuse a capacity
+- **AC-PANEL-6** (10.21) — The edit form and `PATCH /api/v1/events/{id}` refuse a capacity
   below the tickets already issued (revoked ones do not count) with the summary's message
   and change nothing; the same value as stored is accepted; a body without `capacity`
   leaves it alone; a new event has no floor.

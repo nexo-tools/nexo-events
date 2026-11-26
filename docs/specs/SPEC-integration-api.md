@@ -167,6 +167,9 @@ as the web form, same `PATCH` semantics; trimmed, and `""` is `null`. A consumer
 content but not the tickets (the first one) sends `capacity` only on creation and never
 sends `status`: after creation, capacity and registration state belong to whoever manages
 the tickets.
+Since 10.21 (SPEC-event-panel AC-PANEL-6) a `PATCH` that changes `capacity` to less than the
+tickets already issued is a 422 on `capacity`, with the same message as the panel; sending
+the stored value again, or not sending `capacity` at all, is unaffected.
 
 **Event payload** — one shape for every event-returning endpoint, frozen by AC-API-6c:
 `{id, slug, title, description, status, starts_at, venue, capacity, issued_tickets_count,
