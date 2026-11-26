@@ -50,7 +50,9 @@ single account ([Nexo ID](https://github.com/nexo-tools/nexo-id) SSO).
 - **Cookieless visit counts** — see how many distinct people opened an event page,
   measured with a fingerprint that rotates daily and stores no IP.
 - **Full event lifecycle** — create, edit, **publish**, **close** registrations and
-  **cancel**, with a live registrations list per event.
+  **cancel** (which tells everyone holding a ticket); a draft that was never published can
+  simply be **deleted**. Every event opens on its summary — registered, came in, capacity —
+  with **Summary · Registrations · Door · Edit** one tap away.
 - **Organizer accounts, your way** — standalone local login out of the box, or turn on
   Nexo ID SSO to share one account across the whole Nexo ecosystem.
 - **Private by design** — cookieless, server-rendered, **zero external requests** (no

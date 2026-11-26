@@ -64,6 +64,27 @@ Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./ven
     exception object is remembered (a `WeakMap`) and its report skipped; `JobFailed` mails once.
     The listeners are wired in `->booted()`, not in the exceptions callback, which only runs once
     the handler is resolved. `OperatorAlertTest` drives a real `queue:work --once`.
+  - **Every event opens on its summary** (`events.manage`, 10.18), for the owner too, under one
+    partial (`app/events/_header`) with Summary · Registrations · Door · Edit. Collaborators
+    live on the summary now (owner only). A new event screen includes that partial; the
+    routes did not change.
+  - **No confirmation had ever run** (10.19). The CSP allows no inline script, so every
+    `onsubmit="return confirm(…)"` was refused by the browser and "Cancel event" (which mails
+    every ticket holder), "Release spot", "Remove access" and "Revoke" submitted without asking.
+    Destructive forms declare `data-confirm`; `app.js` asks in the capture phase, before the
+    double-submit guard. `EventDraftTest` fails on any `on…=` attribute in a view.
+  - **Cancelling only acts on published/closed** (10.19): a cancelled event shows its public
+    page, so cancelling a draft used to publish it and cancelling a blocked one undid the
+    kill-switch. Drafts are deleted instead (`EventLifecycle::deleteDraft`, no API endpoint).
+  - **`EventRequest` has the capacity floor** of the summary's form (10.21), web and API
+    `PATCH`, only when the value changes (older rows under it stay editable).
+  - **The scanner posts with `redirect: 'manual'`** (10.23): a signed-out JSON request on a web
+    route is answered with a redirect to `/login`, and following it ended in "No connection".
+    A 401, 419 or unfollowed redirect is "the session ended" (`outcomeOf()`, node test in
+    `tests/js/`); the door page is unchanged otherwise.
+  - Spanish says «Cupo» (never «Aforo»), Portuguese «Vagas» (10.20, `CapacityWordingTest`).
+  - `php artisan test --parallel` is flaky here (the route:cache guardian races the other
+    processes for `bootstrap/cache/routes-v7.php`); the serial suite takes ~10 s — use it.
 
 - **2026-11-23** — **The attendee phone gets a country and a format (PLAN 10.16).** The owner
   saw "+54 …" numbers with a WhatsApp link and "11 …" ones as bare text, side by side. What a
