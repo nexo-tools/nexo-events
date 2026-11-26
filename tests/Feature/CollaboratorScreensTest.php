@@ -25,39 +25,41 @@ function screensBand(Event $event, string $email = 'banda@example.com'): User
     return $band;
 }
 
-it('AC-COLLAB-11: the owner invites, resends and revokes from the edit screen, and the list follows', function (): void {
+it('AC-COLLAB-11: the owner invites, resends and revokes from the event\'s summary, and the list follows', function (): void {
+    // Since 10.18 the collaborators live on the summary, next to what they
+    // manage (SPEC-event-panel AC-PANEL-3); before, on the edit screen.
     $event = Event::factory()->create();
     $owner = $event->organizer;
 
-    $invite = $this->actingAs($owner)->from(route('events.edit', $event))
+    $invite = $this->actingAs($owner)->from(route('events.manage', $event))
         ->post(route('collaborators.store', $event), ['collaborator_email' => 'Banda@Example.com']);
 
-    $invite->assertRedirect(route('events.edit', $event))->assertSessionHas('collaborator_link');
+    $invite->assertRedirect(route('events.manage', $event))->assertSessionHas('collaborator_link');
     $link = (string) session('collaborator_link');
 
     // Right after inviting: the link, once, with the WhatsApp share.
-    $page = (string) $this->actingAs($owner)->get(route('events.edit', $event))->getContent();
+    $page = (string) $this->actingAs($owner)->get(route('events.manage', $event))->getContent();
     expect($page)->toContain(e($link))
         ->and($page)->toContain('https://wa.me/?text=')
         ->and($page)->toContain('banda@example.com')
         ->and($page)->toContain(__('Invited, not accepted yet'));
 
     // Never again: a reload does not show it.
-    expect((string) $this->actingAs($owner)->get(route('events.edit', $event))->getContent())->not->toContain(e($link));
+    expect((string) $this->actingAs($owner)->get(route('events.manage', $event))->getContent())->not->toContain(e($link));
 
     // Resend: same email, new link, second mail.
-    $this->actingAs($owner)->from(route('events.edit', $event))
+    $this->actingAs($owner)->from(route('events.manage', $event))
         ->post(route('collaborators.store', $event), ['collaborator_email' => 'banda@example.com'])
         ->assertSessionHas('collaborator_link', fn (string $new): bool => $new !== $link);
     Mail::assertQueued(CollaboratorInvited::class, 2);
 
     $collaborator = EventCollaborator::sole();
-    $this->actingAs($owner)->from(route('events.edit', $event))
+    $this->actingAs($owner)->from(route('events.manage', $event))
         ->post(route('collaborators.revoke', [$event, $collaborator]))
-        ->assertRedirect(route('events.edit', $event));
+        ->assertRedirect(route('events.manage', $event));
 
     expect($collaborator->fresh()->status())->toBe(EventCollaborator::REVOKED)
-        ->and((string) $this->actingAs($owner)->get(route('events.edit', $event))->getContent())->toContain(__('Access removed'));
+        ->and((string) $this->actingAs($owner)->get(route('events.manage', $event))->getContent())->toContain(__('Access removed'));
 });
 
 it('AC-COLLAB-11: the owner\'s invite form refuses an unverified owner and the eleventh collaborator', function (): void {

@@ -1,5 +1,6 @@
-{{-- Collaborators (ADR-011), owner only — this partial is rendered from the
-     edit screen, which is owner-only. Expects $event and $collaborators. --}}
+{{-- Collaborators (ADR-011), owner only — rendered on the event's summary
+     behind an owner check (SPEC-event-panel AC-PANEL-3), next to what they
+     manage. Expects $event and $collaborators. --}}
 <section class="mt-8 border-t border-line pt-6" aria-labelledby="collaborators-heading">
     <h2 id="collaborators-heading" class="text-lg font-bold">{{ __('Collaborators') }}</h2>
     <p class="mb-4 text-sm text-muted">{{ __('Invite someone to manage this event\'s tickets with their own account: capacity, registrations (names, not emails) and the door. They cannot edit or cancel the event.') }}</p>

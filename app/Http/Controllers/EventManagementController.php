@@ -10,9 +10,10 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
- * "Ticket management" (ADR-011): the screen a collaborator lands on, and the
- * owner's quick view of the same thing. Capacity and the open/closed state are
- * the two settings a collaborator may change; content stays with the owner.
+ * The event's summary (SPEC-event-panel; "Ticket management" in ADR-011): the
+ * screen every event opens on, for the owner and for a collaborator. Capacity
+ * and the open/closed state are the two settings a collaborator may change;
+ * content stays with the owner, and so do the collaborators themselves.
  */
 class EventManagementController extends Controller
 {
@@ -22,11 +23,16 @@ class EventManagementController extends Controller
     {
         $this->managed($request, $event);
 
+        $isOwner = $event->organizer_id === $request->user()->id;
+
         return view('app.events.manage', [
             'event' => $event,
             'issued' => $event->issuedTicketsCount(),
             'checkedIn' => $event->checkedInCount(),
-            'isOwner' => $event->organizer_id === $request->user()->id,
+            'isOwner' => $isOwner,
+            // The collaborator list is the owner's (ADR-011): a collaborator's
+            // summary never loads it, not just never shows it.
+            'collaborators' => $isOwner ? $event->collaborators()->latest('invited_at')->get() : collect(),
         ]);
     }
 

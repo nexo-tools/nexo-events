@@ -222,7 +222,15 @@ sends, the check-in endpoint or any stored row.
   dedupe and kill-switch. `OperatorAlertTest` runs a real `queue:work --once` (retried then works
   → nothing; gives up → one; sync queue → one; alert loop → none). Deliberate violation: the
   attempt skip removed → the two worker tests red.
-- [ ] 10.18 The event opens in its summary, with the event navigation; collaborators move to the summary (AC-PANEL-1..3).
+- [x] 10.18 The event opens in its summary (H-nexoevents-06): every dashboard link goes to
+  `events.manage`, now "Summary", for the owner too; one partial (`app/events/_header`) gives
+  Summary, Registrations, Door and Edit the same top — back to the event list, title, date,
+  venue, status and the navigation Summary · Registrations · Door · Edit (`aria-current`; Edit
+  only for the owner; four Spanish tabs fit at 320 px). Collaborators move to the summary,
+  owner only (AC-COLLAB-11 reworded); a draft's summary says it is not public and hands out no
+  link; Edit keeps content, publishing a draft and cancelling; the duplicated buttons and
+  "Back" links go. Routes unchanged. AC-PANEL-1..3. Deliberate violation: the dashboard link
+  back to `events.edit` → AC-PANEL-1 red.
 - [ ] 10.19 Delete a draft; cancelling never publishes; confirmations that run under the CSP (AC-PANEL-4, 5, 10).
 - [ ] 10.20 One word for the capacity: "Cupo" / "Vagas" (AC-PANEL-7).
 - [ ] 10.21 The edit form's capacity floor, web and API (AC-PANEL-6).

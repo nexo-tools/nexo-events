@@ -28,6 +28,7 @@ function traceableSpecs(): array
         'docs/specs/SPEC-integration-api.md' => 'AC-API-',
         'docs/specs/SPEC-event-collaborators.md' => 'AC-COLLAB-',
         'docs/specs/SPEC-ticket-info.md' => 'AC-TICKET-',
+        'docs/specs/SPEC-event-panel.md' => 'AC-PANEL-',
     ];
 }
 

@@ -1,6 +1,8 @@
+{{-- Door: the scanner, under the event navigation (SPEC-event-panel). The
+     form, the endpoint and scanner.js's contract are what they were; the
+     door of a live event depends on them. --}}
 <x-app-layout>
-    <h1 class="mb-1 text-xl font-bold">{{ __('Door check-in') }}</h1>
-    <p class="mb-4 text-sm text-muted">{{ $event->title }}</p>
+    @include('app.events._header', ['event' => $event, 'current' => 'door'])
 
     {{-- Whoever is at the door collects (or checks a transfer receipt) before
          scanning: the ticket is a reservation, and its validity never depends
@@ -55,5 +57,4 @@
         <x-button>{{ __('Validate') }}</x-button>
     </form>
 
-    <a href="{{ route('events.registrations', $event) }}" class="mt-4 block text-sm text-muted hover:underline">{{ __('View registrations') }}</a>
 </x-app-layout>

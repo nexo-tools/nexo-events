@@ -1,6 +1,7 @@
 <x-app-layout>
-    <h1 class="mb-1 text-xl font-bold">{{ __('Registrations') }}</h1>
-    <p class="mb-4 text-sm text-muted">{{ $event->title }} · {{ trans_choice('app.tickets', $tickets->count()) }}</p>
+    @include('app.events._header', ['event' => $event, 'current' => 'registrations'])
+
+    <p class="mb-4 text-sm text-muted" data-registrations-count>{{ trans_choice('app.tickets', $tickets->count()) }}</p>
 
     @if (session('checkin'))
         @include('app._checkin-flash', ['result' => session('checkin')])
@@ -67,5 +68,4 @@
         @endforelse
     </ul>
 
-    <a href="{{ $showEmails ? route('events.edit', $event) : route('events.manage', $event) }}" class="mt-4 block text-sm text-muted hover:underline">{{ __('Back') }}</a>
 </x-app-layout>

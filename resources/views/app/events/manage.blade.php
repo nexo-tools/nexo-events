@@ -1,11 +1,8 @@
-{{-- Ticket management (ADR-011): where a collaborator lands, designed for a
-     phone at the door. Content is read-only here — it belongs to the owner. --}}
+{{-- The event's summary (SPEC-event-panel): where every event opens, for the
+     owner and for a collaborator (ADR-011), designed for a phone at the door.
+     Content is read-only here — it belongs to the owner, under Edit. --}}
 <x-app-layout :title="__('Ticket management')">
-    <h1 class="mb-1 text-xl font-bold">{{ $event->title }}</h1>
-    <p class="mb-4 text-sm text-muted">
-        {{ $event->starts_at->translatedFormat(__('app.datetime')) }}@if ($event->venue) · {{ $event->venue }}@endif
-        · {{ $event->status->label() }}
-    </p>
+    @include('app.events._header', ['event' => $event, 'current' => 'summary'])
 
     @if (session('status'))
         <p class="nexo-flash mb-4" role="status">{{ session('status') }}</p>
@@ -13,6 +10,15 @@
     @error('reopen')
         <p class="nexo-flash nexo-flash--warning mb-4" role="alert">{{ $message }}</p>
     @enderror
+
+    @if ($isOwner && $event->status->value === 'draft')
+        <p class="nexo-flash nexo-flash--info mb-4" role="note" data-draft-notice>
+            <span>
+                {{ __('This event is a draft: nobody can see it yet.') }}
+                <a href="{{ route('events.edit', $event) }}" class="font-medium underline">{{ __('Complete it and publish it') }}</a>
+            </span>
+        </p>
+    @endif
 
     <div class="mb-6 grid grid-cols-2 gap-3" data-counters>
         <div class="rounded-lg border border-line p-3 text-center">
@@ -23,11 +29,6 @@
             <p class="text-3xl font-bold" data-checked-in>{{ $checkedIn }}</p>
             <p class="text-xs text-muted">{{ __('Came in') }}</p>
         </div>
-    </div>
-
-    <div class="mb-6 grid grid-cols-1 gap-2 sm:grid-cols-2">
-        <a href="{{ route('events.scan', $event) }}" class="nexo-btn nexo-btn--primary w-full">{{ __('Door check-in') }}</a>
-        <a href="{{ route('events.registrations', $event) }}" class="nexo-btn nexo-btn--ghost w-full">{{ __('Registrations') }}</a>
     </div>
 
     @if ($event->access_address || $event->access_info || $event->payment_info)
@@ -72,6 +73,8 @@
         @endif
     </div>
 
+    {{-- A draft has no public page yet (it answers 404): no link to hand out. --}}
+    @if ($event->status->isPublic())
     <div class="border-t border-line pt-4">
         <label for="public-url" class="mb-1 block text-sm font-medium">{{ __('Public page') }}</label>
         <div class="flex gap-2">
@@ -82,9 +85,11 @@
             <button type="button" hidden data-copy="public-url" data-copied="{{ __('Copied') }}" class="nexo-btn nexo-btn--ghost">{{ __('Copy') }}</button>
         </div>
     </div>
-
-    @if ($isOwner)
-        <a href="{{ route('events.edit', $event) }}" class="mt-6 block text-sm text-muted hover:underline">{{ __('Edit event') }}</a>
     @endif
-    <a href="{{ route('dashboard') }}" class="mt-4 block text-sm text-muted hover:underline">{{ __('Back to the dashboard') }}</a>
+
+    {{-- Collaborators sit next to what they manage (capacity, registrations,
+         the door), owner only (ADR-011). --}}
+    @if ($isOwner)
+        @include('app.events._collaborators', ['event' => $event, 'collaborators' => $collaborators])
+    @endif
 </x-app-layout>

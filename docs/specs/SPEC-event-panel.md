@@ -60,14 +60,15 @@ published event (it is cancelled, which tells ticket holders); an API delete; a 
 A criterion is declared in bold when its tests land (`ApiSpecTraceabilityTest` reads this
 SPEC with the prefix `AC-PANEL-`).
 
-- AC-PANEL-1 (10.18) — Every event link of the dashboard, owned or managed, points to
+- **AC-PANEL-1** (10.18) — Every event link of the dashboard, owned or managed, points to
   `events.manage`; none points to `events.edit`.
-- AC-PANEL-2 (10.18) — Summary, Registrations, Door and Edit render the event navigation
+- **AC-PANEL-2** (10.18) — Summary, Registrations, Door and Edit render the event navigation
   with the four links (three for a collaborator: no Edit), the current one marked
-  `aria-current="page"`, and a link back to the dashboard.
-- AC-PANEL-3 (10.18) — The owner invites, resends and revokes collaborators from the
+  `aria-current="page"`, in the three languages, and a link back to the dashboard.
+- **AC-PANEL-3** (10.18) — The owner invites, resends and revokes collaborators from the
   summary and is sent back to it; the edit screen has no collaborator section; a
-  collaborator's summary has none either.
+  collaborator's summary has none either. A draft's summary tells the owner it is not
+  public yet, links to Edit and hands out no public link.
 - AC-PANEL-4 (10.19) — The owner deletes a draft without tickets: the row and what hangs
   from it are gone and the dashboard says so; a published, closed, cancelled or blocked
   event is refused and stays as it was; a collaborator and a stranger get 403.

@@ -33,10 +33,7 @@ class EventController extends Controller
     {
         $this->owned($request, $event);
 
-        return view('app.events.edit', [
-            'event' => $event,
-            'collaborators' => $event->collaborators()->latest('invited_at')->get(),
-        ]);
+        return view('app.events.edit', ['event' => $event]);
     }
 
     public function update(EventRequest $request, Event $event): RedirectResponse

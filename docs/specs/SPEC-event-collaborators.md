@@ -23,7 +23,7 @@ closes and reopens registration, checks people in and releases a spot — and no
 hashed single-use token; acceptance bound to an account with the same (verified) email;
 `Event::canBeManagedBy()` and the move of the registrations / close / scanner / check-in
 routes from "owner only" to "managed"; a new "Release a spot" action (ticket → `revoked`);
-a "Collaborators" section in the owner's edit screen; a "Ticket management" screen for
+a "Collaborators" section in the owner's edit screen (on the event's summary since 10.18); a "Ticket management" screen for
 owner and collaborators; "Events you manage" on the dashboard; two queued mails
 (`CollaboratorInvited`, and `CollaboratorInvitedByIntegration` for invitations made through
 the API); the API endpoints of SPEC-integration-api v1.1.
@@ -68,7 +68,7 @@ invited weeks ahead and must not lapse before the door opens.
 ### Sharing the link outside email is safe because acceptance is bound to the email
 
 Transactional mail from a shared relay can land in spam. The inviter sees the raw link once
-— a flash in the edit screen, `invite_url` in the API `POST` response — and can paste it
+— a flash on the screen it was invited from, `invite_url` in the API `POST` response — and can paste it
 into a chat. This does not widen anything: the link only works for a signed-in, verified
 account with the invited email. The link is never shown again and never returned by a read.
 
@@ -154,9 +154,10 @@ landed with 10.9, AC-COLLAB-11..16 with 10.10.
 - **AC-COLLAB-10** — `DatabaseStandardTest` is green with the new table declared; the
   rollback is run against real MySQL; `MailStandardTest`, `RateLimitTest` and the full suite
   are green with the API flag off.
-- **AC-COLLAB-11** — The owner invites, resends and revokes from the event's edit
-  screen; each action is reflected in the list with its status; right after inviting, the
-  link is shown once with a "Share on WhatsApp" link, and not again on reload.
+- **AC-COLLAB-11** — The owner invites, resends and revokes from the event's summary
+  (the edit screen until 10.18, SPEC-event-panel AC-PANEL-3); each action is reflected in
+  the list with its status; right after inviting, the link is shown once with a "Share on
+  WhatsApp" link, and not again on reload.
 - **AC-COLLAB-12** — "Ticket management" answers 200 for the owner and an accepted
   collaborator and 403 for anyone else, shows registered, checked-in and capacity, and
   renders in the app shell.

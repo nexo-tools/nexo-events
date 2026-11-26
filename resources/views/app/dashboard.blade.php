@@ -20,7 +20,9 @@
     <ul class="mt-4 space-y-2">
         @forelse ($events as $event)
             <li class="rounded-lg border border-line p-3">
-                <a href="{{ route('events.edit', $event) }}" class="font-medium hover:underline">{{ $event->title }}</a>
+                {{-- Every event opens on its summary, the owner's as much as a
+                     collaborator's (SPEC-event-panel AC-PANEL-1). --}}
+                <a href="{{ route('events.manage', $event) }}" class="font-medium hover:underline">{{ $event->title }}</a>
                 <div class="text-xs text-muted">{{ $event->starts_at->translatedFormat(__('app.datetime')) }} · {{ $event->status->label() }} · {{ trans_choice('app.tickets', $event->tickets_count) }} · {{ trans_choice('app.views', $event->views_count) }}</div>
             </li>
         @empty
