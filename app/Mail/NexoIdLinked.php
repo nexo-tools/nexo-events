@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Mail;
 
 use App\Models\User;
+use App\Services\NexoSso\NexoSsoApp;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
@@ -35,9 +37,19 @@ class NexoIdLinked extends Mailable implements ShouldQueue
      */
     public function __construct(public User $user, public string $how = 'email') {}
 
+    /**
+     * The footer says «write to us», and the From is this tool's sending
+     * mailbox, which nobody may read: a reply goes to the support address
+     * (NexoSsoApp::supportEmail(), NEXO_SUPPORT_EMAIL) when there is a real one.
+     */
     public function envelope(): Envelope
     {
-        return new Envelope(subject: __('Nexo ID was linked to your account'));
+        $support = NexoSsoApp::supportEmail();
+
+        return new Envelope(
+            subject: __('Nexo ID was linked to your account'),
+            replyTo: $support === null ? [] : [new Address($support)],
+        );
     }
 
     public function content(): Content
