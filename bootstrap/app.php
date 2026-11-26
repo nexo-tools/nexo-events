@@ -13,6 +13,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -69,6 +70,16 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prependToPriorityList(
             before: ThrottleRequests::class,
             prepend: AuthenticateApiToken::class,
+        );
+
+        // The language is set before route-model binding, so a 404 from a
+        // missing {event}/{business} (a mistyped or deleted shared link) speaks
+        // the visitor's language, not the default. SetLocale is appended to
+        // the web group, after SubstituteBindings, and binding failed first
+        // (usability pass, F3 2026-11-26).
+        $middleware->prependToPriorityList(
+            before: SubstituteBindings::class,
+            prepend: SetLocale::class,
         );
     })
     ->withExceptions(function (Exceptions $exceptions): void {

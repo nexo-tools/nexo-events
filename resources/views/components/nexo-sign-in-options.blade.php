@@ -66,6 +66,12 @@
             <p class="nexo-flash nexo-flash--danger nexo-auth-alert" role="alert">{{ $message }}</p>
         @enderror
 
+        {{-- What Nexo ID is, said once and the same in every tool (usability
+             pass, F3 2026-11-26): only Tools and Short explained it, each in its
+             own words, and a person new to Events, Agenda or Links met a «Nexo ID»
+             button with nothing saying what it was. --}}
+        <p class="nexo-auth-note" data-nexo-id-explainer>{{ __('nexo.auth.explainer') }}</p>
+
         <a href="{{ $ssoUrl }}" class="nexo-btn nexo-btn--primary nexo-btn--block" data-nexo-sso-primary>
             {{ __('nexo.auth.continue') }}
         </a>

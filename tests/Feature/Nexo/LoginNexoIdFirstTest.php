@@ -100,6 +100,31 @@ it('puts «Continuar con Nexo ID» first, as the only primary action', function 
     expect(substr_count($card, 'nexo-btn--primary'))->toBe(1, 'The sign-in card has more than one primary button.');
 })->with(['local', 'transition', 'sso']);
 
+// Usability pass, F3 2026-11-26: only two of the five tools said what Nexo ID
+// is, each in its own words; in the other three a newcomer met a «Continuar con
+// Nexo ID» button and nothing else. The line is part of the component now.
+it('says what Nexo ID is, before «Continuar con Nexo ID», in every mode', function (string $mode) {
+    loginNexoIdFirstSkipWithoutSso();
+    loginNexoIdFirstMode($mode);
+
+    $html = loginNexoIdFirstPage();
+    if ($html === null) {
+        test()->markTestSkipped("The login screen does not render in {$mode} mode.");
+    }
+
+    // Inside the card: in sso mode the header's «Iniciar sesión» may point at
+    // the same authorize URL.
+    $card = substr($html, (int) strpos($html, 'data-nexo-auth-card'));
+
+    // In the language the page was rendered in (another test may leave a
+    // different locale behind in this process).
+    $locale = preg_match('/<html[^>]*\blang="([a-z]{2})/', $html, $m) ? $m[1] : app()->getLocale();
+    $explainer = strpos($card, 'data-nexo-id-explainer>'.e(__('nexo.auth.explainer', [], $locale)).'</p>');
+    expect($explainer)->not->toBeFalse('The sign-in card does not say what Nexo ID is (nexo.auth.explainer).');
+    expect(substr_count($html, 'data-nexo-id-explainer'))->toBe(1, 'The sign-in screen explains Nexo ID more than once.');
+    expect($explainer)->toBeLessThan((int) loginNexoIdFirstSsoAnchor($card), 'The explanation goes before «Continuar con Nexo ID».');
+})->with(['local', 'transition', 'sso']);
+
 it('shapes the password form after the auth mode', function (string $mode) {
     loginNexoIdFirstSkipWithoutSso();
     loginNexoIdFirstMode($mode);

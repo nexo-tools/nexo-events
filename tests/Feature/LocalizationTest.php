@@ -40,3 +40,10 @@ it('keeps every string translated in en and pt', function () {
 
     expect($result->exitCode())->toBe(0, 'Faltan traducciones: '.$result->errorOutput());
 })->skip(fn () => Process::run('which node')->failed(), 'node no disponible');
+
+it('a mistyped or deleted event link answers its 404 in the visitor language', function () {
+    // SetLocale runs before route-model binding (bootstrap/app.php): the 404
+    // of a missing {event} used to be Spanish for everybody.
+    $this->get('/e/no-existe-este-evento?lang=en')->assertNotFound()->assertSee('<html lang="en"', false);
+    $this->get('/e/no-existe-este-evento', ['Accept-Language' => 'pt-BR,pt;q=0.9'])->assertNotFound()->assertSee('<html lang="pt"', false);
+});

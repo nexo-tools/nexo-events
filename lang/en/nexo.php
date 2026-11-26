@@ -62,6 +62,7 @@ return [
     ],
     'auth' => [
         'continue' => 'Continue with Nexo ID',
+        'explainer' => 'Nexo ID is your one account for every Nexo tool: sign in once and they all open.',
         'or_password' => 'or use your email and password',
         'use_password' => 'Use email and password',
         'no_account' => "Don't have an account?",
