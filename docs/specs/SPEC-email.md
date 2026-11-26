@@ -60,7 +60,7 @@ An organizer can sign up, create and edit drafts unverified. Only `publish` requ
 - **AC-VERIFY-2** — An unverified organizer cannot publish: the attempt is refused and the event remains in its previous status.
 - **AC-VERIFY-3** — After verifying, the same organizer can publish that event.
 - **AC-VERIFY-4** — An organizer signed in through Nexo ID with `email_verified` true is treated as verified and is never asked to verify again.
-- **AC-VERIFY-5** — Verification gates publishing only: creating, editing, closing and cancelling stay available while unverified.
+- **AC-VERIFY-5** — Verification gates publishing only: creating, editing, closing, cancelling and deleting a draft stay available while unverified (a draft is deleted, not cancelled, since 10.19).
 
 ### Queue & scheduler
 

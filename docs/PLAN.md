@@ -231,7 +231,20 @@ sends, the check-in endpoint or any stored row.
   link; Edit keeps content, publishing a draft and cancelling; the duplicated buttons and
   "Back" links go. Routes unchanged. AC-PANEL-1..3. Deliberate violation: the dashboard link
   back to `events.edit` → AC-PANEL-1 red.
-- [ ] 10.19 Delete a draft; cancelling never publishes; confirmations that run under the CSP (AC-PANEL-4, 5, 10).
+- [x] 10.19 Drafts that can go, cancelling that never publishes (H-nexoevents-07):
+  `DELETE /app/eventos/{event}` (`events.destroy`, owner only) through
+  `EventLifecycle::deleteDraft()` — a draft without tickets, its rows cascading; anything else
+  refused with a message. `EventLifecycle::cancel()` only acts on published/closed: a draft or a
+  blocked event stays as it was, on the panel and the API (AC-API-10 note) — cancelling a draft
+  used to PUBLISH it, and cancelling a blocked one undid the kill-switch. The edit screen offers
+  "Delete draft" on a draft, "Cancel event" on published/closed, neither otherwise. **Found on
+  the way: no confirmation ever ran** — the CSP has no `'unsafe-inline'` for scripts, so every
+  inline `onsubmit="return confirm(…)"` was refused by the browser ("Cancel event", which mails
+  every ticket holder, "Release spot", "Remove access", "Revoke"; verified in Chromium: CSP
+  error, no dialog, POST sent). They are `data-confirm` now, asked by `app.js` in the capture
+  phase before the double-submit guard; verified in the browser (dialog shown, POST only on
+  accept). AC-VERIFY-5 reworded (an unverified organizer deletes a draft). AC-PANEL-4, 5, 10.
+  Deliberate violation: the cancel guard removed → three AC-PANEL-5 tests red.
 - [ ] 10.20 One word for the capacity: "Cupo" / "Vagas" (AC-PANEL-7).
 - [ ] 10.21 The edit form's capacity floor, web and API (AC-PANEL-6).
 - [ ] 10.22 Registration lines that wrap whole, no dangling separator (AC-PANEL-8).

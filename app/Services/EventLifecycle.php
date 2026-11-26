@@ -27,6 +27,9 @@ class EventLifecycle
     /** Publishing needs a verified email (ADR-007 §1) — the same gate on both surfaces. */
     public const UNVERIFIED = 'unverified';
 
+    /** Nothing to do from this state (cancelling a draft or a blocked event, deleting a non-draft). */
+    public const UNCHANGED = 'unchanged';
+
     public function publish(User $organizer, Event $event): string
     {
         // Publishing is the one action that puts content under this instance's
@@ -61,6 +64,15 @@ class EventLifecycle
             return self::OK;
         }
 
+        // Only an event people could see can be cancelled. A cancelled event
+        // shows its public page (EventStatus::isPublic), so "cancelling" a
+        // draft would have PUBLISHED it — and cancelling a blocked one would
+        // have brought back a page the kill-switch took down (SPEC-event-panel
+        // AC-PANEL-5). A draft is deleted instead (deleteDraft).
+        if (! in_array($event->status, [EventStatus::Published, EventStatus::Closed], true)) {
+            return self::UNCHANGED;
+        }
+
         $event->update(['status' => EventStatus::Cancelled]);
 
         // Cancelling used to be silent: the public page said cancelled and the
@@ -71,6 +83,23 @@ class EventLifecycle
                 ->locale($ticket->locale ?: config('app.locale'))
                 ->queue(new EventCancelled($ticket));
         }
+
+        return self::OK;
+    }
+
+    /**
+     * A draft nobody holds a ticket for can go entirely (SPEC-event-panel
+     * AC-PANEL-4): it was never public, so nobody is owed an explanation.
+     * Its invitations, views and reports cascade with it. Anything else is
+     * cancelled instead, which tells the people holding a ticket.
+     */
+    public function deleteDraft(Event $event): string
+    {
+        if ($event->status !== EventStatus::Draft || $event->tickets()->exists()) {
+            return self::UNCHANGED;
+        }
+
+        $event->delete();
 
         return self::OK;
     }

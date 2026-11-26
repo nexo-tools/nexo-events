@@ -8,6 +8,19 @@ Alpine.start();
 
 initScanner();
 
+// Confirmation before a destructive submit: <form data-confirm="…">. It has to
+// live here, not in an inline onsubmit="return confirm(…)": the CSP allows no
+// inline script, so the browser refused those handlers and "Cancel event",
+// "Release spot", "Remove access" and "Revoke" submitted without asking.
+// Capture phase, so it runs before the double-submit guard below, which reads
+// defaultPrevented to leave a declined form's button usable.
+document.addEventListener('submit', (event) => {
+    const message = event.target instanceof HTMLFormElement ? event.target.dataset.confirm : undefined;
+    if (message && !window.confirm(message)) {
+        event.preventDefault();
+    }
+}, true);
+
 // Double-submit guard. Every form here writes a row — a registration, an
 // event, a check-in — and on a slow connection nothing on screen said the
 // first click had landed, so people clicked again and got two. Delegated from

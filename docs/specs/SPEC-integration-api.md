@@ -230,7 +230,10 @@ costs nothing and saves it a round trip.
   by a verified account it publishes and is idempotent on an already-published event.
   Transitions match the web panel exactly (same service).
 - **AC-API-10** — `POST .../cancel` cancels and queues the same attendee mails as the web
-  flow; `.../close` closes registrations. Responses reflect the new status.
+  flow; `.../close` closes registrations. Responses reflect the new status. *Since 10.19
+  (SPEC-event-panel AC-PANEL-5) cancelling only acts on a published or closed event: on a
+  draft or a blocked one it answers 200 with the status unchanged — a cancelled event shows
+  its public page, so cancelling a draft used to publish it.*
 - **AC-API-11** — No API response ever contains attendee PII (names, emails, ticket
   tokens) — asserted by test on every event-returning endpoint. *Extended in 10.11 to all
   ten endpoints, the three collaborator ones included (landed). Extended in 10.13: the

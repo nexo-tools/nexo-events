@@ -79,7 +79,7 @@
                 </span>
                 @unless ($token->revoked_at)
                     <form method="POST" action="{{ route('integrations.revoke', $token) }}"
-                          onsubmit="return confirm(@js(__('Revoke “:name”? It stops working immediately and cannot be restored.', ['name' => $token->name])))">
+                          data-confirm="{{ __('Revoke “:name”? It stops working immediately and cannot be restored.', ['name' => $token->name]) }}">
                         @csrf
                         <x-button variant="danger" class="nexo-btn--sm" :block="false">{{ __('Revoke') }}</x-button>
                     </form>

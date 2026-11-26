@@ -69,10 +69,10 @@ SPEC with the prefix `AC-PANEL-`).
   summary and is sent back to it; the edit screen has no collaborator section; a
   collaborator's summary has none either. A draft's summary tells the owner it is not
   public yet, links to Edit and hands out no public link.
-- AC-PANEL-4 (10.19) — The owner deletes a draft without tickets: the row and what hangs
+- **AC-PANEL-4** (10.19) — The owner deletes a draft without tickets: the row and what hangs
   from it are gone and the dashboard says so; a published, closed, cancelled or blocked
   event is refused and stays as it was; a collaborator and a stranger get 403.
-- AC-PANEL-5 (10.19) — Cancelling a draft or a blocked event, from the panel or the API,
+- **AC-PANEL-5** (10.19) — Cancelling a draft or a blocked event, from the panel or the API,
   leaves its status as it was, its public page answering 404 and no mail queued; the edit
   screen of a draft offers "Delete draft" and no "Cancel event", and a cancelled or blocked
   event offers neither.
@@ -89,7 +89,7 @@ SPEC with the prefix `AC-PANEL-`).
   "Your session ended." with a "Sign in again" link to the scanner page; 429 keeps
   "Too many attempts", any other failure keeps "We could not validate the ticket", and a
   200 keeps its result (node test of `scanner.js`, plus a browser pass).
-- AC-PANEL-10 (10.19) — No view carries an inline event handler (`on…=`); every form that
+- **AC-PANEL-10** (10.19) — No view carries an inline event handler (`on…=`); every form that
   deletes, cancels, releases or revokes declares `data-confirm`.
 
 ## Not proven by this suite

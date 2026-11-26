@@ -68,9 +68,29 @@ class EventController extends Controller
     public function cancel(Request $request, Event $event): RedirectResponse
     {
         $this->owned($request, $event);
-        $this->lifecycle->cancel($event);
+
+        // A draft or a blocked event is not cancelled (AC-PANEL-5): saying
+        // "Event cancelled." would be a lie about a page that stays hidden.
+        if ($this->lifecycle->cancel($event) === EventLifecycle::UNCHANGED) {
+            return back();
+        }
 
         return back()->with('status', __('Event cancelled.'));
+    }
+
+    public function destroy(Request $request, Event $event): RedirectResponse
+    {
+        $this->owned($request, $event);
+
+        $title = $event->title;
+
+        if ($this->lifecycle->deleteDraft($event) === EventLifecycle::UNCHANGED) {
+            return back()->withErrors([
+                'delete' => __('Only a draft can be deleted. A published event is cancelled instead, so the people holding a ticket are told.'),
+            ]);
+        }
+
+        return redirect()->route('dashboard')->with('status', __('Draft “:title” deleted.', ['title' => $title]));
     }
 
     public function registrations(Request $request, Event $event): View

@@ -47,7 +47,7 @@
                         </form>
                         {{-- ADR-011 §6: the reservation that was never paid. --}}
                         <form method="POST" action="{{ route('tickets.release', $ticket) }}"
-                              onsubmit="return confirm(@js(__('Release the spot of :name? Their ticket stops working at the door.', ['name' => $ticket->attendee_name])))">@csrf
+                              data-confirm="{{ __('Release the spot of :name? Their ticket stops working at the door.', ['name' => $ticket->attendee_name]) }}">@csrf
                             <x-button variant="secondary" class="nexo-btn--sm" :block="false">{{ __('Release spot') }}</x-button>
                         </form>
                     </span>

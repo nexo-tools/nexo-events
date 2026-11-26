@@ -75,6 +75,8 @@ Route::middleware('auth')->group(function () {
         Route::post('eventos/{event}/publicar', [EventController::class, 'publish'])->name('events.publish');
         Route::post('eventos/{event}/cerrar', [EventController::class, 'close'])->name('events.close');
         Route::post('eventos/{event}/cancelar', [EventController::class, 'cancel'])->name('events.cancel');
+        // Owner only, drafts without tickets only (SPEC-event-panel AC-PANEL-4).
+        Route::delete('eventos/{event}', [EventController::class, 'destroy'])->name('events.destroy');
         Route::get('eventos/{event}/registrados', [EventController::class, 'registrations'])->name('events.registrations');
 
         // Ticket management — owner and collaborators (ADR-011).

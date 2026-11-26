@@ -48,7 +48,7 @@
                     @endif
                     @if ($state !== 'revoked')
                         <form method="POST" action="{{ route('collaborators.revoke', [$event, $collaborator]) }}"
-                              onsubmit="return confirm(@js(__('Remove access for :email? It stops working immediately.', ['email' => $collaborator->email])))">@csrf
+                              data-confirm="{{ __('Remove access for :email? It stops working immediately.', ['email' => $collaborator->email]) }}">@csrf
                             <x-button variant="danger" class="nexo-btn--sm" :block="false">{{ __('Remove access') }}</x-button>
                         </form>
                     @endif

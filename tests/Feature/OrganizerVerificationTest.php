@@ -110,9 +110,11 @@ it('AC-VERIFY-5: verification gates publishing only — create, edit, close and 
     $this->get(route('dashboard'))->assertOk();
     $this->get(route('events.registrations', $event))->assertOk();
 
-    // Cancel it.
-    $this->post(route('events.cancel', $event))->assertSessionHasNoErrors();
-    expect($event->fresh()->status)->toBe(EventStatus::Cancelled);
+    // Get rid of it. Since 10.19 a draft is deleted rather than cancelled
+    // (cancelling it would have made it public, SPEC-event-panel AC-PANEL-5) —
+    // and neither is gated on the verified email.
+    $this->delete(route('events.destroy', $event))->assertSessionHasNoErrors();
+    expect(Event::find($event->id))->toBeNull();
 });
 
 it('AC-VERIFY-1: sends the verification mail from the project template, in the project language', function (): void {
