@@ -9,8 +9,11 @@
 use App\Models\Event;
 use App\Models\EventCollaborator;
 use App\Models\User;
+use App\Services\EventRegistrar;
 use App\Support\NexoChrome;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+
+require_once __DIR__.'/NexoSso/NexoSsoTestSupport.php';
 
 uses(RefreshDatabase::class);
 
@@ -44,7 +47,12 @@ it('AC-SESSION-6: the public event page carries no tool header, only the public 
         ->and(str_contains($html, 'data-nexo-theme-toggle'))->toBeTrue()
         ->and(str_contains($html, '?lang=en'))->toBeTrue()
         ->and(str_contains($html, e(__('nexo.public_footer.made_with', ['app' => NexoChrome::brand()]))))->toBeTrue()
-        ->and(str_contains($html, 'data-nexo-edit-chip'))->toBeFalse('A visitor sees «Editar».');
+        ->and(str_contains($html, 'data-nexo-edit-chip'))->toBeFalse('A visitor sees «Editar».')
+        // The page takes the attendee's name, email and phone: without the
+        // full footer, the privacy policy has to stay one tap away (STANDARD
+        // «Páginas legales»; the tool footer used to carry it).
+        ->and(str_contains($html, 'href="'.route('legal.privacy').'"'))->toBeTrue('The page that takes attendee data does not link the privacy policy.')
+        ->and(str_contains($html, 'href="'.route('legal.terms').'"'))->toBeTrue('The public event page does not link the terms.');
 });
 
 it('AC-SESSION-6: «Editar» only for the owner (to the editor) and a collaborator (to the summary)', function (): void {
@@ -85,12 +93,21 @@ it('AC-SESSION-6: the registration form is the same form it always was', functio
     expect($event->tickets()->where('attendee_email', 'juan@example.com')->exists())->toBeTrue();
 });
 
-it('AC-SESSION-6: an organizer with a session opening the page is never bounced to Nexo ID', function (): void {
+it('AC-SESSION-6: an organizer with a session opening the page (or a ticket at the door) is never bounced to Nexo ID', function (): void {
+    // Nexo ID answers, and the re-validation window passed three hours ago: the
+    // panel itself bounces (the control), the attendee surfaces never do. Without
+    // the reachable provider this would pass for the wrong reason — the guard
+    // skips every bounce while Nexo ID is down (fail-open).
+    nexoSsoFakeProvider();
     $event = Event::factory()->create();
-    $this->actingAs($event->organizer)
-        ->withSession(['nexo_sso.sub' => 'sub-1', 'nexo_sso.id_token' => 'x', 'nexo_sso.checked_at' => now()->subHours(3)->getTimestamp()])
-        ->get(route('public.event', $event))
-        ->assertOk();
+    $ticket = app(EventRegistrar::class)->register($event, 'Juan', 'juan@example.com');
+    $session = nexoSsoSignedIn($this, $event->organizer, checkedAgo: 3 * 60 * 60);
+
+    $this->withSession($session)->get(route('dashboard'))
+        ->assertRedirect(route('nexo-sso.recheck', ['to' => '/app']));
+
+    $this->withSession($session)->get(route('public.event', $event))->assertOk();
+    $this->withSession($session)->get(route('ticket.show', ['token' => $ticket['token']]))->assertOk();
 });
 
 // ── Tab titles of the event screens (AC-SESSION-7, H-nexoevents-16) ────────

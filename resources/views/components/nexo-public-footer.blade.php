@@ -31,4 +31,14 @@
     <a href="{{ $toolUrl }}" class="nexo-public-footer__made" rel="noopener" data-nexo-made-with>
         {{ __('nexo.public_footer.made_with', ['app' => \App\Support\NexoChrome::brand()]) }}
     </a>
+
+    {{-- These pages take the visitor's own data (a registration, a booking):
+         the privacy policy stays one tap away, as the full footer had it
+         (STANDARD «Páginas legales»). --}}
+    @if (\Illuminate\Support\Facades\Route::has('legal.privacy'))
+        <a href="{{ route('legal.privacy') }}" class="nexo-public-footer__made" data-nexo-public-legal>{{ __('nexo.footer.privacy') }}</a>
+    @endif
+    @if (\Illuminate\Support\Facades\Route::has('legal.terms'))
+        <a href="{{ route('legal.terms') }}" class="nexo-public-footer__made" data-nexo-public-legal>{{ __('nexo.footer.terms') }}</a>
+    @endif
 </footer>

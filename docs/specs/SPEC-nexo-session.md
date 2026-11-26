@@ -94,8 +94,10 @@ SPEC with the prefix `AC-SESSION-`).
   and renders the public footer with language, theme and «Hecho con Nexo Events»; the
   «Editar» chip shows for the owner (→ `events.edit`) and an accepted collaborator inside
   their access window (→ `events.manage`), never for anybody else or a guest; the
-  registration, resend and report forms are the same and registering works; a signed-in
-  organizer opening the page is never bounced to Nexo ID.
+  registration, resend and report forms are the same and registering works; the footer
+  still links the privacy policy and the terms (the page takes the attendee's data); a
+  signed-in organizer whose re-validation is due is never bounced to Nexo ID from the page
+  nor from a ticket `/t/{token}`, while the panel is.
 - **AC-SESSION-7** (10.26) — The dashboard, new event, summary, registrations, door and edit
   screens are titled «<Page> — Nexo Events» / «<Page> · <event> — Nexo Events»; login and
   sign-up «<Page> — Nexo Events»; the landing «Nexo Events — <tagline>».
@@ -103,6 +105,9 @@ SPEC with the prefix `AC-SESSION-`).
   `/auth/nexo/enter` (create → `?to=/app/eventos/nuevo`) and never to the closed `/register`
   or `/login`; in `local` and standalone to `/register` and `/login`; signed in, to the new
   event form and the panel.
+- **AC-SESSION-9** (10.25) — The `nexo_sso_revocations` rows are pruned daily by the
+  scheduler, inline (`nexo-sso-prune`, `Artisan::call('nexo-sso:prune')`), like every other
+  task of this app (production disables `proc_open`).
 
 ## Not proven by this suite
 

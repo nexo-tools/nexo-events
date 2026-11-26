@@ -17,8 +17,10 @@ use App\Services\CollaboratorInviter;
 use App\Services\EventRegistrar;
 use App\Services\NexoSso\NexoSsoFlows;
 use App\Services\NexoSso\NexoSsoRevocations;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Factory;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
@@ -336,4 +338,18 @@ it('AC-SESSION-5: the Integration API answers its token in sso mode, with no ses
 
     $this->getJson('/api/v1/me', bearer($raw))->assertOk();
     $this->getJson('/api/v1/me')->assertUnauthorized();
+});
+
+// ── The revocations are pruned (AC-SESSION-9) ──────────────────────────────
+
+it('AC-SESSION-9: the back-channel revocations are pruned daily by the scheduler, inline', function (): void {
+    // Inline (Schedule::call + Artisan::call) like every task here: production
+    // disables proc_open, so a Schedule::command subprocess would die unseen and
+    // the table would only grow.
+    $prune = collect(app(Schedule::class)->events())
+        ->filter(fn ($event): bool => $event->description === 'nexo-sso-prune');
+
+    expect($prune)->toHaveCount(1)
+        ->and($prune->first()->expression)->toBe('0 0 * * *')
+        ->and(array_keys(Artisan::all()))->toContain('nexo-sso:prune');
 });

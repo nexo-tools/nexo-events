@@ -309,5 +309,14 @@ check-in endpoint, what the scanner sends and the Integration API are unchanged.
 - [x] 10.27 D8, the public event page (H-nexoevents-18): `x-public-layout`, no tool header, the
   public footer with the «Editar» chip for the owner (→ edit) or a collaborator inside their
   window (→ summary); forms unchanged. AC-SESSION-6.
+- [x] 10.28 Independent review of 10.25–10.27 (adversarial, Chromium and WebKit against the mock
+  provider): the public footer links the privacy policy and the terms again (`/e/{slug}` takes
+  attendee data; the tool footer used to carry them); a menu opened from its button now focuses
+  its first item (`nexoMenu.items()` read the button as `$el`, so a keyboard Tab closed the
+  account menu before reaching «Cerrar sesión»); «Ir a la portada» on the signed-out screen is a
+  44 px target; the «never bounced from `/e/` or `/t/`» test passed with Nexo ID unreachable
+  (fail-open) and now proves it with a reachable provider and the panel as control; the
+  revocations prune is pinned to the scheduler (AC-SESSION-9); the sso-mode «linked» mail says
+  «Nexo ID» instead of «the identity provider». The three shared files go back to the templates.
 
 **Gate 10:** per integration — real cross-tool flow exercised, **standalone mode still green** (self-host story intact), owner sign-off.

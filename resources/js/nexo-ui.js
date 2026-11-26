@@ -74,7 +74,7 @@ document.addEventListener('alpine:init', () => {
       window.removeEventListener('pagehide', this.onPageHide);
     },
     trigger() {
-      return this.$refs.trigger || this.$el.querySelector('[aria-haspopup]');
+      return this.$refs.trigger || this.$root.querySelector('[aria-haspopup]');
     },
     toggle() {
       if (this.open) { this.close(); return; }
@@ -89,7 +89,9 @@ document.addEventListener('alpine:init', () => {
       if (restoreFocus) this.trigger()?.focus();
     },
     items() {
-      const root = this.modal ? (this.$refs.panel || this.$el) : this.$el;
+      // $root, never $el: called from the trigger's @click, $el is the trigger
+      // itself, which holds no items — opening a menu focused nothing.
+      const root = this.modal ? (this.$refs.panel || this.$root) : this.$root;
       const selector = this.modal
         ? 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
         : '[role="menuitem"]';

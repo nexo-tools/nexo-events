@@ -21,7 +21,7 @@
 
             <div class="mt-6 flex flex-col gap-3">
                 <a href="{{ route('nexo-sso.enter') }}" class="nexo-btn nexo-btn--primary w-full">{{ __('Sign in again') }}</a>
-                <a href="{{ url('/') }}" class="text-center text-sm font-medium text-link hover:text-link-hover hover:underline">{{ __('Go to the home page') }}</a>
+                <a href="{{ url('/') }}" class="inline-flex min-h-11 items-center justify-center text-sm font-medium text-link hover:text-link-hover hover:underline">{{ __('Go to the home page') }}</a>
             </div>
         </x-nexo-auth-card>
     </div>

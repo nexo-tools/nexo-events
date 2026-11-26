@@ -55,7 +55,8 @@ Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./ven
 
 - **2026-11-26** — **Nexo ID controls the session; shared chrome v2.1; the public event page
   without the tool chrome (PLAN 10.25–10.27, [SPEC-nexo-session](docs/specs/SPEC-nexo-session.md)).**
-  Production runs `NEXO_AUTH_MODE=sso` (owner decision D2: 133 local accounts, 1 verified).
+  Production is meant to run `NEXO_AUTH_MODE=sso` (owner decision D2: 133 local accounts, 1
+  verified); the flag is set by hand at deploy time, not by this commit.
   What a future session should not have to rediscover:
   - **The template files are byte-identical** to `alvaro/templates/nexo-sso-client` and
     `nexo-ui` (`cmp`; `nexo-doctor` checks it). Edit them there, never here. This app's own
@@ -65,6 +66,12 @@ Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./ven
     invitation need it — and the `NexoIdLinked` mail), the layout line of the three
     `nexo-sso/*` screens (`<x-guest-layout bare>`), `config/nexo.php → chrome.panel_route`
     and `lang/*/nexo.php → app.panel` («Tus eventos»).
+    **Pending template merge (review of 2026-11-26):** three shared files carry a fix the
+    templates don't have yet, sent to the coordinator — `resources/js/nexo-ui.js` (a menu
+    opened from its button focused nothing: `items()` read `$el`, the button, instead of
+    `$root`), `components/nexo-public-footer.blade.php` (privacy and terms links: `/e/{slug}`
+    takes attendee data) and `nexo-sso/signed-out.blade.php` («Ir a la portada» as a 44 px
+    target). Until the templates take them, `cmp` against the template shows these three.
   - **The `add_nexo_id_sub` migration keeps its 2026-07-23 name**: same content as the
     template's `2026_01_01_…`, already run in production; renaming it would run it twice.
   - **The door is safe by construction**: the re-validation bounces only GET page
@@ -84,10 +91,12 @@ Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./ven
   - `phpunit.xml` pins `APP_URL=http://localhost` (the template tests build same-origin
     headers from it; a developer `.env` with `:8103` broke AC-LOGOUT-4) and the SSO/auth-mode
     env, so the suite never depends on the local `.env`.
-  - Booted with `NEXO_SSO_ENABLED=false` only the `tests/Feature/NexoSso/` files fail (they
-    need the routes registered at boot, by design); everything else is green standalone.
+  - Booted with `NEXO_SSO_ENABLED=false` only the tests that need the `/auth/nexo/*` routes
+    registered at boot fail, by design: `tests/Feature/NexoSso/` and the SSO cases of
+    `NexoSessionTest` and `EventChromeTest`. Everything else is green standalone.
   - Deploy: migration `nexo_sso_revocations` (additive), env `NEXO_AUTH_MODE=sso`, the Nexo ID
     client update (`--add-redirect …/auth/nexo/signed-out --backchannel …/backchannel-logout`),
+    then `NEXO_SSO_POST_LOGOUT_REDIRECT_URI` emptied (production had it set to the landing),
     `events:door-guard` first — see DEPLOYMENT.md «Nexo ID controls the session».
 
 - **2026-11-26** — **Unified Nexo experience, this tool's own fixes (PLAN 10.17–10.23,

@@ -143,9 +143,16 @@ php artisan nexo:sso-client:update <client_id> \
     --backchannel=https://nexoevents.alvarocdev.com/auth/nexo/backchannel-logout
 ```
 
+Then empty `NEXO_SSO_POST_LOGOUT_REDIRECT_URI` (an instance that set it to its landing keeps
+landing there instead of on «Cerraste sesión en todo Nexo») and re-cache the config. Not
+before the redirect above is registered: Nexo ID only honours a registered URI.
+
 Before flipping to `sso`, the people who run a door must be able to sign in to Nexo ID with
 the **same email** as their local account: that account joins itself on the first Nexo ID
-sign-in. A password session open when the flag flips is closed on its next request (the
+sign-in. In `sso` there is no other way to join it (no password, no «Link my account»): a
+Nexo ID with another email gets a new, empty account. If an event's door is close, check its
+owner and accepted collaborators first, or keep the mode as it was until the event is over
+(the code ships the same; only the flag waits). A password session open when the flag flips is closed on its next request (the
 scanner says «Tu sesión se cerró» and «Volver a entrar» goes through Nexo ID back to the
 door), so the flip respects the door window like any deploy (`events:door-guard`).
 The migration `nexo_sso_revocations` is additive; until it runs the guard fails open.
