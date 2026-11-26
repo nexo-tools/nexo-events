@@ -17,9 +17,18 @@
     <ul class="space-y-2">
         @forelse ($tickets as $ticket)
             <li class="flex items-center justify-between gap-3 rounded-lg border border-line p-3">
-                <span>
+                <span class="min-w-0">
                     <span class="font-medium">{{ $ticket->attendee_name }}</span>
-                    <span class="block text-xs text-muted">@if ($showEmails){{ $ticket->attendee_email }} · @endif{{ $ticket->status->label() }}</span>
+                    {{-- Same rule as the phone line below (10.16, 10.22): pieces
+                         that wrap whole with a gap, no printed separator — a long
+                         email used to push "· Valid" alone onto the next line, and
+                         an email wider than the column broke the page width. --}}
+                    <span class="flex flex-wrap gap-x-2 text-xs text-muted" data-ticket-meta>
+                        @if ($showEmails)
+                            <span class="min-w-0 wrap-anywhere" data-ticket-email>{{ $ticket->attendee_email }}</span>
+                        @endif
+                        <span class="whitespace-nowrap" data-ticket-status>{{ $ticket->status->label() }}</span>
+                    </span>
                     {{-- PLAN 10.13: the optional phone sits with the email, so
                          it rides the same owner-only condition. Collaborators
                          never get it. 10.16: formatted the way its country

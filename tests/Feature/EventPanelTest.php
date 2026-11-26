@@ -3,6 +3,7 @@
 use App\Models\Event;
 use App\Models\EventCollaborator;
 use App\Models\User;
+use App\Services\EventRegistrar;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -145,4 +146,41 @@ it('AC-PANEL-3: a draft\'s summary tells the owner it is not public yet and hand
         ->and($forDraft)->not->toContain('id="public-url"')
         ->and($forPublished)->not->toContain('data-draft-notice')
         ->and($forPublished)->toContain('id="public-url"');
+});
+
+it('AC-PANEL-8: in the registrations list the email and the status are separate pieces, with no separator to dangle', function (): void {
+    $event = Event::factory()->create();
+    $band = User::factory()->create();
+    EventCollaborator::factory()->for($event)->acceptedBy($band)->create();
+    app(EventRegistrar::class)->register($event, 'Bartolomé', 'bartolome.rodriguez.fernandez.largo@ejemplo-de-dominio-largo.test');
+
+    $forOwner = (string) $this->actingAs($event->organizer)->get(route('events.registrations', $event))->getContent();
+    $forBand = (string) $this->actingAs($band)->get(route('events.registrations', $event))->getContent();
+
+    foreach ([$forOwner, $forBand] as $html) {
+        preg_match('#<span[^>]*data-ticket-meta[^>]*>(.*?</span>)\s*</span>#s', $html, $meta);
+
+        expect($meta)->not->toBeEmpty()
+            ->and($meta[0])->toContain('flex-wrap')
+            ->and($meta[0])->toContain('data-ticket-status')
+            // Nothing between the pieces but markup and whitespace: no "·".
+            ->and(trim(strip_tags(preg_replace('#<span[^>]*>[^<]*</span>#', '', $meta[1]))))->toBe('');
+    }
+
+    expect($forOwner)->toMatch('#data-ticket-email>bartolome\.rodriguez\.fernandez\.largo@ejemplo-de-dominio-largo\.test</span>#')
+        ->and($forBand)->not->toContain('data-ticket-email');
+});
+
+it('AC-PANEL-8: the dashboard and summary meta lines print no separator either', function (): void {
+    [$event, $owner] = panelFixture(['venue' => 'La Herrería']);
+
+    foreach ([route('dashboard'), route('events.manage', $event)] as $url) {
+        $html = (string) $this->actingAs($owner)->get($url)->getContent();
+        preg_match_all('#<(?:p|div)[^>]*data-event-meta[^>]*>(.*?)</(?:p|div)>#s', $html, $lines);
+
+        expect($lines[1])->not->toBeEmpty();
+        foreach ($lines[1] as $line) {
+            expect($line)->not->toContain('·');
+        }
+    }
 });

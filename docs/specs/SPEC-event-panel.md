@@ -82,7 +82,7 @@ SPEC with the prefix `AC-PANEL-`).
   leaves it alone; a new event has no floor.
 - **AC-PANEL-7** (10.20) — No "Aforo" in `lang/` or `resources/views`; the Spanish capacity
   strings all say "cupo", the Portuguese ones "vagas".
-- AC-PANEL-8 (10.22) — In the registrations list the email and the status are two pieces of
+- **AC-PANEL-8** (10.22) — In the registrations list the email and the status are two pieces of
   a wrapping row with no separator character between them, for the owner and for a
   collaborator; the dashboard and summary meta lines follow the same rule.
 - AC-PANEL-9 (10.23) — The scanner classifies a 401 or a 419 as a closed session and shows

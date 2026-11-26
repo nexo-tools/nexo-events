@@ -23,7 +23,13 @@
                 {{-- Every event opens on its summary, the owner's as much as a
                      collaborator's (SPEC-event-panel AC-PANEL-1). --}}
                 <a href="{{ route('events.manage', $event) }}" class="font-medium hover:underline">{{ $event->title }}</a>
-                <div class="text-xs text-muted">{{ $event->starts_at->translatedFormat(__('app.datetime')) }} · {{ $event->status->label() }} · {{ trans_choice('app.tickets', $event->tickets_count) }} · {{ trans_choice('app.views', $event->views_count) }}</div>
+                {{-- Pieces that wrap whole, no printed separator (AC-PANEL-8). --}}
+                <div class="flex flex-wrap gap-x-3 text-xs text-muted" data-event-meta>
+                    <span class="whitespace-nowrap">{{ $event->starts_at->translatedFormat(__('app.datetime')) }}</span>
+                    <span class="whitespace-nowrap">{{ $event->status->label() }}</span>
+                    <span class="whitespace-nowrap">{{ trans_choice('app.tickets', $event->tickets_count) }}</span>
+                    <span class="whitespace-nowrap">{{ trans_choice('app.views', $event->views_count) }}</span>
+                </div>
             </li>
         @empty
             <li class="rounded-lg border border-dashed border-line p-6 text-center">
@@ -42,7 +48,11 @@
             @foreach ($managed as $event)
                 <li class="rounded-lg border border-line p-3">
                     <a href="{{ route('events.manage', $event) }}" class="font-medium hover:underline">{{ $event->title }}</a>
-                    <div class="text-xs text-muted">{{ $event->starts_at->translatedFormat(__('app.datetime')) }} · {{ $event->status->label() }} · {{ trans_choice('app.tickets', $event->tickets_count) }}</div>
+                    <div class="flex flex-wrap gap-x-3 text-xs text-muted" data-event-meta>
+                        <span class="whitespace-nowrap">{{ $event->starts_at->translatedFormat(__('app.datetime')) }}</span>
+                        <span class="whitespace-nowrap">{{ $event->status->label() }}</span>
+                        <span class="whitespace-nowrap">{{ trans_choice('app.tickets', $event->tickets_count) }}</span>
+                    </div>
                 </li>
             @endforeach
         </ul>

@@ -256,7 +256,13 @@ sends, the check-in endpoint or any stored row.
   floor leaks for somebody else's id — still 404). The first consumer sends `capacity` only on
   creation, so its flow is untouched. AC-PANEL-6. Deliberate violation: the rule removed → two
   tests red.
-- [ ] 10.22 Registration lines that wrap whole, no dangling separator (AC-PANEL-8).
+- [x] 10.22 Lines that wrap whole (owner-approved loose end, the 10.16 phone-line rule): in the
+  registrations list the email and the status are two pieces of a `flex-wrap` row with a gap
+  and no printed "·" (a long email left "· Valid" alone on the next line, and an email wider
+  than the column pushed the page to 394 px at 390); the email wraps anywhere. Same for the
+  dashboard, summary and collaborator meta lines. Checked at 390 and 320 px in Chromium: no
+  separator node, page width = viewport, capture kept with the owner's planning notes.
+  AC-PANEL-8.
 - [ ] 10.23 The scanner says when the session ended (AC-PANEL-9).
 
 **Gate 10:** per integration — real cross-tool flow exercised, **standalone mode still green** (self-host story intact), owner sign-off.

@@ -29,14 +29,18 @@
             <li class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line p-3" data-collaborator="{{ $collaborator->email }}">
                 <span>
                     <span class="block break-all font-medium">{{ $collaborator->email }}</span>
-                    <span class="block text-xs text-muted">
-                        @switch($state)
-                            @case('accepted') {{ __('Accepted') }} @break
-                            @case('expired') {{ __('Invitation expired') }} @break
-                            @case('revoked') {{ __('Access removed') }} @break
-                            @default {{ __('Invited, not accepted yet') }}
-                        @endswitch
-                        @if ($collaborator->invited_via) · {{ __('via :name', ['name' => $collaborator->invited_via]) }} @endif
+                    <span class="flex flex-wrap gap-x-2 text-xs text-muted">
+                        <span>
+                            @switch($state)
+                                @case('accepted') {{ __('Accepted') }} @break
+                                @case('expired') {{ __('Invitation expired') }} @break
+                                @case('revoked') {{ __('Access removed') }} @break
+                                @default {{ __('Invited, not accepted yet') }}
+                            @endswitch
+                        </span>
+                        @if ($collaborator->invited_via)
+                            <span>{{ __('via :name', ['name' => $collaborator->invited_via]) }}</span>
+                        @endif
                     </span>
                 </span>
                 <span class="flex flex-wrap gap-2">
