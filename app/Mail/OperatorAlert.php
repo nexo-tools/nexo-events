@@ -46,9 +46,13 @@ class OperatorAlert extends Mailable implements ShouldQueue
         public readonly int $line,
         public readonly ?string $url,
         public readonly string $trace,
+        // The queued job that gave up, with its attempts — null outside a job
+        // (see App\Support\OperatorAlerts: a job is only reported once it fails
+        // for good, never on an attempt that is going to be retried).
+        public readonly ?string $job = null,
     ) {}
 
-    public static function fromThrowable(Throwable $e, ?string $url): self
+    public static function fromThrowable(Throwable $e, ?string $url, ?string $job = null): self
     {
         return new self(
             exceptionClass: $e::class,
@@ -59,6 +63,7 @@ class OperatorAlert extends Mailable implements ShouldQueue
             // The first frames are what tells you where to look; the rest is
             // noise in an inbox.
             trace: implode("\n", array_slice(explode("\n", $e->getTraceAsString()), 0, 12)),
+            job: $job,
         );
     }
 

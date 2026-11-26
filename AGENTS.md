@@ -53,6 +53,18 @@ Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./ven
 
 ## Accumulated context
 
+- **2026-11-26** — **Unified Nexo experience, this tool's own fixes (PLAN 10.17–10.23,
+  [SPEC-event-panel](docs/specs/SPEC-event-panel.md)).** The header, account menu, login and
+  tab titles are NOT here: they arrive with the shared chrome/session v2. What a future session
+  should not have to rediscover:
+  - **The operator mail no longer fires on a retried job attempt** (10.17,
+    `App\Support\OperatorAlerts`, from `templates/nexo-ops`). On 2026-11-23 one SMTP
+    `TransportException` on a ticket mail, delivered by the next attempt, mailed the operator.
+    The worker fires `JobExceptionOccurred` before it reports an attempt's exception, so the
+    exception object is remembered (a `WeakMap`) and its report skipped; `JobFailed` mails once.
+    The listeners are wired in `->booted()`, not in the exceptions callback, which only runs once
+    the handler is resolved. `OperatorAlertTest` drives a real `queue:work --once`.
+
 - **2026-11-23** — **The attendee phone gets a country and a format (PLAN 10.16).** The owner
   saw "+54 …" numbers with a WhatsApp link and "11 …" ones as bare text, side by side. What a
   future session should not have to rediscover:

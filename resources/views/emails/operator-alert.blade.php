@@ -9,6 +9,7 @@
         'Exception' => $exceptionClass,
         'Where' => $file.':'.$line,
         'URL' => $url,
+        'Job' => $job,
     ]" />
 
     <p style="margin:0 0 4px; font-size:14px; line-height:1.6;"><strong>Message</strong></p>
@@ -19,6 +20,7 @@
 
     <p class="nexo-muted nexo-rule" style="margin:20px 0 0; padding-top:16px; border-top:1px solid #e4e4e7; font-size:12px; line-height:1.6; color:#a1a1aa;">
         One mail per distinct exception every 15 minutes — a loop cannot flood the inbox.
+        A queued job is only reported once it gives up, never on an attempt that is retried.
         Turn these off with NEXO_OPS_MAIL=false.
     </p>
 </x-nexo-mail::layout>

@@ -215,7 +215,13 @@ on 2026-11-26 together with three loose ends (the edit form's capacity floor, th
 The 28-Nov event of the first consumer uses the door: nothing here changes what the scanner
 sends, the check-in endpoint or any stored row.
 
-- [ ] 10.17 Operator mail only when a queued job gives up (template `nexo-ops`).
+- [x] 10.17 Operator mail only when a queued job gives up (`App\Support\OperatorAlerts`, template
+  `nexo-ops`): each failed attempt is remembered (`JobExceptionOccurred`, fired before the worker
+  reports it) and its report skipped; `JobFailed` mails once, naming the job and its attempts;
+  exceptions outside jobs mail as before; the alert mail itself giving up never alerts; same
+  dedupe and kill-switch. `OperatorAlertTest` runs a real `queue:work --once` (retried then works
+  → nothing; gives up → one; sync queue → one; alert loop → none). Deliberate violation: the
+  attempt skip removed → the two worker tests red.
 - [ ] 10.18 The event opens in its summary, with the event navigation; collaborators move to the summary (AC-PANEL-1..3).
 - [ ] 10.19 Delete a draft; cancelling never publishes; confirmations that run under the CSP (AC-PANEL-4, 5, 10).
 - [ ] 10.20 One word for the capacity: "Cupo" / "Vagas" (AC-PANEL-7).
