@@ -1,6 +1,6 @@
 <?php
 
-// NEXO_SSO_* env contract (nexo-sso-client template v2.1). Identical across every
+// NEXO_SSO_* env contract (nexo-sso-client template v2.2). Identical across every
 // Nexo tool EXCEPT the keys marked ADAPTATION POINT (home and the silent
 // exclusions), which each tool fills with its own routes.
 return [
@@ -20,7 +20,9 @@ return [
 
     // ADAPTATION POINT — path (same origin) of this tool's panel: where a login
     // lands when there is no saved destination, and where /auth/nexo/enter goes
-    // when its `to` is missing or unsafe. Nexo Short: '/panel'.
+    // when its `to` is missing or unsafe. «Crear cuenta» comes back here too:
+    // nexo-ui's NexoChrome::signUpUrl() links /auth/nexo/enter?to=<home>&signup=1
+    // outside local mode (Nexo ID's sign-up, then this tool). Nexo Short: '/panel'.
     // Nexo Events: the organizer's panel, «Tus eventos» (route `dashboard`).
     'home' => '/app',
 

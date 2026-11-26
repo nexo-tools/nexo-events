@@ -29,6 +29,7 @@ Route::middleware('web')->group(function (): void {
 
     // Entry point for links from other Nexo apps (switcher, deep links, "Sign in
     // again"): ?to=/same-origin/path. Signed in → `to`; guest → Nexo ID. (AC-ENTER)
+    // «Crear cuenta» adds &signup=1: Nexo ID's sign-up, and back here. (AC-SIGNUP)
     Route::get('/auth/nexo/enter', [NexoSsoController::class, 'enter'])->name('nexo-sso.enter');
 
     // "You signed out of all of Nexo" / "Your Nexo ID session ended". (AC-SIGNEDOUT)

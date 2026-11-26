@@ -17,20 +17,27 @@ beforeEach(function (): void {
     ]);
 });
 
-test('AC-CFG-1: with SSO disabled the endpoints return 404 and no network is touched', function (): void {
+test('AC-CFG-1: with SSO disabled the endpoints don\'t answer and no network is touched', function (): void {
     config(['nexo-sso.enabled' => false]);
     Http::fake();
+
+    // A GET is a 404. A POST is a 404 here (the routes exist, the controller
+    // says no) or a 405 in a real standalone boot, where the routes don't
+    // exist and the tool's GET-only Route::fallback answers any other method
+    // with «method not allowed» (CONTRATO-F3 §0.1). Never a 2xx/3xx.
+    $absent = fn ($response) => expect($response->status())->toBeIn([404, 405]);
 
     $this->get('/auth/nexo/redirect')->assertNotFound();
     $this->get('/auth/nexo/callback')->assertNotFound();
     $this->get('/auth/nexo/enter')->assertNotFound();
+    $this->get('/auth/nexo/enter?to=/x&signup=1')->assertNotFound();
     $this->get('/auth/nexo/signed-out')->assertNotFound();
-    $this->post('/auth/nexo/backchannel-logout', ['logout_token' => 'x'])->assertNotFound();
+    $absent($this->post('/auth/nexo/backchannel-logout', ['logout_token' => 'x']));
     $this->get('/auth/nexo/new-account')->assertNotFound();
-    $this->post('/auth/nexo/new-account', ['choice' => 'create'])->assertNotFound();
-    $this->actingAs(User::factory()->create())->post('/auth/nexo/link')->assertNotFound();
+    $absent($this->post('/auth/nexo/new-account', ['choice' => 'create']));
+    $absent($this->actingAs(User::factory()->create())->post('/auth/nexo/link'));
     $this->get('/auth/nexo/link/confirm')->assertNotFound();
-    $this->post('/auth/nexo/link/confirm', ['choice' => 'link'])->assertNotFound();
+    $absent($this->post('/auth/nexo/link/confirm', ['choice' => 'link']));
     Http::assertNothingSent();
 });
 

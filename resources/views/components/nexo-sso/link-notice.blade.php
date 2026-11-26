@@ -7,12 +7,12 @@
        <x-nexo-sso.link-notice class="mb-4" /> --}}
 @php
     $request = request();
-    $email = config('nexo-sso.enabled') && \App\Services\NexoSso\NexoSsoNewAccount::armed($request) !== null
+    $email = \App\Services\NexoSso\NexoSsoNewAccount::awaitsPasswordSignIn($request)
         ? \App\Services\NexoSso\NexoSsoNewAccount::email($request)
         : null;
 @endphp
 @if ($email !== null)
     <p role="note" {{ $attributes->merge(['class' => 'rounded-md border border-line bg-bg-subtle px-3 py-2 text-sm text-ink']) }} data-nexo-sso-link-notice>
-        {{ __('Sign in with the email and password of your :app account. Then you can link it to the Nexo ID :email.', ['app' => config('app.name'), 'email' => $email]) }}
+        {{ __('Sign in with the email and password of your :app account. Then you can link it to the Nexo ID :email.', ['app' => \App\Services\NexoSso\NexoSsoApp::name(), 'email' => $email]) }}
     </p>
 @endif

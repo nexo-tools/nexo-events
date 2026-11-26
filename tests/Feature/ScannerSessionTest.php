@@ -46,3 +46,13 @@ it('AC-PANEL-9: a scan without a session is answered with a redirect to sign in 
     $this->post(route('events.checkin', $event), ['token' => 'x'], ['Accept' => 'application/json', 'X-Requested-With' => 'XMLHttpRequest'])
         ->assertRedirect(route('login'));
 });
+
+it('AC-PANEL-9: «Volver a entrar» stays on one line inside the flex row of the closed-session notice', function (): void {
+    // .nexo-flash is display:flex; the link scanner.js builds must neither
+    // shrink nor wrap, or at 390 px its label broke into three lines.
+    $js = (string) file_get_contents(resource_path('js/scanner.js'));
+    preg_match("/const showSignedOut = \\(\\) => \\{.*?again\\.className = '([^']*)'/s", $js, $match);
+    $classes = explode(' ', $match[1] ?? '');
+
+    expect($classes)->toContain('nexo-btn', 'nexo-btn--primary', 'shrink-0', 'whitespace-nowrap');
+});

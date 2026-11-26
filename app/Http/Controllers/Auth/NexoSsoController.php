@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\NexoSso\NexoAuthMode;
+use App\Services\NexoSso\NexoSsoApp;
 use App\Services\NexoSso\NexoSsoFlows;
 use App\Services\NexoSso\NexoSsoLinkConflictException;
 use App\Services\NexoSso\NexoSsoLinkRefusedException;
@@ -25,7 +26,7 @@ use Illuminate\Support\Facades\Auth;
 use Throwable;
 
 /**
- * The Nexo ID client endpoints (nexo-sso-client v2.1). Identical in every tool:
+ * The Nexo ID client endpoints (nexo-sso-client v2.2). Identical in every tool:
  * what differs per tool lives in config('nexo-sso.home') and the silent
  * exclusions (adaptation points), in NexoSsoUserResolver::newUser()/linked(),
  * and in the layout of the signed-out and new-account views.
@@ -86,6 +87,15 @@ class NexoSsoController extends Controller
      * session, the Nexo ID login otherwise — and back to `to` either way. `to`
      * must be a path of this origin; anything else lands on the panel.
      *
+     * `&signup=1` (v2.2, «Crear cuenta»): the same, but the authorize carries
+     * prompt=create, so a visitor without a Nexo ID session lands on Nexo ID's
+     * sign-up and, once the email is verified, comes back here with a code —
+     * an account in this tool, signed in, on `to`. A Nexo ID that doesn't know
+     * `create` shows its login, which links to its sign-up and keeps the
+     * authorize. Its flow waits up to an hour (NexoSsoFlows::SIGNUP_TTL): the
+     * sign-up and the verification mail take longer than a sign-in. Any other
+     * value of `signup` is ignored. (AC-SIGNUP)
+     *
      * A signed-in password session (local or transition) is simply let in:
      * joining an account to Nexo ID is only ever explicit, through
      * nexo-sso.link. In sso mode such a session has no place (the guard closes
@@ -101,8 +111,11 @@ class NexoSsoController extends Controller
             return redirect()->to(url($to));
         }
 
+        $signup = $request->query('signup') === '1';
+
         try {
-            $url = $this->authorizeUrl($request, $sso, $flows, NexoSsoFlows::INTERACTIVE, return: $to);
+            $url = $this->authorizeUrl($request, $sso, $flows, NexoSsoFlows::INTERACTIVE, return: $to,
+                prompt: $signup ? 'create' : null, ttl: $signup ? NexoSsoFlows::SIGNUP_TTL : null);
         } catch (Throwable) {
             return $this->failed(__('Sign-in with Nexo ID is temporarily unavailable. Please try again later.'));
         }
@@ -152,7 +165,7 @@ class NexoSsoController extends Controller
         }
 
         return response()
-            ->view('nexo-sso.new-account', ['email' => $email, 'app' => (string) config('app.name')])
+            ->view('nexo-sso.new-account', ['email' => $email, 'app' => NexoSsoApp::name()])
             ->header('Cache-Control', 'no-store, private')
             ->header('X-Robots-Tag', 'noindex');
     }
@@ -518,7 +531,7 @@ class NexoSsoController extends Controller
 
         return response()
             ->view('nexo-sso.link-confirm', [
-                'app' => (string) config('app.name'),
+                'app' => NexoSsoApp::name(),
                 'localEmail' => (string) $user->getAttribute('email'),
                 'nexoEmail' => (string) ($pending['claims']['email'] ?? ''),
             ])
@@ -629,9 +642,9 @@ class NexoSsoController extends Controller
     }
 
     /** Starts a flow (state + PKCE + nonce + mode) and returns the provider URL. (AC-FLOW-1) */
-    private function authorizeUrl(Request $request, NexoSsoService $sso, NexoSsoFlows $flows, string $mode, ?string $return = null, ?string $prompt = null): string
+    private function authorizeUrl(Request $request, NexoSsoService $sso, NexoSsoFlows $flows, string $mode, ?string $return = null, ?string $prompt = null, ?int $ttl = null): string
     {
-        $flow = $flows->start($request, $mode, $return);
+        $flow = $ttl !== null ? $flows->start($request, $mode, $return, $ttl) : $flows->start($request, $mode, $return);
 
         return $sso->buildAuthorizeUrl($flow['state'], $flow['challenge'], $flow['nonce'], $prompt); // discovery may hit the network
     }

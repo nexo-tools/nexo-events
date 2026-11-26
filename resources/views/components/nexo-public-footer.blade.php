@@ -8,7 +8,9 @@
 
      The page decides who the owner is and passes edit-url only then; the chip
      never renders for anybody else (and never for a guest, even if a URL slips
-     through). «Hecho con» links to the tool's own landing from the registry. --}}
+     through). «Hecho con» links to the tool's own landing from the registry.
+     Privacidad and Términos follow when the app has the routes (legal.privacy,
+     legal.terms): these pages take a visitor's own data. --}}
 @props(['editUrl' => null])
 @php
     $tool = \App\Support\NexoChrome::tool();

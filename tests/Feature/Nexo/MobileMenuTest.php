@@ -2,6 +2,7 @@
 
 use App\Support\NexoChrome;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Route;
 
 // Guardian (chrome v2, 2026-11-26): on a phone the header is the wordmark, the
 // switcher and ONE button that opens a full-width sheet with everything else
@@ -96,6 +97,74 @@ it('offers sign in, sign up, help, language and theme to a guest', function () {
 
     expect(str_contains($html, 'href="'.NexoChrome::signInUrl().'"'))->toBeTrue('«Iniciar sesión» in the sheet does not go where the header\'s does.');
     expect(str_contains($html, 'data-nexo-sheet-logout'))->toBeFalse('A guest sheet offers «Cerrar sesión».');
+});
+
+it('lists the app\'s own account page after «Tu panel» when the app opts in', function () {
+    // The same opt-in as the account menu (AccountMenuTest), in the sheet.
+    config()->set('nexo-sso.enabled', true);
+    config()->set('nexo-sso.issuer', 'https://id.example.test');
+    $model = config('auth.providers.users.model');
+    test()->actingAs($model::factory()->create());
+
+    Route::get('/nexo-guardian-account', fn () => 'account')->name('nexo-guardian.account');
+    Route::getRoutes()->refreshNameLookups();
+    app('translator')->load('*', 'nexo', app()->getLocale()); // load the file first, or addLines() would hide it
+    app('translator')->addLines(['nexo.app.account' => 'Guardian account page'], app()->getLocale());
+    config()->set('nexo.chrome.account_route', 'nexo-guardian.account');
+
+    $html = Blade::render('<x-nexo-mobile-menu />');
+    $panel = mobileMenuPosition($html, 'data-nexo-sheet-panel');
+    $own = mobileMenuPosition($html, 'data-nexo-sheet-account');
+    $help = mobileMenuPosition($html, 'data-nexo-sheet-help');
+    mobileMenuAssertOrder([$panel, $own, $help], 'panel, the app\'s own account page, help');
+    expect(str_contains($html, '>Guardian account page</a>'))->toBeTrue('The own account page carries its label (nexo.app.account).');
+
+    config()->set('nexo.chrome.account_route', null);
+    expect(str_contains(Blade::render('<x-nexo-mobile-menu />'), 'data-nexo-sheet-account'))->toBeFalse('Without the opt-in the sheet has no own account page.');
+});
+
+it('moves the focus inside a menu or the sheet as soon as it opens', function () {
+    // What a browser shows (CONTRATO-F3 §5.1; checked in Chromium and WebKit
+    // with skills/usability-review), pinned here at the source so a copy that
+    // brings a bug back fails the suite:
+    //   - items() and trigger() search from $root: from the trigger's @click,
+    //     $el is the trigger, and opening a menu by keyboard or click focused
+    //     nothing (Tab then closed it);
+    //   - the first focus waits, bounded, until the panel is shown: the sheet
+    //     has no transition, Alpine reveals it on a later frame, and WebKit
+    //     left the focus outside the aria-modal sheet.
+    $js = (string) file_get_contents(resource_path('js/nexo-ui.js'));
+
+    $code = (string) preg_replace('~^\s*//.*$~m', '', $js); // the comments may name $el
+    expect(preg_match('/\$el\b/', $code))
+        ->toBe(0, 'nexo-ui.js searches the menu from $el: from the trigger\'s @click that is the button, and the focus never enters the menu.');
+    expect(substr_count($js, 'this.$root'))->toBeGreaterThanOrEqual(3, 'nexoMenu must find its trigger and items from $root.');
+    expect(preg_match('/toggle\(\)\s*\{.*?\$nextTick\(\(\) => this\.focusFirst\(\)\)/s', $js))
+        ->toBe(1, 'Opening a menu must hand the first focus to focusFirst(), which waits until the panel is shown.');
+    expect(preg_match('/focusFirst\(attempts = (\d+)\)\s*\{(.*?)\n    \},/s', $js, $focus))->toBe(1, 'nexo-ui.js has no focusFirst().');
+    expect((int) $focus[1])->toBeGreaterThan(1, 'focusFirst() must retry more than once.');
+    expect(str_contains($focus[2], 'if (!this.open) return;'))->toBeTrue('focusFirst() must stop when the menu closed in between.');
+    expect(str_contains($focus[2], 'requestAnimationFrame') && str_contains($focus[2], 'attempts - 1'))
+        ->toBeTrue('focusFirst() must retry on the next frame, bounded.');
+});
+
+it('lets Tab leave an open menu for the next control, never for <body>', function () {
+    // v2.2, seen in Chromium and WebKit: the browser's own Tab from a menu item
+    // lands on the next item of a panel that x-transition keeps on screen a few
+    // frames, which then hides, and the focus fell to <body>. nexoMenu takes
+    // the move: Tab closes the menu and focuses what follows it on the page,
+    // Shift+Tab goes back to the trigger. The sheet keeps its own trap.
+    $js = (string) file_get_contents(resource_path('js/nexo-ui.js'));
+
+    expect(preg_match('/Tab: \(\) => this\.tabOut\(event\.shiftKey\)/', $js))
+        ->toBe(1, 'A menu must hand Tab to tabOut(), not let the browser move the focus.');
+    expect(preg_match('/const handler = handlers\[event\.key\];\s*if \(!handler\) return;\s*event\.preventDefault\(\);\s*handler\(\);/', $js))
+        ->toBe(1, 'Every key a menu handles, Tab included, must cancel the browser\'s own move.');
+    expect(preg_match('/tabOut\(backwards\)\s*\{(.*?)\n    \},/s', $js, $tab))->toBe(1, 'nexo-ui.js has no tabOut().');
+    expect(str_contains($tab[1], 'this.close({ restoreFocus: backwards })'))
+        ->toBeTrue('Shift+Tab out of a menu must return to its trigger.');
+    expect(str_contains($tab[1], '!root.contains(el)') && str_contains($tab[1], 'DOCUMENT_POSITION_FOLLOWING') && str_contains($tab[1], 'getClientRects().length > 0'))
+        ->toBeTrue('Tab out of a menu must focus the next visible control AFTER the menu, outside its panel.');
 });
 
 it('lists every language and the theme toggle inside the sheet', function () {

@@ -69,11 +69,13 @@ SPEC with the prefix `AC-SESSION-`).
 
 - **AC-SESSION-1** (10.25) — In `sso` mode the local login POST, registration and password
   reset answer 404 and `/login` offers only «Continuar con Nexo ID» (no password field, no
-  "remember me", «Crear cuenta» to Nexo ID's sign-up); a guest deep link into `/app` is sent
+  "remember me", «Crear cuenta» to Nexo ID's sign-up through `/auth/nexo/enter?to=/app&signup=1`,
+  never the issuer's `/register`, 10.29); a guest deep link into `/app` is sent
   to `/auth/nexo/enter?to=<that path>`. In `local` the password form, its "remember me" and
   `/login` stay; in `transition` a password sign-in is never remembered and a linked account
-  is refused with «Esta cuenta ya entra con Nexo ID» and gets no reset link. With SSO off
-  nothing of Nexo ID shows and the local login works.
+  is refused with «Esta cuenta ya entra con Nexo ID» and gets no reset link, and the password
+  fold starts open only for whoever chose «Ya tengo una cuenta con otro email» (10.29). With
+  SSO off nothing of Nexo ID shows and the local login works.
 - **AC-SESSION-2** (10.25) — A local account entering through Nexo ID with the same verified
   email is joined in place (same row, its events, `nexo_id_sub` set, the linked mail once),
   and an unconfirmed email counts as verified; coming back is by `sub`, even with another

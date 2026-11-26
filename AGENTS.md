@@ -66,12 +66,11 @@ Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./ven
     invitation need it — and the `NexoIdLinked` mail), the layout line of the three
     `nexo-sso/*` screens (`<x-guest-layout bare>`), `config/nexo.php → chrome.panel_route`
     and `lang/*/nexo.php → app.panel` («Tus eventos»).
-    **Pending template merge (review of 2026-11-26):** three shared files carry a fix the
-    templates don't have yet, sent to the coordinator — `resources/js/nexo-ui.js` (a menu
-    opened from its button focused nothing: `items()` read `$el`, the button, instead of
-    `$root`), `components/nexo-public-footer.blade.php` (privacy and terms links: `/e/{slug}`
-    takes attendee data) and `nexo-sso/signed-out.blade.php` («Ir a la portada» as a 44 px
-    target). Until the templates take them, `cmp` against the template shows these three.
+    Since 10.29 every shared file is the v2.2 template again, byte for byte (10.28's three
+    fixes went into the templates); the login passes nexo-sso-client's
+    `awaitsPasswordSignIn()` to `password-open`, and `partials/head` gives `<x-nexo-seo>` the
+    registry brand as `site-name` (the sso-client tests check the screens never show
+    `APP_NAME`).
   - **The `add_nexo_id_sub` migration keeps its 2026-07-23 name**: same content as the
     template's `2026_01_01_…`, already run in production; renaming it would run it twice.
   - **The door is safe by construction**: the re-validation bounces only GET page

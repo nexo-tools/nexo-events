@@ -1,7 +1,9 @@
 <?php
 
 use App\Support\NexoChrome;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\ViewErrorBag;
 
 // Guardian (chrome v2, 2026-11-26): with SSO on, «Continuar con Nexo ID» is the
 // first and only primary action of the sign-in screen, and the password form
@@ -15,10 +17,10 @@ use Illuminate\Support\Facades\Route;
 // last, under an «o» (H-cruce-08). People typed their Nexo ID password into a
 // form that could never accept it, got «credenciales no coinciden» and no hint.
 //
-// It checks the rendered screen, not a component: the pattern ships both as
-// nexo-ui's <x-nexo-sign-in-options> and as the sso-client's <x-nexo-sso.login>,
-// and an app renders one of them. Copy into tests/Feature/Nexo/. Nothing to
-// adapt: an app without an SSO client (Nexo ID itself) skips.
+// It checks the rendered screen, not the component: <x-nexo-sign-in-options>
+// is THE login component of the family (CONTRATO-F3 §0.1), but what a person
+// meets is the screen the app builds around it. Copy into tests/Feature/Nexo/.
+// Nothing to adapt: an app without an SSO client (Nexo ID itself) skips.
 
 function loginNexoIdFirstPage(): ?string
 {
@@ -85,7 +87,7 @@ it('puts «Continuar con Nexo ID» first, as the only primary action', function 
     $card = substr($card, 0, (int) (strpos($card, '</main>') ?: strlen($card)));
 
     $sso = loginNexoIdFirstSsoAnchor($card, $tag);
-    expect($sso)->not->toBeFalse('The sign-in card has no «Continuar con Nexo ID» (x-nexo-sign-in-options or x-nexo-sso.login).');
+    expect($sso)->not->toBeFalse('The sign-in card has no «Continuar con Nexo ID» (x-nexo-sign-in-options).');
 
     $password = strpos($card, 'type="password"');
     if ($password !== false) {
@@ -132,11 +134,14 @@ it('sends «Iniciar sesión» and «Crear cuenta» where the mode says', functio
     loginNexoIdFirstSkipWithoutSso();
     loginNexoIdFirstMode($mode);
 
-    // «Crear cuenta»: Nexo ID's sign-up outside local mode (§5.4).
+    // «Crear cuenta»: the local sign-up in local mode (if the instance keeps it
+    // open); outside it, Nexo ID's sign-up THROUGH this tool (v2.2), so the
+    // person comes back here signed in — see the next test.
     if ($mode === 'local') {
-        expect(NexoChrome::signUpUrl())->toBe(Route::has('register') ? route('register') : null, 'In local mode «Crear cuenta» is the local sign-up.');
+        $open = (bool) config('nexo.allow_registration', true);
+        expect(NexoChrome::signUpUrl())->toBe($open && Route::has('register') ? route('register') : null, 'In local mode «Crear cuenta» is the local sign-up.');
     } else {
-        expect(NexoChrome::signUpUrl())->toBe('https://id.example.test/register', "In {$mode} mode «Crear cuenta» is Nexo ID's sign-up.");
+        loginNexoIdFirstAssertSignUpComesBack($mode);
     }
 
     // «Iniciar sesión»: straight to Nexo ID in sso (no /login on the way), the
@@ -150,6 +155,87 @@ it('sends «Iniciar sesión» and «Crear cuenta» where the mode says', functio
     expect(preg_match('/<a href="([^"]*)"[^>]*data-nexo-sign-in>/', $header, $m))->toBe(1, 'The guest header has no «Iniciar sesión».');
     expect(html_entity_decode($m[1]))->toBe($expected, "In {$mode} mode the header's «Iniciar sesión» does not follow the mode.");
 })->with(['local', 'transition', 'sso']);
+
+/**
+ * v2.2, «alta que vuelve a la tool»: outside local mode «Crear cuenta» is
+ * GET /auth/nexo/enter?to=<home>&signup=1 — the tool asks Nexo ID for its
+ * sign-up (prompt=create) and, once the account exists, the authorize goes on
+ * and lands back here. Before v2.2 it linked <issuer>/register and the person
+ * never came back. Without the entry route (an sso-client before v2) it is
+ * still Nexo ID's /register.
+ */
+function loginNexoIdFirstAssertSignUpComesBack(string $mode): void
+{
+    $url = (string) NexoChrome::signUpUrl();
+
+    if (! Route::has('nexo-sso.enter')) {
+        expect($url)->toBe('https://id.example.test/register', "In {$mode} mode, without the entry route, «Crear cuenta» is Nexo ID's /register.");
+
+        return;
+    }
+
+    $parts = parse_url($url);
+    parse_str((string) ($parts['query'] ?? ''), $query);
+    $base = strtok($url, '?');
+
+    expect($base)->toBe(route('nexo-sso.enter'), "In {$mode} mode «Crear cuenta» must go through this tool's entry route, not to Nexo ID directly.");
+    expect($query['signup'] ?? null)->toBe('1', "In {$mode} mode «Crear cuenta» must ask for Nexo ID's sign-up (signup=1).");
+    expect($query['to'] ?? null)->toBe(NexoChrome::ssoHome(), "In {$mode} mode «Crear cuenta» must come back to this app's home (nexo-sso.home).");
+    expect(NexoChrome::ssoHome())->toStartWith('/');
+}
+
+it('brings a new account back to this tool, wherever «Crear cuenta» is offered', function (string $mode) {
+    loginNexoIdFirstSkipWithoutSso();
+    loginNexoIdFirstMode($mode);
+
+    loginNexoIdFirstAssertSignUpComesBack($mode);
+
+    // Every «Crear cuenta» of the chrome says the same: the login card and the
+    // phone sheet of a guest.
+    $expected = e((string) NexoChrome::signUpUrl());
+    $sheet = Blade::render('<x-nexo-mobile-menu />');
+    expect(str_contains($sheet, 'href="'.$expected.'" class="nexo-sheet__item" data-nexo-sheet-sign-up'))
+        ->toBeTrue("In {$mode} mode the phone sheet's «Crear cuenta» does not come back to the tool.");
+
+    $html = loginNexoIdFirstPage();
+    if ($html !== null) {
+        expect(str_contains($html, 'href="'.$expected.'" data-nexo-sign-up'))
+            ->toBeTrue("In {$mode} mode the login card's «Crear cuenta» does not come back to the tool.");
+    }
+})->with(['transition', 'sso']);
+
+it('keeps «Crear cuenta» away from a closed local sign-up', function () {
+    // NEXO_ALLOW_REGISTRATION=false (nexo.allow_registration): the local
+    // /register answers 404, so local mode offers no «Crear cuenta» at all.
+    config()->set('nexo-sso.enabled', false);
+    config()->set('nexo.allow_registration', false);
+    expect(NexoChrome::signUpUrl())->toBeNull('With the local sign-up closed, «Crear cuenta» must not link a 404.');
+
+    // Read like the gate reads it, `(bool)`: an empty or null value closes it
+    // there, so it must not leave a «Crear cuenta» pointing at the 404 here.
+    foreach (['', null, '0'] as $closed) {
+        config()->set('nexo.allow_registration', $closed);
+        expect(NexoChrome::signUpUrl())->toBeNull('nexo.allow_registration = '.var_export($closed, true).' closes the sign-up.');
+    }
+
+    config()->set('nexo.allow_registration', true);
+    expect(NexoChrome::signUpUrl())->toBe(Route::has('register') ? route('register') : null);
+});
+
+it('only ever sends «Crear cuenta» back to a path of this app', function () {
+    loginNexoIdFirstSkipWithoutSso();
+    loginNexoIdFirstMode('sso');
+
+    // "/\t/evil.example" is "//evil.example" to a browser (it drops tabs and
+    // newlines from a URL); /auth/nexo/* would loop through the entry route.
+    foreach (['https://evil.example/', '//evil.example/x', '/\\evil.example', "/\t/evil.example", "/\n/evil.example", '/auth/nexo/enter', 'app', ''] as $home) {
+        config()->set('nexo-sso.home', $home);
+        expect(NexoChrome::ssoHome())->toBe('/', 'nexo-sso.home = '.json_encode($home).' must fall back to \'/\'.');
+    }
+
+    config()->set('nexo-sso.home', '/somewhere/inside');
+    expect(NexoChrome::ssoHome())->toBe('/somewhere/inside');
+});
 
 it('reads the mode the way the sso-client does', function () {
     config()->set('nexo-sso.enabled', true);
@@ -194,6 +280,34 @@ it('offers «Recordarme» only where NexoChrome::allowsRemember() says so', func
 
     config()->set('nexo-sso.enabled', false);
     expect(NexoChrome::allowsRemember())->toBeTrue('Standalone (SSO off), «Recordarme» is always offered.');
+});
+
+it('opens the transition fold from the start when the login view asks for it', function () {
+    // v2.2: `password-open` is for the person who chose «Ya tengo una cuenta
+    // con otro email» — they came to type a password. Closed by default.
+    loginNexoIdFirstSkipWithoutSso();
+    loginNexoIdFirstMode('transition');
+    view()->share('errors', new ViewErrorBag);
+
+    $fold = function (string $props): string {
+        $html = Blade::render('<x-nexo-sign-in-options '.$props.'><input type="password" name="password"></x-nexo-sign-in-options>');
+        expect(preg_match('/<details\b[^>]*data-nexo-password-fold[^>]*>/', $html, $m))->toBe(1, 'In transition the password form is folded.');
+
+        return $m[0];
+    };
+
+    expect($fold(''))->not->toMatch('/\sopen\b/', 'The fold starts closed by default.');
+    expect($fold(':password-open="false"'))->not->toMatch('/\sopen\b/');
+    expect($fold('password-open="false"'))->not->toMatch('/\sopen\b/', 'A plain password-open="false" is text, and it means closed.');
+    expect($fold(':password-open="true"'))->toMatch('/\sopen\b/', 'password-open must open the fold.');
+
+    // Nowhere else does it change anything: local is never folded, sso has no form.
+    loginNexoIdFirstMode('local');
+    $local = Blade::render('<x-nexo-sign-in-options :password-open="true"><input type="password" name="password"></x-nexo-sign-in-options>');
+    expect(str_contains($local, '<details'))->toBeFalse();
+    loginNexoIdFirstMode('sso');
+    $sso = Blade::render('<x-nexo-sign-in-options :password-open="true"><input type="password" name="password"></x-nexo-sign-in-options>');
+    expect(str_contains($sso, 'type="password"'))->toBeFalse();
 });
 
 it('keeps the plain password form when SSO is switched off', function () {

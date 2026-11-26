@@ -102,7 +102,6 @@
     "If you cannot find your ticket, ask for it again from the event page:": "Si no encuentras tu entrada, pídela de nuevo desde la página del evento:",
     "If you did not ask for this, you can ignore this email — your password stays the same.": "Si no lo pediste, puedes ignorar este correo: tu contraseña sigue igual.",
     "If you did not create an account, you can ignore this email.": "Si no creaste una cuenta, puedes ignorar este correo.",
-    "If you did not do this, change your password and write to us: your email address was verified by the identity provider, so someone with access to it linked the account.": "Si no fuiste tú, cambia tu contraseña y escríbenos: el proveedor de identidad verificó tu correo, así que alguien con acceso a él vinculó la cuenta.",
     "If you did not expect this, remove the access from the event and revoke that system's token under Integrations.": "Si no lo esperabas, quita el acceso desde el evento y revoca el token de ese sistema en Integraciones.",
     "If you do not have an account yet, create it with this same email address: the invitation only works for it.": "Si todavía no tienes cuenta, créala con este mismo email: la invitación solo sirve para él.",
     "If you paid for this event outside the platform, contact the organizer directly: they collect and refund, not us.": "Si pagaste por este evento fuera de la plataforma, escríbele directamente a quien lo organiza: el cobro y la devolución son suyos, no nuestros.",
@@ -127,7 +126,7 @@
     "never used": "sin usar todavía",
     "New event": "Nuevo evento",
     "New password": "Nueva contraseña",
-    "Nexo ID was linked to your account": "Se vinculó Nexo ID a tu cuenta",
+    "Nexo ID was linked to your account": "Tu cuenta quedó unida a Nexo ID",
     "No access": "Sin acceso",
     "No account: name (≤120) and email": "Sin cuenta: nombre (≤120) y email",
     "No connection. Check the signal and try again.": "Sin conexión. Revisa la señal e inténtalo de nuevo.",
@@ -312,7 +311,6 @@
     "If you already have one, sign in with its email and password within 15 minutes: then you can link it to this Nexo ID.": "Si ya tienes una, inicia sesión con su email y su contraseña en los próximos 15 minutos: después podrás unirla a este Nexo ID.",
     "If you did not do this, change your password and write to us: someone who knew your password signed in here and linked the account.": "Si no fuiste tú, cambia tu contraseña y escríbenos: alguien que conocía tu contraseña inició sesión aquí y unió la cuenta.",
     "If you did not do this, write to us: someone who knew your password signed in here and linked the account.": "Si no fuiste tú, escríbenos: alguien que conocía tu contraseña inició sesión aquí y unió la cuenta.",
-    "If you did not do this, write to us: Nexo ID verified your email address, so someone with access to it linked the account.": "Si no fuiste tú, escríbenos: Nexo ID verificó tu correo, así que alguien con acceso a él unió la cuenta.",
     "Link my account": "Unir mi cuenta",
     "Link this account to Nexo ID?": "¿Unir esta cuenta a Nexo ID?",
     "Nexo ID account": "Cuenta de Nexo ID",
@@ -321,7 +319,6 @@
     "Soon, sign-in will be only with Nexo ID.": "Pronto se entrará solo con Nexo ID.",
     "That Nexo ID account is already linked to another :app account.": "Esa cuenta de Nexo ID ya está unida a otra cuenta de :app.",
     "This account already signs in with Nexo ID.": "Esta cuenta ya entra con Nexo ID.",
-    "This account is already linked to another Nexo ID account.": "Esta cuenta ya está unida a otra cuenta de Nexo ID.",
     "You can link this account to a Nexo ID with a different email.": "Puedes unir esta cuenta a un Nexo ID con otro email.",
     "You signed in to Nexo ID as :email, and no :app account uses that email yet.": "Iniciaste sesión en Nexo ID como :email y todavía no hay una cuenta de :app con ese email.",
     "You signed out of all of Nexo": "Cerraste sesión en todo Nexo",
@@ -330,5 +327,9 @@
     "Your account was not linked. Please try again.": "No se unió tu cuenta. Inténtalo de nuevo.",
     "Your Nexo ID session ended": "Tu sesión de Nexo ID terminó",
     "Your Nexo ID sign-in expired. Please try again.": "Tu inicio de sesión con Nexo ID venció. Inténtalo de nuevo.",
-    "Your session ended in Nexo ID and in every Nexo tool on this device.": "Se cerró tu sesión en Nexo ID y en todas las herramientas de Nexo de este dispositivo."
+    "Your session ended in Nexo ID and in every Nexo tool on this device.": "Se cerró tu sesión en Nexo ID y en todas las herramientas de Nexo de este dispositivo.",
+    "If you did not do this, change your password and write to us: Nexo ID confirmed that this email address is yours, so someone with access to it linked the account.": "Si no fuiste tú, cambia tu contraseña y escríbenos: Nexo ID confirmó que ese correo es tuyo, así que alguien con acceso a él unió la cuenta.",
+    "If you did not do this, write to us: Nexo ID confirmed that this email address is yours, so someone with access to it linked the account.": "Si no fuiste tú, escríbenos: Nexo ID confirmó que ese correo es tuyo, así que alguien con acceso a él unió la cuenta.",
+    "This account is already linked to another Nexo ID account. Write to us at :email and we will sort it out.": "Esta cuenta ya está unida a otra cuenta de Nexo ID. Escríbenos a :email y lo resolvemos.",
+    "This account is already linked to another Nexo ID account. Sign in with that Nexo ID account instead.": "Esta cuenta ya está unida a otra cuenta de Nexo ID. Inicia sesión con esa cuenta de Nexo ID."
 }

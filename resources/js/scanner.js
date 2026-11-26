@@ -138,7 +138,9 @@ export function initScanner() {
         message.textContent = labels.signedOut
         const again = document.createElement('a')
         again.href = window.location.href
-        again.className = 'nexo-btn nexo-btn--primary mt-3'
+        // One line at 390 px: .nexo-flash is a flex row, so without these the
+        // button is squeezed and its label breaks into three lines.
+        again.className = 'nexo-btn nexo-btn--primary mt-3 shrink-0 whitespace-nowrap'
         again.textContent = labels.signIn
         again.dataset.scannerSignIn = ''
 

@@ -86,12 +86,31 @@ function glossaryViewText(string $blade): string
         '/\{\{.*?\}\}/s',               // {{ echo }}
         '/\{!!.*?!!\}/s',               // {!! raw echo !!}
         '/<(script|style)\b.*?<\/\1>/s', // inline code
+        // Bound and event attributes are PHP or JS, not text, and their value
+        // can hold a «>» (`:title="$link->slug"`, `@click="a > b"`) that would
+        // end the tag early and leak the rest of it as visible text.
+        '/\s(?::|x-bind:|x-on:|@)[\w.:-]+\s*=\s*(?:"[^"]*"|\'[^\']*\')/s',
         '/<[^>]*>/s',                   // tags with their attributes
         '/@\w+(\s*\((?:[^()]|\([^()]*\))*\))?/', // directives and their arguments
     ], ' ', $blade);
 
     return (string) $text;
 }
+
+it('reads the text of a view, not the code inside its attributes', function () {
+    // A component attribute with PHP in it used to end the tag at the «>» of
+    // «->»: `slug" />` then counted as text a person reads (a false positive
+    // in Nexo Short, worked around by moving the value into @php).
+    $blade = '<x-nexo-seo :title="__(\'Edit\').\' \'.$link->slug" :canonical=\'$link->slug\' @click="open = count > 1" />Hola';
+
+    $text = glossaryViewText($blade);
+
+    expect(preg_match('/\bslug\b/', $text))->toBe(0, 'An attribute\'s code leaked into the view text: «'.trim($text).'».');
+    expect(trim($text))->toBe('Hola');
+
+    // Real text still counts.
+    expect(glossaryViewText('<p class="a">El slug del link</p>'))->toContain('slug');
+});
 
 it('uses one word per concept in every translation', function () {
     $offenders = [];

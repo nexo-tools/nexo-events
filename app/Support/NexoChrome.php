@@ -16,9 +16,14 @@ use Throwable;
  * Copy to app/Support/NexoChrome.php. IDENTICAL IN THE 6 APPS: what differs per
  * app lives in config, never here —
  *   - config/nexo-ecosystem.php  which tool this is (`current`), names, marks, entry
- *   - config/nexo.php → chrome   the panel route (wordmark + «Tu panel»)
+ *   - config/nexo.php → chrome   the panel route (wordmark + «Tu panel») and,
+ *                                opt-in, the app's own account page
+ *                                (`account_route`, label `nexo.app.account`)
+ *   - config/nexo.php            `allow_registration` (optional; false closes
+ *                                the local sign-up, so «Crear cuenta» goes away)
  *   - lang/{es,en,pt}/nexo.php   the panel's own name (`nexo.app.panel`)
- *   - config/nexo-sso.php        SSO on/off, issuer and the auth mode
+ *   - config/nexo-sso.php        SSO on/off, issuer, the auth mode and `home`
+ *                                (where «Crear cuenta» comes back to)
  *
  * Why a class and not @php blocks: the header, the account menu, the phone sheet,
  * the switcher and the login card all answer the same questions («where does
@@ -243,14 +248,63 @@ final class NexoChrome
         return null;
     }
 
-    /** «Crear cuenta»: Nexo ID's sign-up in sso/transition, the local one in local. */
+    /**
+     * «Crear cuenta» (v2.2, «alta que vuelve a la tool»).
+     *
+     * In sso and transition: the entry route with `signup=1` and this app's
+     * home as `to` — the tool asks Nexo ID for its sign-up screen
+     * (prompt=create), and once the account is created and its email verified
+     * the authorize goes on and the person lands back in THIS tool, signed in.
+     * Before v2.2 it linked Nexo ID's /register, and the person stayed in Nexo
+     * ID for good. An sso-client without the entry route falls back to that
+     * /register; one that predates `signup` ignores it and goes through Nexo
+     * ID's login, which offers «Crear cuenta» and keeps the way back.
+     *
+     * In local: the local sign-up, unless the instance closed it
+     * (NEXO_ALLOW_REGISTRATION=false, `nexo.allow_registration`), where the
+     * route answers 404 and the link would be a dead end — then nothing.
+     */
     public static function signUpUrl(): ?string
     {
-        if (self::authMode() !== 'local' && self::issuer() !== '') {
-            return self::issuer().'/register';
+        if (self::authMode() !== 'local') {
+            if (Route::has('nexo-sso.enter')) {
+                return route('nexo-sso.enter', ['to' => self::ssoHome(), 'signup' => 1]);
+            }
+            if (self::issuer() !== '') {
+                return self::issuer().'/register';
+            }
+        }
+
+        // The same reading as the gate that closes the route (nexoshort's
+        // EnsureRegistrationOpen: `(bool) config(…)`), so the link and the
+        // route never disagree; an app without the key keeps it open.
+        if (! (bool) config('nexo.allow_registration', true)) {
+            return null;
         }
 
         return Route::has('register') ? route('register') : null;
+    }
+
+    /**
+     * Where this app sends a person once signed in through Nexo ID
+     * (`nexo-sso.home`, the sso-client's adaptation point): a same-origin path,
+     * '/' otherwise. With session v2 ported the sso-client answers
+     * (NexoSsoRequest::home(), the same check its entry route applies to `to`);
+     * until then the same rule, minus the /auth/nexo/* exclusion.
+     */
+    public static function ssoHome(): string
+    {
+        $owner = 'App\\Services\\NexoSso\\NexoSsoRequest';
+        if (class_exists($owner)) {
+            return (string) $owner::home();
+        }
+
+        $home = config('nexo-sso.home', '/');
+
+        return is_string($home) && str_starts_with($home, '/') && ! str_starts_with($home, '//')
+            && ! str_contains($home, '\\') && preg_match('/[\x00-\x1F\x7F]/', $home) !== 1
+            ? $home
+            : '/';
     }
 
     /** What the logout form posts to: the central logout when SSO is on (§5.2). */
@@ -288,6 +342,30 @@ final class NexoChrome
     public static function panelLabel(): string
     {
         return Lang::has('nexo.app.panel') ? (string) __('nexo.app.panel') : (string) __('nexo.account.panel');
+    }
+
+    /**
+     * This app's own account page, for an app that keeps local accounts next to
+     * Nexo ID (Nexo Links' /profile: the password of an account not linked yet,
+     * deleting the account), or null. Opt-in per app, nothing to do elsewhere:
+     * config('nexo.chrome.account_route') names the route and lang
+     * nexo.app.account its label. The account menu and the phone sheet list it
+     * right after «Tu panel».
+     */
+    public static function appAccountUrl(): ?string
+    {
+        $route = config('nexo.chrome.account_route');
+        if (! is_string($route) || $route === '' || ! Route::has($route) || ! Lang::has('nexo.app.account')) {
+            return null;
+        }
+
+        return route($route);
+    }
+
+    /** The label of appAccountUrl() («Perfil» in Nexo Links). */
+    public static function appAccountLabel(): string
+    {
+        return (string) __('nexo.app.account');
     }
 
     public static function helpUrl(): ?string

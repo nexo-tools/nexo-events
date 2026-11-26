@@ -34,6 +34,22 @@ it('renders the app-switcher with every tool and the hub invite', function () {
         ->and($html)->toContain(config('nexo-ecosystem.github_org_url'));
 });
 
+it('lets the keyboard reach the hub and the code links of the switcher', function () {
+    // v2.2: nexoMenu moves with the arrows over [role="menuitem"] only, and Tab
+    // leaves the menu. The two links under the tools had no role, so no key
+    // reached them — and at 19px tall they were no target for a finger either.
+    $html = Blade::render('<x-nexo-app-switcher />');
+
+    foreach (['data-nexo-switcher-hub' => 'nexo-ecosystem.hub_url', 'data-nexo-switcher-code' => 'nexo-ecosystem.github_org_url'] as $marker => $url) {
+        expect(preg_match('/<a href="'.preg_quote(e((string) config($url)), '/').'"[^>]*role="menuitem"[^>]*'.$marker.'>/', $html))
+            ->toBe(1, "The switcher link [{$marker}] must be a menu item, or the arrows skip it.");
+    }
+
+    $css = (string) file_get_contents(resource_path('css/nexo-ui.css'));
+    expect(preg_match('/\.nexo-menu__foot a \{[^}]*min-height: 44px/', $css))
+        ->toBe(1, 'The switcher\'s hub and code links must be 44px tall (nexo-ui.css, .nexo-menu__foot a).');
+});
+
 it('translates every tool description in every locale', function () {
     foreach (array_keys(config('nexo-ecosystem.tools')) as $key) {
         foreach (['es', 'en', 'pt'] as $locale) {

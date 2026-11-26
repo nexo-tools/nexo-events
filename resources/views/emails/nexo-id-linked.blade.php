@@ -18,11 +18,11 @@
         @if ($passwords)
             {{ $explicit
                 ? __('If you did not do this, change your password and write to us: someone who knew your password signed in here and linked the account.')
-                : __('If you did not do this, change your password and write to us: your email address was verified by the identity provider, so someone with access to it linked the account.') }}
+                : __('If you did not do this, change your password and write to us: Nexo ID confirmed that this email address is yours, so someone with access to it linked the account.') }}
         @else
             {{ $explicit
                 ? __('If you did not do this, write to us: someone who knew your password signed in here and linked the account.')
-                : __('If you did not do this, write to us: Nexo ID verified your email address, so someone with access to it linked the account.') }}
+                : __('If you did not do this, write to us: Nexo ID confirmed that this email address is yours, so someone with access to it linked the account.') }}
         @endif
     </p>
 </x-nexo-mail::layout>

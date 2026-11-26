@@ -57,7 +57,8 @@ test('AC-AUTHMODE-3: transition keeps password login and reset, closes local sig
 
     $this->post('/nexo-sso-tests/login')->assertOk();
     $this->post('/nexo-sso-tests/forgot')->assertOk();
-    $this->get('/nexo-sso-tests/register')->assertRedirect('https://nexoid.test/register');
+    // Through the entry with signup=1, so the new account comes back to this tool (v2.2).
+    $this->get('/nexo-sso-tests/register')->assertRedirect(route('nexo-sso.enter', ['to' => config('nexo-sso.home'), 'signup' => 1]));
     $this->post('/nexo-sso-tests/register')->assertNotFound();
 
     expect(NexoAuthMode::allowsRemember())->toBeFalse()

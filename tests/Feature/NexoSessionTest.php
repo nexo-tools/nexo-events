@@ -88,8 +88,10 @@ it('AC-SESSION-1: sso mode closes every local credential surface and keeps only 
         ->and($html)->toContain(__('nexo.auth.continue'))
         ->and(str_contains($html, 'name="password"'))->toBeFalse()
         ->and(str_contains($html, 'name="remember"'))->toBeFalse()
-        // «Crear cuenta» is Nexo ID's sign-up.
-        ->and($html)->toContain('https://nexoid.test/register');
+        // «Crear cuenta» is Nexo ID's sign-up through this tool, and back to
+        // the panel (nexo-ui v2.2), never the issuer's /register by hand.
+        ->and($html)->toContain('href="'.e(route('nexo-sso.enter', ['to' => '/app', 'signup' => 1])).'"')
+        ->and(str_contains($html, 'https://nexoid.test/register'))->toBeFalse();
 });
 
 it('AC-SESSION-1: sso mode sends a guest deep link through Nexo ID and back to itself, never /login', function (): void {
@@ -136,6 +138,26 @@ it('AC-SESSION-1: transition never remembers a password sign-in, refuses a linke
 
     // The panel offers «Unir mi cuenta».
     $this->get(route('dashboard'))->assertOk()->assertSee('data-nexo-sso-transition-banner', false);
+});
+
+it('AC-SESSION-1: transition opens the password fold for whoever chose «Ya tengo una cuenta con otro email», and only then', function (): void {
+    config(['nexo-sso.auth_mode' => 'transition', 'nexo-sso.transition_until' => now()->addMonth()->format('Y-m-d')]);
+    $fold = function (string $html): string {
+        expect(preg_match('/<details\b[^>]*data-nexo-password-fold[^>]*>/', $html, $m))->toBe(1);
+
+        return $m[0];
+    };
+    $pending = fn (bool $armed): array => ['nexo_sso.new_account' => [
+        'claims' => ['sub' => 'new-sub', 'email' => 'otra@example.com', 'email_verified' => true],
+        'id_token' => 'x', 'return' => '/app', 'at' => now()->getTimestamp(), 'armed' => $armed,
+    ]];
+
+    expect($fold((string) $this->get('/login')->assertOk()->getContent()))->not->toMatch('/\sopen\b/');
+    expect($fold((string) $this->withSession($pending(false))->get('/login')->getContent()))->not->toMatch('/\sopen\b/');
+
+    $html = (string) $this->withSession($pending(true))->get('/login')->assertOk()->getContent();
+    expect($fold($html))->toMatch('/\sopen\b/')
+        ->and($html)->toContain('otra@example.com');
 });
 
 it('AC-SESSION-1: standalone (SSO off) has no Nexo ID anywhere and local auth as always', function (): void {

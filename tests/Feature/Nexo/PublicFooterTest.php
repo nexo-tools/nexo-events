@@ -2,6 +2,7 @@
 
 use App\Support\NexoChrome;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Route;
 
 // Guardian (chrome v2, 2026-11-26): the footer of the public CONTENT pages (D8 —
 // a Links profile, an event page, a booking page). Those pages carry no tool
@@ -35,4 +36,21 @@ it('shows «Editar» only when the page passes an edit URL to a signed-in person
 
     $html = Blade::render('<x-nexo-public-footer edit-url="/editor" />');
     expect(preg_match('/<a[^>]*href="\/editor"[^>]*data-nexo-edit-chip/s', $html))->toBe(1, 'The owner\'s chip must link to the editor.');
+});
+
+it('keeps Privacidad and Términos one tap away when the app has them', function () {
+    // These pages take a visitor's own data (a registration, a booking), and
+    // the full footer that linked the legal pages is gone from them (D8):
+    // STANDARD «Páginas legales». Rendered only when the routes exist, so the
+    // component stays the same in every app.
+    $html = Blade::render('<x-nexo-public-footer />');
+
+    foreach (['legal.privacy' => 'nexo.footer.privacy', 'legal.terms' => 'nexo.footer.terms'] as $route => $label) {
+        if (! Route::has($route)) {
+            continue;
+        }
+
+        expect(preg_match('/<a href="'.preg_quote(route($route), '/').'"[^>]*data-nexo-public-legal>'.preg_quote(e(__($label)), '/').'<\/a>/', $html))
+            ->toBe(1, "The public footer must link [{$route}] («".__($label).'»).');
+    }
 });

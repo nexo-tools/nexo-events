@@ -7,7 +7,9 @@
 
 use App\Models\User;
 use App\Services\NexoSso\NexoSsoFlows;
+use App\Services\NexoSso\NexoSsoLinkConflictException;
 use App\Services\NexoSso\NexoSsoService;
+use App\Support\NexoChrome;
 use Firebase\JWT\JWT;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\Cache;
@@ -89,6 +91,37 @@ if (! function_exists('nexoSsoEnforceCsrf')) {
     function nexoSsoEnforceCsrf(TestCase $test): void
     {
         app()->instance('env', 'local');
+    }
+}
+
+if (! function_exists('nexoSsoAccountTakenMessage')) {
+    /**
+     * What a person reads when the account is already joined to another Nexo
+     * ID (AC-LINK-4) — its wording, with or without a support email, is
+     * pinned in NexoSsoLinkTest.
+     */
+    function nexoSsoAccountTakenMessage(): string
+    {
+        return (new NexoSsoLinkConflictException(NexoSsoLinkConflictException::ACCOUNT_TAKEN))->userMessage();
+    }
+}
+
+if (! function_exists('nexoSsoDistinctBrand')) {
+    /**
+     * Makes the chrome brand and APP_NAME differ, so a screen that names the
+     * tool can be checked to use the brand (NexoSsoApp::name()). Returns the
+     * name the screens must show; APP_NAME is 'NexoPlainAppName'.
+     */
+    function nexoSsoDistinctBrand(): string
+    {
+        config(['app.name' => 'NexoPlainAppName']);
+        if (class_exists(NexoChrome::class) && NexoChrome::current() !== null) {
+            config(['nexo-ecosystem.tools.'.NexoChrome::current().'.name' => 'Nexo Brand Name']);
+
+            return 'Nexo Brand Name';
+        }
+
+        return 'NexoPlainAppName';
     }
 }
 

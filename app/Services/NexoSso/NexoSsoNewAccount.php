@@ -101,6 +101,19 @@ final class NexoSsoNewAccount
         return $pending !== null && $pending['armed'] ? $pending : null;
     }
 
+    /**
+     * The login screen should open its password form: the person chose «I
+     * already have an account with another email» and its window is still
+     * open, in transition mode (which is never the effective mode with SSO
+     * off). The login passes it to nexo-ui's <x-nexo-sign-in-options> so the
+     * folded «Use email and password» starts open, and
+     * <x-nexo-sso.link-notice> shows only then. (v2.2)
+     */
+    public static function awaitsPasswordSignIn(Request $request): bool
+    {
+        return NexoAuthMode::isTransition() && self::armed($request) !== null;
+    }
+
     /** The Nexo ID email of the pending sign-in, for the screens that mention it. */
     public static function email(Request $request): ?string
     {

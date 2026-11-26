@@ -78,7 +78,7 @@ test('AC-LINK-4: an account already joined to ANOTHER Nexo ID is never re-joined
     nexoSsoFakeProvider(); // sub user-uuid-0001, verified user@example.com
 
     nexoSsoCallback($this)->assertRedirect(route('login'))->assertSessionHasErrors([
-        'nexo_sso' => __('This account is already linked to another Nexo ID account.'),
+        'nexo_sso' => nexoSsoAccountTakenMessage(),
     ]);
 
     $this->assertGuest();
@@ -100,3 +100,41 @@ test('AC-LINK-4: a silent attempt that meets such an account stays invisible: ba
     $this->assertGuest();
     expect($local->fresh()->nexo_id_sub)->toBe('owner-sub');
 });
+
+test('AC-LINK-4: the refusal says what to do — write to the support email when the tool has one', function (): void {
+    config(['nexo.support_email' => 'help@alvarocdev.com']);
+    $local = User::factory()->create(['email' => 'user@example.com']);
+    $local->forceFill(['nexo_id_sub' => 'owner-sub'])->save();
+    nexoSsoFakeProvider();
+
+    $message = __('This account is already linked to another Nexo ID account. Write to us at :email and we will sort it out.', ['email' => 'help@alvarocdev.com']);
+    expect($message)->toContain('help@alvarocdev.com');
+
+    nexoSsoCallback($this)->assertRedirect(route('login'))->assertSessionHasErrors(['nexo_sso' => $message]);
+    expect(nexoSsoAccountTakenMessage())->toBe($message);
+});
+
+test('AC-LINK-4: without a usable support email it says to sign in with that other Nexo ID, and shows no address', function (?string $email): void {
+    config(['nexo.support_email' => $email]);
+
+    expect(nexoSsoAccountTakenMessage())
+        ->toBe(__('This account is already linked to another Nexo ID account. Sign in with that Nexo ID account instead.'))
+        ->not->toContain('@');
+})->with([
+    'unset' => null,
+    'empty' => '',
+    'not an email' => 'support',
+    'the example.com placeholder' => 'hola@example.com',
+    'a .test address' => 'ops@tool.test',
+]);
+
+test('AC-LINK-4: both wordings are translated in es and pt (tuteo, no voseo)', function (string $locale): void {
+    foreach ([
+        'This account is already linked to another Nexo ID account. Write to us at :email and we will sort it out.',
+        'This account is already linked to another Nexo ID account. Sign in with that Nexo ID account instead.',
+    ] as $key) {
+        $translated = __($key, ['email' => 'help@alvarocdev.com'], $locale);
+        expect($translated)->not->toBe(__($key, ['email' => 'help@alvarocdev.com'], 'en'))
+            ->and($translated)->not->toMatch('/\b(escribinos|iniciá|entrá|podés|tenés)\b/iu');
+    }
+})->with(['es', 'pt']);

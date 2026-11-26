@@ -149,7 +149,7 @@ test('AC-LOGOUT-4: a stale token from this same origin (another tab rotated it) 
     nexoSsoEnforceCsrf($this);
 
     $response = $this->withSession(nexoSsoSignedIn($this, User::factory()->create()))
-        ->withHeaders(['Origin' => 'http://localhost'])
+        ->withHeaders(['Origin' => rtrim((string) config('app.url'), '/')]) // this tool's own origin, whatever APP_URL is
         ->post(route('nexo-sso.logout'));
 
     expect(nexoSsoEndSessionQuery($response))->not->toHaveKey('id_token_hint');

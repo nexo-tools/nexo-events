@@ -318,5 +318,14 @@ check-in endpoint, what the scanner sends and the Integration API are unchanged.
   (fail-open) and now proves it with a reachable provider and the panel as control; the
   revocations prune is pinned to the scheduler (AC-SESSION-9); the sso-mode «linked» mail says
   «Nexo ID» instead of «the identity provider». The three shared files go back to the templates.
+- [x] 10.29 Templates v2.2 (`nexo-sso-client` and `nexo-ui`, byte-identical outside the
+  documented adaptation points, which absorb 10.28's three fixes): «Crear cuenta» is
+  `/auth/nexo/enter?to=/app&signup=1` (Nexo ID's sign-up, and back here), the login opens the
+  password fold after «Ya tengo una cuenta con otro email» (transition), the screens name the
+  tool by its brand (`og:site_name` too, not `APP_NAME`), the AC-LINK-4 message says what to
+  do, and the «linked» mail follows the template's reference text («Tu cuenta quedó unida a
+  Nexo ID», no «identity provider», password lines only in local mode, AC-SEC-5). The door's
+  «Volver a entrar» stays on one line (`shrink-0 whitespace-nowrap`, nothing else of the
+  scanner changed). symfony 8.1.12 in its own commit (composer audit green).
 
 **Gate 10:** per integration — real cross-tool flow exercised, **standalone mode still green** (self-host story intact), owner sign-off.

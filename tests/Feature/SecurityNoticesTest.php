@@ -74,3 +74,57 @@ it('AC-SEC-4: sends no linking notice to an account created by SSO', function ()
     // through X is noise.
     Mail::assertNothingQueued();
 });
+
+// The reference text of the nexo-sso-client README («The "Nexo ID was linked"
+// mail»): no «identity provider», «unir» in Spanish, and the password lines
+// only where the password keeps working (local mode).
+
+it('AC-SEC-5: in local mode the mail says the password keeps working, and how the account got joined', function (string $how, string $footer): void {
+    config(['nexo-sso.enabled' => true, 'nexo-sso.auth_mode' => 'local']);
+    $html = (new NexoIdLinked(User::factory()->create(), $how))->render();
+
+    expect($html)->toContain(e(__('From now on you can sign in here with your Nexo ID. Your password keeps working — nothing else changed.')))
+        ->toContain(e(__($footer)));
+})->with([
+    'by email' => [NexoSsoUserResolver::BY_EMAIL, 'If you did not do this, change your password and write to us: Nexo ID confirmed that this email address is yours, so someone with access to it linked the account.'],
+    'explicit' => [NexoSsoUserResolver::EXPLICIT, 'If you did not do this, change your password and write to us: someone who knew your password signed in here and linked the account.'],
+]);
+
+it('AC-SEC-5: in transition and sso the mail never mentions a password that no longer signs in', function (string $mode, string $how, string $footer): void {
+    config(['nexo-sso.enabled' => true, 'nexo-sso.auth_mode' => $mode, 'nexo-sso.transition_until' => now()->addMonth()->format('Y-m-d')]);
+    $html = (new NexoIdLinked(User::factory()->create(), $how))->render();
+
+    expect($html)->toContain(e(__('From now on you sign in here with your Nexo ID — nothing else changed.')))
+        ->toContain(e(__($footer)))
+        ->not->toContain(e(__('From now on you can sign in here with your Nexo ID. Your password keeps working — nothing else changed.')))
+        ->not->toContain('change your password');
+})->with([
+    'sso, by email' => ['sso', NexoSsoUserResolver::BY_EMAIL, 'If you did not do this, write to us: Nexo ID confirmed that this email address is yours, so someone with access to it linked the account.'],
+    'transition, explicit' => ['transition', NexoSsoUserResolver::EXPLICIT, 'If you did not do this, write to us: someone who knew your password signed in here and linked the account.'],
+]);
+
+it('AC-SEC-5: the mail speaks of Nexo ID, never of an «identity provider», in every language', function (string $mode, string $locale, string $expected): void {
+    config(['nexo-sso.enabled' => true, 'nexo-sso.auth_mode' => $mode]);
+    $html = html_entity_decode((new NexoIdLinked(User::factory()->create(), NexoSsoUserResolver::BY_EMAIL))->locale($locale)->render());
+
+    expect($html)->toContain($expected)
+        ->not->toMatch('/identity provider|proveedor de identidad|provedor de identidade/i');
+})->with([
+    'sso, es' => ['sso', 'es', 'Si no fuiste tú, escríbenos: Nexo ID confirmó que ese correo es tuyo, así que alguien con acceso a él unió la cuenta.'],
+    'local, es' => ['local', 'es', 'Si no fuiste tú, cambia tu contraseña y escríbenos: Nexo ID confirmó que ese correo es tuyo'],
+    'sso, en' => ['sso', 'en', 'Nexo ID confirmed that this email address is yours'],
+    'local, pt' => ['local', 'pt', 'o Nexo ID confirmou que esse e-mail é seu'],
+]);
+
+it('AC-SEC-5: in Spanish the subject and the title say «quedó unida», as every screen says «unir»', function (string $mode, string $how): void {
+    config(['nexo-sso.enabled' => true, 'nexo-sso.auth_mode' => $mode]);
+    $mail = (new NexoIdLinked(User::factory()->create(), $how))->locale('es');
+    $html = html_entity_decode($mail->render());
+
+    $mail->assertHasSubject('Tu cuenta quedó unida a Nexo ID');
+    expect($html)->toContain('Tu cuenta quedó unida a Nexo ID')
+        ->not->toMatch('/vincul/iu');
+})->with([
+    'sso, by email' => ['sso', NexoSsoUserResolver::BY_EMAIL],
+    'local, explicit' => ['local', NexoSsoUserResolver::EXPLICIT],
+]);

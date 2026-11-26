@@ -7,6 +7,10 @@
 // The head theme-init snippet (partials/theme-init.blade.php) must run first so
 // <html data-theme> is always stamped before Alpine reads it.
 
+// What Tab can reach: the sheet's focus trap cycles through these, and a menu
+// left with Tab hands the focus to the next one after it.
+const TABBABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 document.addEventListener('alpine:init', () => {
   // Light/dark toggle. The explicit choice persists in the `nexo-theme` cookie,
   // scoped to the parent domain so it crosses every ecosystem tool (dark in one =
@@ -41,7 +45,8 @@ document.addEventListener('alpine:init', () => {
   // and Escape; the trigger owns aria-expanded.
   //
   // The panels declare role="menu"/"menuitem", and that role is a promise: arrow
-  // navigation, Home/End, and focus returning to the trigger on close. Without
+  // navigation, Home/End, Tab moving on past the menu (Shift+Tab, back to the
+  // trigger), and focus returning to the trigger on close. Without
   // it a screen-reader user is told to press arrows and nothing happens.
   // Wire it up with:  x-data="nexoMenu" @keydown="onKeydown($event)"
   //
@@ -62,7 +67,7 @@ document.addEventListener('alpine:init', () => {
     init() {
       if (!this.modal) return;
       this.onWindowKeydown = (event) => {
-        if (this.open && !this.$el.contains(event.target)) this.onKeydown(event);
+        if (this.open && !this.$root.contains(event.target)) this.onKeydown(event);
       };
       this.onPageHide = () => this.close({ restoreFocus: false });
       window.addEventListener('keydown', this.onWindowKeydown);
@@ -73,6 +78,11 @@ document.addEventListener('alpine:init', () => {
       window.removeEventListener('keydown', this.onWindowKeydown);
       window.removeEventListener('pagehide', this.onPageHide);
     },
+    // `$root`, never `$el`, here and in items(): toggle() runs from the
+    // trigger's @click, where `this.$el` is the trigger itself — it holds no
+    // items, so opening a menu (by keyboard or by click) focused nothing, and
+    // the next Tab closed it again. `$root` is the component's element from
+    // wherever it is called.
     trigger() {
       return this.$refs.trigger || this.$root.querySelector('[aria-haspopup]');
     },
@@ -80,7 +90,24 @@ document.addEventListener('alpine:init', () => {
       if (this.open) { this.close(); return; }
       this.open = true;
       if (this.modal) document.documentElement.classList.add('nexo-sheet-open');
-      this.$nextTick(() => this.focusItem(0));
+      this.$nextTick(() => this.focusFirst());
+    },
+    // The first item takes the focus as soon as it is shown. A menu (x-show
+    // with x-transition) is shown by the next tick; the sheet (x-show with no
+    // transition) is not: Alpine reveals it on a later frame (or a timeout in
+    // a hidden tab), and WebKit runs that after $nextTick. Until then its items
+    // have no client rects, there is nothing to focus, and the aria-modal sheet
+    // opened with the focus left outside it (on the trigger in Chromium, on
+    // <body> in WebKit). So it retries, bounded, until something is visible;
+    // closing in between stops it.
+    focusFirst(attempts = 10) {
+      if (!this.open) return;
+      if (this.items().length) { this.focusItem(0); return; }
+      if (attempts <= 0) return;
+      const later = document.visibilityState === 'visible'
+        ? (fn) => requestAnimationFrame(fn)
+        : (fn) => setTimeout(fn, 16);
+      later(() => this.focusFirst(attempts - 1));
     },
     close({ restoreFocus = true } = {}) {
       if (!this.open) return;
@@ -89,12 +116,8 @@ document.addEventListener('alpine:init', () => {
       if (restoreFocus) this.trigger()?.focus();
     },
     items() {
-      // $root, never $el: called from the trigger's @click, $el is the trigger
-      // itself, which holds no items — opening a menu focused nothing.
       const root = this.modal ? (this.$refs.panel || this.$root) : this.$root;
-      const selector = this.modal
-        ? 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
-        : '[role="menuitem"]';
+      const selector = this.modal ? TABBABLE : '[role="menuitem"]';
       return Array.from(root.querySelectorAll(selector))
         .filter((el) => !el.hasAttribute('disabled') && el.getClientRects().length > 0);
     },
@@ -128,13 +151,26 @@ document.addEventListener('alpine:init', () => {
         ArrowUp: () => this.moveFocus(-1),
         Home: () => this.focusItem(0),
         End: () => this.focusItem(this.items().length - 1),
-        // Tabbing out of a menu closes it, but the browser keeps the focus move.
-        Tab: () => this.close({ restoreFocus: false }),
+        Tab: () => this.tabOut(event.shiftKey),
       };
       const handler = handlers[event.key];
       if (!handler) return;
-      if (event.key !== 'Tab') event.preventDefault();
+      event.preventDefault();
       handler();
+    },
+    // Tab leaves an open menu (v2.2): it closes, and the focus goes on to what
+    // follows the menu on the page; Shift+Tab, back to its button. Not the
+    // browser's own move: from an item it lands on the next item of a panel
+    // that x-transition keeps on screen a few more frames, which then hides,
+    // and the focus fell to <body> (Chromium, and WebKit on Shift+Tab).
+    tabOut(backwards) {
+      this.close({ restoreFocus: backwards });
+      if (backwards) return;
+      const root = this.$root;
+      const next = Array.from(document.querySelectorAll(TABBABLE)).find((el) => !root.contains(el)
+        && (root.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING)
+        && el.tabIndex >= 0 && el.getClientRects().length > 0);
+      (next || this.trigger())?.focus();
     },
   }));
 });

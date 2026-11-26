@@ -2,7 +2,8 @@
      6 apps, so what a person learns in one works in all:
 
        1. name + email (not clickable)
-       2. Tu panel, with this app's own name (panel-label)
+       2. Tu panel, with this app's own name (panel-label) — and, in an app that
+          keeps local accounts, its own account page (NexoChrome::appAccountUrl)
        3. Tu cuenta Nexo ID → <issuer>/profile (not in Nexo ID itself, not standalone)
        4. Centro de ayuda
        5. separator
@@ -20,6 +21,7 @@
     $panelUrl ??= \App\Support\NexoChrome::panelUrl();
     $panelLabel ??= \App\Support\NexoChrome::panelLabel();
     $nexoIdUrl = \App\Support\NexoChrome::nexoIdAccountUrl();
+    $appAccountUrl = \App\Support\NexoChrome::appAccountUrl();
     $helpUrl = \App\Support\NexoChrome::helpUrl();
     $logoutUrl = \App\Support\NexoChrome::logoutUrl();
     $name = (string) data_get($user, 'name', '');
@@ -51,6 +53,10 @@
             <div class="nexo-menu__sep" role="separator"></div>
 
             <a href="{{ $panelUrl }}" class="nexo-menu__item" role="menuitem" data-nexo-account-panel>{{ $panelLabel }}</a>
+
+            @if ($appAccountUrl)
+                <a href="{{ $appAccountUrl }}" class="nexo-menu__item" role="menuitem" data-nexo-account-app>{{ \App\Support\NexoChrome::appAccountLabel() }}</a>
+            @endif
 
             @if ($nexoIdUrl)
                 <a href="{{ $nexoIdUrl }}" class="nexo-menu__item" role="menuitem" data-nexo-account-nexoid>{{ __('nexo.account.nexo_id') }}</a>

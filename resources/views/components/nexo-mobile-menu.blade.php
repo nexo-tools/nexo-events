@@ -2,7 +2,8 @@
      the wordmark, the switcher and ONE button: the avatar with a session, ☰
      without. It opens a full-width sheet with everything else:
 
-       signed in   identity · own nav · Tu panel · Tu cuenta Nexo ID · Centro de
+       signed in   identity · own nav · Tu panel (· the app's own account page,
+                   NexoChrome::appAccountUrl) · Tu cuenta Nexo ID · Centro de
                    ayuda · Idioma · Tema · Cerrar sesión
        guest       Iniciar sesión · Crear cuenta · Centro de ayuda · Idioma · Tema
 
@@ -28,6 +29,7 @@
     $panelUrl ??= \App\Support\NexoChrome::panelUrl();
     $panelLabel ??= \App\Support\NexoChrome::panelLabel();
     $nexoIdUrl = \App\Support\NexoChrome::nexoIdAccountUrl();
+    $appAccountUrl = \App\Support\NexoChrome::appAccountUrl();
     $helpUrl = \App\Support\NexoChrome::helpUrl();
     $logoutUrl = \App\Support\NexoChrome::logoutUrl();
     $signInUrl = \App\Support\NexoChrome::signInUrl();
@@ -91,6 +93,9 @@
 
                 <div class="nexo-sheet__section">
                     <a href="{{ $panelUrl }}" class="nexo-sheet__item" data-nexo-sheet-panel>{{ $panelLabel }}</a>
+                    @if ($appAccountUrl)
+                        <a href="{{ $appAccountUrl }}" class="nexo-sheet__item" data-nexo-sheet-account>{{ \App\Support\NexoChrome::appAccountLabel() }}</a>
+                    @endif
                     @if ($nexoIdUrl)
                         <a href="{{ $nexoIdUrl }}" class="nexo-sheet__item" data-nexo-sheet-nexoid>{{ __('nexo.account.nexo_id') }}</a>
                     @endif

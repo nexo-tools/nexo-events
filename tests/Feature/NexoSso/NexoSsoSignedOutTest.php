@@ -30,6 +30,13 @@ test('AC-SIGNEDOUT-1: by default it says the person signed out of all of Nexo, w
         ->assertSee('data-nexo-sso-signed-out="signed_out"', false);
 });
 
+test('AC-SIGNEDOUT-1: «Go to the home page» is a 44 px target, not a thin line of text', function (): void {
+    $html = $this->get(route('nexo-sso.signed-out'))->getContent();
+
+    expect(preg_match('#<a href="'.preg_quote(url('/'), '#').'" class="([^"]*)">\s*'.preg_quote(e(__('Go to the home page')), '#').'#', (string) $html, $m))->toBe(1)
+        ->and(explode(' ', $m[1]))->toContain('min-h-11', 'inline-flex');
+});
+
 test('AC-SIGNEDOUT-2: reason=ended says the Nexo ID session ended', function (): void {
     $this->get(route('nexo-sso.signed-out', ['reason' => 'ended']))
         ->assertOk()

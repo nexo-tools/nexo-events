@@ -118,6 +118,67 @@ it('signs out through the central logout when SSO is on, and the local one when 
     expect(str_contains(Blade::render('<x-nexo-account-menu />'), 'name="_token"'))->toBeTrue('The sign-out form has no CSRF token.');
 });
 
+/**
+ * Opt-in (v2.2, from Nexo Links): an app that keeps local accounts next to
+ * Nexo ID lists its own account page right after «Tu panel». A throwaway route
+ * and label stand in for the app's own (`nexo.chrome.account_route`, lang
+ * nexo.app.account).
+ */
+function accountMenuWithAppAccount(): string
+{
+    Route::get('/nexo-guardian-account', fn () => 'account')->name('nexo-guardian.account');
+    Route::getRoutes()->refreshNameLookups();
+    app('translator')->load('*', 'nexo', app()->getLocale()); // load the file first, or addLines() would hide it
+    app('translator')->addLines(['nexo.app.account' => 'Guardian account page'], app()->getLocale());
+    config()->set('nexo.chrome.account_route', 'nexo-guardian.account');
+
+    return route('nexo-guardian.account');
+}
+
+it('lists the app\'s own account page right after «Tu panel», only when the app opts in', function () {
+    config()->set('nexo-sso.enabled', true);
+    config()->set('nexo-sso.issuer', 'https://id.example.test');
+    accountMenuSignIn();
+
+    $before = Blade::render('<x-nexo-account-menu />');
+    if (config('nexo.chrome.account_route') === null) {
+        expect(str_contains($before, 'data-nexo-account-app'))->toBeFalse('Without nexo.chrome.account_route there is no own account page in the menu.');
+    }
+
+    $url = accountMenuWithAppAccount();
+    $html = Blade::render('<x-nexo-account-menu />');
+
+    $panel = accountMenuPosition($html, 'data-nexo-account-panel');
+    $own = accountMenuPosition($html, 'data-nexo-account-app');
+    $next = NexoChrome::current() !== 'nexoid'
+        ? accountMenuPosition($html, 'data-nexo-account-nexoid')
+        : accountMenuPosition($html, 'data-nexo-account-help');
+    expect($panel < $own && $own < $next)->toBeTrue('The app\'s own account page goes right after «Tu panel».');
+    expect(preg_match('/<a href="'.preg_quote($url, '/').'" class="nexo-menu__item" role="menuitem" data-nexo-account-app>Guardian account page<\/a>/', $html))
+        ->toBe(1, 'The own account page must be a menu item with its route and its label.');
+
+    config()->set('nexo.chrome.account_route', 'no-such-route');
+    expect(str_contains(Blade::render('<x-nexo-account-menu />'), 'data-nexo-account-app'))->toBeFalse('A route that does not exist must not render.');
+});
+
+it('leaves the own account page out while the app has no label for it', function () {
+    // The route alone is not enough: without lang nexo.app.account the item
+    // would read «nexo.app.account». An app that ships the label has nothing
+    // to prove here.
+    if (Lang::has('nexo.app.account')) {
+        test()->markTestSkipped('This app ships nexo.app.account.');
+    }
+
+    config()->set('nexo-sso.enabled', true);
+    accountMenuSignIn();
+    Route::get('/nexo-guardian-account', fn () => 'account')->name('nexo-guardian.account');
+    Route::getRoutes()->refreshNameLookups();
+    config()->set('nexo.chrome.account_route', 'nexo-guardian.account');
+
+    expect(NexoChrome::appAccountUrl())->toBeNull();
+    expect(str_contains(Blade::render('<x-nexo-account-menu />'), 'data-nexo-account-app'))->toBeFalse('An own account page without its label must not render.');
+});
+
 it('renders nothing for a guest', function () {
     expect(trim(Blade::render('<x-nexo-account-menu />')))->toBe('');
 });

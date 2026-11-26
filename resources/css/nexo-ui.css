@@ -133,10 +133,13 @@
 .nexo-menu__item img, .nexo-menu__item svg { width: 24px; height: 24px; border-radius: 7px; flex: none; }
 .nexo-menu__item small { display: block; color: var(--nexo-text-muted); font-weight: 400; }
 .nexo-menu__sep { height: 1px; margin: 0.5rem 0.25rem; background: var(--nexo-border); }
-.nexo-menu__foot { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.5rem; font-size: 0.8rem; }
+/* The two links under the tools (the hub, the code): menu items too, so the
+   arrows reach them, and 44px tall like every other target (v2.2; they were 19px). */
+.nexo-menu__foot { display: flex; align-items: center; gap: 0.5rem; padding: 0 0.5rem; font-size: 0.8rem; }
 .nexo-menu__glyph { width: 16px; height: 16px; flex: none; color: var(--nexo-text-muted); }
-.nexo-menu__foot a { color: var(--nexo-link); text-decoration: none; }
+.nexo-menu__foot a { display: inline-flex; align-items: center; flex: 1; min-height: 44px; padding-inline: 0.375rem; border-radius: var(--nexo-radius-md); color: var(--nexo-link); text-decoration: none; }
 .nexo-menu__foot a:hover { color: var(--nexo-link-hover); text-decoration: underline; }
+.nexo-menu__foot a:focus-visible { outline: 2px solid var(--nexo-ring); outline-offset: -2px; }
 .nexo-badge-soon { font-size: 0.62rem; text-transform: uppercase; letter-spacing: .05em; padding: 1px 6px; border-radius: 999px; background: var(--nexo-bg-subtle); color: var(--nexo-text-muted); }
 
 /* The app-switcher opens edge to edge on phones (a 15rem panel anchored to a

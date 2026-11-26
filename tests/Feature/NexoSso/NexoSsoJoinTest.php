@@ -7,7 +7,9 @@
 // whose owners may use another email on Nexo ID. (AC-JOIN)
 
 use App\Models\User;
+use App\Services\NexoSso\NexoSsoApp;
 use App\Services\NexoSso\NexoSsoFlows;
+use App\Services\NexoSso\NexoSsoLinkConflictException;
 use App\Services\NexoSso\NexoSsoPendingLink;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase;
@@ -118,6 +120,21 @@ test('AC-JOIN-2: a Nexo ID with ANOTHER email is never joined on the spot: the p
     expect((string) $response->headers->get('Cache-Control'))->toContain('no-store');
 });
 
+test('AC-JOIN-2: «Link this account?» and the «already linked» refusal name the tool as the header does (the brand, not APP_NAME)', function (): void {
+    $brand = nexoSsoDistinctBrand();
+    nexoSsoOtherEmailProvider();
+    $user = nexoSsoPasswordUser();
+
+    nexoSsoLinkCallback($this, $user)->assertRedirect(route('nexo-sso.link.confirm'));
+    $screen = $this->get(route('nexo-sso.link.confirm'))->assertSee(__('Your :app account', ['app' => $brand]));
+    $refusal = (new NexoSsoLinkConflictException(NexoSsoLinkConflictException::SUB_TAKEN))->userMessage();
+
+    expect($refusal)->toBe(__('That Nexo ID account is already linked to another :app account.', ['app' => $brand]));
+    if ($brand !== 'NexoPlainAppName') {
+        $screen->assertDontSee('NexoPlainAppName');
+    }
+});
+
 test('AC-JOIN-2: confirmed, the account is joined to the Nexo ID with ANOTHER email and the session becomes a Nexo ID one', function (): void {
     nexoSsoOtherEmailProvider();
     $user = nexoSsoPasswordUser();
@@ -186,7 +203,7 @@ test('AC-JOIN-3: a Nexo ID already joined to ANOTHER account is refused and the 
     $this->assertAuthenticatedAs($user);
     $this->get('/nexo-sso-tests/panel')
         ->assertSee('data-nexo-sso-link-error', false)
-        ->assertSee(__('That Nexo ID account is already linked to another :app account.', ['app' => config('app.name')]));
+        ->assertSee(__('That Nexo ID account is already linked to another :app account.', ['app' => NexoSsoApp::name()]));
 });
 
 test('AC-JOIN-4: an account already joined to a DIFFERENT Nexo ID is refused (one account, one identity)', function (): void {
@@ -200,7 +217,7 @@ test('AC-JOIN-4: an account already joined to a DIFFERENT Nexo ID is refused (on
     expect($user->fresh()->nexo_id_sub)->toBe('old-sub')
         ->and(session('nexo_sso.sub'))->toBeNull();
     $this->assertAuthenticatedAs($user);
-    expect(session('nexo_sso.notice.message'))->toBe(__('This account is already linked to another Nexo ID account.'));
+    expect(session('nexo_sso.notice.message'))->toBe(nexoSsoAccountTakenMessage());
 });
 
 test('AC-JOIN-5: a link flow coming back to ANOTHER signed-in user is refused — nobody gets joined', function (): void {
@@ -407,7 +424,7 @@ test('AC-JOIN-CONFIRM-5: a Nexo ID joined to another account while the question 
 
     expect($user->fresh()->nexo_id_sub)->toBeNull()
         ->and(session('nexo_sso.sub'))->toBeNull()
-        ->and(session('nexo_sso.notice.message'))->toBe(__('That Nexo ID account is already linked to another :app account.', ['app' => config('app.name')]));
+        ->and(session('nexo_sso.notice.message'))->toBe(__('That Nexo ID account is already linked to another :app account.', ['app' => NexoSsoApp::name()]));
 });
 
 test('AC-JOIN-CONFIRM-6: it doesn\'t exist in sso mode, nor for a guest', function (): void {

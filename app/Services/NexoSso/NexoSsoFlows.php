@@ -23,7 +23,11 @@ use Illuminate\Support\Str;
  *     tab restores write the session in parallel and the last writer wins;
  *     the cache entry survives that, and only this user can redeem it.
  *
- * Flows are single use and expire after 10 minutes.
+ * Flows are single use and expire after 10 minutes — except a «Crear
+ * cuenta» (enter?signup=1, v2.2), which waits SIGNUP_TTL: between the
+ * authorize and its answer the person fills Nexo ID's sign-up and opens the
+ * verification mail, and a flow gone by then greets a brand-new account with
+ * «the sign-in request could not be validated».
  */
 final class NexoSsoFlows
 {
@@ -42,12 +46,17 @@ final class NexoSsoFlows
 
     private const TTL = 600;
 
+    /** How long a «Crear cuenta» flow waits for its answer (sign-up + email verification). */
+    public const SIGNUP_TTL = 3600;
+
     /**
      * Mints state + PKCE + nonce for a new authorize request and stores the flow.
+     * `$ttl` (seconds) is how long it can be answered: 10 minutes, or up to
+     * SIGNUP_TTL for a sign-up.
      *
      * @return array{state: string, challenge: string, nonce: string}
      */
-    public function start(Request $request, string $mode, ?string $return = null): array
+    public function start(Request $request, string $mode, ?string $return = null, int $ttl = self::TTL): array
     {
         $state = Str::random(40);
         $verifier = Str::random(64); // 43–128 chars per RFC 7636
@@ -59,6 +68,7 @@ final class NexoSsoFlows
             'nonce' => $nonce,
             'return' => $return,
             'created_at' => now()->getTimestamp(),
+            'ttl' => max(1, min($ttl, self::SIGNUP_TTL)),
         ];
 
         if ($mode === self::RECHECK || $mode === self::LINK) {
@@ -66,7 +76,7 @@ final class NexoSsoFlows
         }
 
         if ($mode === self::RECHECK) {
-            Cache::put($this->cacheKey($state), $flow, self::TTL);
+            Cache::put($this->cacheKey($state), $flow, $flow['ttl']);
         } else {
             $flows = $this->sessionFlows($request);
             $flows[$this->hash($state)] = $flow;
@@ -131,7 +141,9 @@ final class NexoSsoFlows
     /** @param  array<string, mixed>  $flow */
     private function expired(array $flow): bool
     {
-        return now()->getTimestamp() - (int) ($flow['created_at'] ?? 0) > self::TTL;
+        $ttl = is_int($flow['ttl'] ?? null) ? $flow['ttl'] : self::TTL; // flows stored before v2.2 have none
+
+        return now()->getTimestamp() - (int) ($flow['created_at'] ?? 0) > $ttl;
     }
 
     /**

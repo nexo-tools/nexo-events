@@ -25,7 +25,9 @@
          Nexo ID a password sign-in will offer to join. Renders nothing otherwise. --}}
     <x-nexo-sso.link-notice />
 
-    <x-nexo-sign-in-options>
+    {{-- password-open: after «Ya tengo una cuenta con otro email» (transition)
+         the person came to type a password, so the fold starts open. --}}
+    <x-nexo-sign-in-options :password-open="\App\Services\NexoSso\NexoSsoNewAccount::awaitsPasswordSignIn(request())">
         <form method="POST" action="{{ route('login') }}" class="space-y-4">
             @csrf
 

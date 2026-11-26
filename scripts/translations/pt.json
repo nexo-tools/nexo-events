@@ -102,7 +102,6 @@
     "If you cannot find your ticket, ask for it again from the event page:": "Se você não achar seu ingresso, peça de novo na página do evento:",
     "If you did not ask for this, you can ignore this email — your password stays the same.": "Se você não pediu isso, pode ignorar este e-mail — a sua senha continua a mesma.",
     "If you did not create an account, you can ignore this email.": "Se você não criou uma conta, pode ignorar este e-mail.",
-    "If you did not do this, change your password and write to us: your email address was verified by the identity provider, so someone with access to it linked the account.": "Se não foi você, troque sua senha e nos escreva: o provedor de identidade verificou seu e-mail, então alguém com acesso a ele vinculou a conta.",
     "If you did not expect this, remove the access from the event and revoke that system's token under Integrations.": "Se você não esperava isto, remova o acesso pelo evento e revogue o token desse sistema em Integrações.",
     "If you do not have an account yet, create it with this same email address: the invitation only works for it.": "Se você ainda não tem conta, crie com este mesmo e-mail: o convite só funciona para ele.",
     "If you paid for this event outside the platform, contact the organizer directly: they collect and refund, not us.": "Se você pagou por este evento fora da plataforma, fale direto com quem organiza: a cobrança e o reembolso são deles, não nossos.",
@@ -312,7 +311,6 @@
     "If you already have one, sign in with its email and password within 15 minutes: then you can link it to this Nexo ID.": "Se você já tem uma, entre com o e-mail e a senha dela nos próximos 15 minutos: depois você poderá vinculá-la a este Nexo ID.",
     "If you did not do this, change your password and write to us: someone who knew your password signed in here and linked the account.": "Se não foi você, troque sua senha e nos escreva: alguém que sabia sua senha entrou aqui e vinculou a conta.",
     "If you did not do this, write to us: someone who knew your password signed in here and linked the account.": "Se não foi você, escreva para nós: alguém que conhecia sua senha entrou aqui e vinculou a conta.",
-    "If you did not do this, write to us: Nexo ID verified your email address, so someone with access to it linked the account.": "Se não foi você, escreva para nós: o Nexo ID verificou seu e-mail, então alguém com acesso a ele vinculou a conta.",
     "Link my account": "Vincular minha conta",
     "Link this account to Nexo ID?": "Vincular esta conta ao Nexo ID?",
     "Nexo ID account": "Conta do Nexo ID",
@@ -321,7 +319,6 @@
     "Soon, sign-in will be only with Nexo ID.": "Em breve, o acesso será só com o Nexo ID.",
     "That Nexo ID account is already linked to another :app account.": "Essa conta do Nexo ID já está vinculada a outra conta do :app.",
     "This account already signs in with Nexo ID.": "Esta conta já entra com o Nexo ID.",
-    "This account is already linked to another Nexo ID account.": "Esta conta já está vinculada a outra conta do Nexo ID.",
     "You can link this account to a Nexo ID with a different email.": "Você pode vincular esta conta a um Nexo ID com outro e-mail.",
     "You signed in to Nexo ID as :email, and no :app account uses that email yet.": "Você entrou no Nexo ID como :email e ainda não há uma conta do :app com esse e-mail.",
     "You signed out of all of Nexo": "Você saiu de todo o Nexo",
@@ -330,5 +327,9 @@
     "Your account was not linked. Please try again.": "Sua conta não foi vinculada. Tente novamente.",
     "Your Nexo ID session ended": "Sua sessão do Nexo ID terminou",
     "Your Nexo ID sign-in expired. Please try again.": "Seu login com o Nexo ID expirou. Tente novamente.",
-    "Your session ended in Nexo ID and in every Nexo tool on this device.": "Sua sessão foi encerrada no Nexo ID e em todas as ferramentas do Nexo neste dispositivo."
+    "Your session ended in Nexo ID and in every Nexo tool on this device.": "Sua sessão foi encerrada no Nexo ID e em todas as ferramentas do Nexo neste dispositivo.",
+    "If you did not do this, change your password and write to us: Nexo ID confirmed that this email address is yours, so someone with access to it linked the account.": "Se não foi você, troque sua senha e nos escreva: o Nexo ID confirmou que esse e-mail é seu, então alguém com acesso a ele vinculou a conta.",
+    "If you did not do this, write to us: Nexo ID confirmed that this email address is yours, so someone with access to it linked the account.": "Se não foi você, escreva para nós: o Nexo ID confirmou que esse e-mail é seu, então alguém com acesso a ele vinculou a conta.",
+    "This account is already linked to another Nexo ID account. Write to us at :email and we will sort it out.": "Esta conta já está vinculada a outra conta do Nexo ID. Escreva para :email e nós resolvemos.",
+    "This account is already linked to another Nexo ID account. Sign in with that Nexo ID account instead.": "Esta conta já está vinculada a outra conta do Nexo ID. Entre com essa conta do Nexo ID."
 }

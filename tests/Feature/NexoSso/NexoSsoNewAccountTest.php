@@ -10,6 +10,7 @@
 // sso mode, and in local mode, sign-up stays direct. (AC-NEWACCOUNT)
 
 use App\Models\User;
+use App\Services\NexoSso\NexoSsoApp;
 use App\Services\NexoSso\NexoSsoFlows;
 use App\Services\NexoSso\NexoSsoNewAccount;
 use App\Services\NexoSso\NexoSsoPendingLink;
@@ -107,7 +108,7 @@ test('AC-NEWACCOUNT-1: the screen asks «First time in <App>?» with both choice
     $response->assertOk()
         ->assertHeader('X-Robots-Tag', 'noindex')
         ->assertSee('data-nexo-sso-new-account', false)
-        ->assertSee(__('First time in :app?', ['app' => config('app.name')]))
+        ->assertSee(__('First time in :app?', ['app' => NexoSsoApp::name()]))
         ->assertSee('nexo-person@example.com')
         ->assertSee('name="choice" value="create"', false)
         ->assertSee('name="choice" value="existing"', false)
@@ -196,6 +197,55 @@ test('AC-NEWACCOUNT-3: while it waits, the login card says what signing in will 
         ->assertSee('nexo-person@example.com');
 });
 
+test('AC-NEWACCOUNT-3: «First time?» and the login notice name the tool as the header does (the chrome brand, not APP_NAME)', function (): void {
+    $brand = nexoSsoDistinctBrand();
+    nexoSsoFirstTime($this);
+
+    $screen = $this->get(route('nexo-sso.new-account'))->assertSee(__('First time in :app?', ['app' => $brand]));
+    $this->post(route('nexo-sso.new-account.store'), ['choice' => 'existing']);
+    $card = $this->get('/nexo-sso-tests/login-card')->assertSee($brand);
+
+    if ($brand !== 'NexoPlainAppName') {
+        $screen->assertDontSee('NexoPlainAppName');
+        $card->assertDontSee('NexoPlainAppName');
+    }
+});
+
+test('AC-NEWACCOUNT-3: awaitsPasswordSignIn() — what the login passes to open the password form — is true only while «I already have an account» waits', function (): void {
+    Route::middleware('web')->get('/nexo-sso-tests/awaits', fn (Request $request) => response()->json([
+        'awaits' => NexoSsoNewAccount::awaitsPasswordSignIn($request),
+    ]));
+    $awaits = fn (): bool => $this->get('/nexo-sso-tests/awaits')->json('awaits');
+
+    expect($awaits())->toBeFalse(); // nothing waiting
+
+    nexoSsoFirstTime($this);
+    expect($awaits())->toBeFalse(); // on «First time?», not chosen yet
+
+    $this->post(route('nexo-sso.new-account.store'), ['choice' => 'existing']);
+    expect($awaits())->toBeTrue();
+
+    config(['nexo-sso.auth_mode' => 'sso']); // the transition ended meanwhile: no password form to open
+    expect($awaits())->toBeFalse();
+    config(['nexo-sso.auth_mode' => 'transition']);
+    expect($awaits())->toBeTrue();
+
+    config(['nexo-sso.enabled' => false]);
+    expect($awaits())->toBeFalse();
+    config(['nexo-sso.enabled' => true]);
+
+    $this->travel(16)->minutes(); // the window closed
+    expect($awaits())->toBeFalse();
+});
+
+test('AC-NEWACCOUNT-3: awaitsPasswordSignIn() is false after «Create my account»', function (): void {
+    nexoSsoFirstTime($this);
+    $this->post(route('nexo-sso.new-account.store'), ['choice' => 'create']);
+
+    expect(NexoSsoNewAccount::awaitsPasswordSignIn(request()))->toBeFalse()
+        ->and(session(NexoSsoNewAccount::SESSION_KEY))->toBeNull();
+});
+
 test('AC-NEWACCOUNT-4: after 15 minutes the window is closed: the password sign-in joins nothing', function (): void {
     $local = nexoSsoLocalAccount();
     nexoSsoFirstTime($this);
@@ -280,7 +330,7 @@ test('AC-NEWACCOUNT-6: an account already joined to another Nexo ID keeps it', f
 
     expect($local->fresh()->nexo_id_sub)->toBe('old-sub')
         ->and(session('nexo_sso.sub'))->toBeNull()
-        ->and(session('nexo_sso.notice.message'))->toBe(__('This account is already linked to another Nexo ID account.'));
+        ->and(session('nexo_sso.notice.message'))->toBe(nexoSsoAccountTakenMessage());
     nexoSsoNoJoinOffered();
 });
 

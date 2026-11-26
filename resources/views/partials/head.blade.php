@@ -7,10 +7,13 @@
      the layout; private pages pass $noindex. --}}
 {{-- Tab title (STANDARD «Títulos», PageTitleTest): «<Página> — Nexo Events»,
      and the landing passes its own full «Nexo Events — <tagline>» as
-     $fullTitle. The brand is the registry name, never APP_NAME. --}}
+     $fullTitle. The brand is the registry name, never APP_NAME — og:site_name
+     and the JSON-LD too (the screens that name the tool are checked against
+     APP_NAME by the sso-client's AC-NEWACCOUNT-3 / AC-JOIN-2). --}}
 <x-nexo-seo
     :title="$fullTitle ?? \App\Support\NexoChrome::pageTitle($title ?? null)"
     :description="$description ?? __('Create free events, take registrations by email and validate tickets with a QR code at the door.')"
+    :site-name="\App\Support\NexoChrome::brand()"
     :image="$seoImage ?? '/og-image.png'"
     :type="$seoType ?? 'website'"
     :noindex="$noindex ?? false"
