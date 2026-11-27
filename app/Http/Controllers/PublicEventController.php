@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\EventStatus;
+use App\Enums\TicketStatus;
 use App\Http\Requests\RegisterAttendeeRequest;
 use App\Http\Requests\ResendTicketRequest;
 use App\Mail\TicketIssued;
@@ -82,7 +83,11 @@ class PublicEventController extends Controller
 
         return match ($outcome['result']) {
             EventRegistrar::OK => redirect()->route('ticket.show', ['token' => $outcome['token']]),
-            EventRegistrar::DUPLICATE => back()->with('status', __('You are already registered with that email. Ask us to resend your ticket if you cannot find it.')),
+            // A released spot (ADR-011 §6) is not "already registered": the resend would send nothing. Same words
+            // as that ticket's page; still no mail (Alvaro, 2026-11-27).
+            EventRegistrar::DUPLICATE => $outcome['ticket']?->status === TicketStatus::Revoked
+                ? back()->with('status', __('The organizer released the spot of this email. If you think this is a mistake, talk to whoever is organizing the event.'))
+                : back()->with('status', __('You are already registered with that email. Ask us to resend your ticket if you cannot find it.')),
             EventRegistrar::SOLD_OUT => back()->withErrors(['email' => __('This event is sold out.')]),
             default => back()->withErrors(['email' => __('Registration for this event is closed.')]),
         };

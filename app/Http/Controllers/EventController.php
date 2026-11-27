@@ -97,6 +97,7 @@ class EventController extends Controller
     public function registrations(Request $request, Event $event): View
     {
         $this->managed($request, $event);
+        $active = ! in_array($event->status, [EventStatus::Cancelled, EventStatus::Killed], true);
 
         return view('app.events.registrations', [
             'event' => $event,
@@ -104,10 +105,11 @@ class EventController extends Controller
             // owner, who is the one answerable for them (ADR-011 §2).
             'showEmails' => $event->organizer_id === $request->user()->id,
             'tickets' => $event->tickets()->with('checkin')->latest()->get(),
-            // «Devolver el lugar» is offered only while there is room; the
-            // restore itself counts again under a lock (AC-COLLAB-19).
-            'canRestore' => ! in_array($event->status, [EventStatus::Cancelled, EventStatus::Killed], true)
-                && ($event->capacity === null || $event->issuedTicketsCount() < $event->capacity),
+            'guests' => $event->guestTicketsCount(),
+            // «Devolver el lugar» is offered only while there is room (a guest
+            // needs none); the restore itself counts again under a lock (AC-COLLAB-19).
+            'eventActive' => $active,
+            'canRestore' => $active && ($event->capacity === null || $event->takenSpotsCount() < $event->capacity),
         ]);
     }
 

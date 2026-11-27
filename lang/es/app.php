@@ -5,6 +5,7 @@
 // lang-file key), and counts that need real plural forms.
 return [
     'or' => 'o',
+    'guests' => ':count invitado|:count invitados',
     'tickets' => ':count entrada|:count entradas',
     'views' => ':count visita|:count visitas',
 

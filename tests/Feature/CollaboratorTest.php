@@ -419,6 +419,10 @@ it('AC-COLLAB-19: a ticket that was not released stays as it is, and a cancelled
     $this->actingAs($event->organizer)->post(route('tickets.restore', $released['ticket']))
         ->assertRedirect()->assertSessionHasErrors('restore');
     expect($released['ticket']->fresh()->status)->toBe(TicketStatus::Revoked);
+    // The list neither offers it nor gives a wrong reason («Sin cupo») on a cancelled event.
+    $this->actingAs($event->organizer)->get(route('events.registrations', $event))
+        ->assertDontSee(route('tickets.restore', $released['ticket']), false)
+        ->assertDontSee('data-no-room', false);
 });
 
 it('AC-COLLAB-20: a released ticket reads «Lugar liberado» in the list, and the door says so too', function (): void {
@@ -438,4 +442,24 @@ it('AC-COLLAB-20: a released ticket reads «Lugar liberado» in the list, and th
         ->assertOk()->assertJsonPath('result', 'revoked')->assertJsonPath('name', 'Ana');
     $this->actingAs($event->organizer)->withSession(['checkin' => 'revoked'])->get(route('events.registrations', $event))
         ->assertSee('✗ Lugar liberado: ya no sirve para entrar', false);
+});
+
+it('AC-COLLAB-21: a released email that registers again is told its spot was released — not «already registered», and no mail', function (): void {
+    $event = Event::factory()->create();
+    $ana = app(EventRegistrar::class)->register($event, 'Ana', 'ana@example.com');
+    $beto = app(EventRegistrar::class)->register($event, 'Beto', 'beto@example.com');
+    $this->actingAs($event->organizer)->post(route('tickets.release', $ana['ticket']))->assertRedirect();
+    auth()->logout();
+    Mail::fake();
+
+    $this->post(route('public.register', $event), ['name' => 'Ana', 'email' => 'ana@example.com'])
+        ->assertRedirect()
+        ->assertSessionHas('status', 'La persona organizadora liberó el lugar de este email. Si crees que es un error, habla con quien organiza el evento.');
+    expect($ana['ticket']->fresh()->status)->toBe(TicketStatus::Revoked);
+
+    // A ticket that was not released keeps the usual answer.
+    $this->post(route('public.register', $event), ['name' => 'Beto', 'email' => 'beto@example.com'])
+        ->assertSessionHas('status', 'Ya estás registrado con ese email. Pide que te reenviemos tu entrada si no la encuentras.');
+    expect($beto['ticket']->fresh()->status)->toBe(TicketStatus::Valid);
+    Mail::assertNothingQueued();
 });

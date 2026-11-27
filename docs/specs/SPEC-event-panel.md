@@ -79,7 +79,7 @@ SPEC with the prefix `AC-PANEL-`).
   screen of a draft offers "Delete draft" and no "Cancel event", and a cancelled or blocked
   event offers neither.
 - **AC-PANEL-6** (10.21) — The edit form and `PATCH /api/v1/events/{id}` refuse a capacity
-  below the tickets already issued (revoked ones do not count) with the summary's message
+  below the tickets already issued (revoked ones and, since AC-PANEL-11, guests do not count) with the summary's message
   and change nothing; the same value as stored is accepted; a body without `capacity`
   leaves it alone; a new event has no floor.
 - **AC-PANEL-7** (10.20) — No "Aforo" in `lang/` or `resources/views`; the Spanish capacity
@@ -95,6 +95,20 @@ SPEC with the prefix `AC-PANEL-`).
   page's labels in three languages, plus a browser pass).
 - **AC-PANEL-10** (10.19) — No view carries an inline event handler (`on…=`); every form that
   deletes, cancels, releases or revokes declares `data-confirm`.
+- **AC-PANEL-11** (10.35, Alvaro's call on 2026-11-27) — «Invitado»: people register as usual, and the
+  owner or a collaborator marks a ticket as a guest from the registrations list (`POST
+  /app/tickets/{ticket}/invitado`, `guest` = `1` or `0`, `throttle:60,1`). A guest takes no room
+  of the capacity — sold out (the public page and the API's `is_sold_out`), registration, the
+  capacity floor (whose message now says «lugares ya ocupados (los invitados no cuentan)»), the
+  summary's «N / cupo» and «Devolver el lugar» all count through `Ticket::scopeCountsAgainstCapacity`
+  (`Event::takenSpotsCount`), while the API's `issued_tickets_count` still counts every ticket not
+  released, guests included (`Event::issuedTicketsCount`) — so marking one gives the spot back to
+  the public; counting it again needs room, under the event-row
+  lock registrations use; a released spot is never a guest one, and a released guest comes back
+  even when the event is full. The list shows «Invitado» in the row (not on a released one) and «(N invitados)» next to
+  the ticket count, the summary «+ N invitados» under «Registrados»; the door scans a guest like
+  anyone else; nobody is mailed; registering can never make a guest (`is_guest` is not mass
+  assignable).
 
 ## Not proven by this suite
 

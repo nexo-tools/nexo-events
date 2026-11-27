@@ -22,8 +22,12 @@
 
     <div class="mb-6 grid grid-cols-2 gap-3" data-counters>
         <div class="rounded-lg border border-line p-3 text-center">
-            <p class="text-3xl font-bold" data-registered>{{ $issued }}@if ($event->capacity !== null)<span class="text-lg font-medium text-muted"> / {{ $event->capacity }}</span>@endif</p>
+            <p class="text-3xl font-bold" data-registered>{{ $taken }}@if ($event->capacity !== null)<span class="text-lg font-medium text-muted"> / {{ $event->capacity }}</span>@endif</p>
             <p class="text-xs text-muted">{{ __('Registered') }}</p>
+            {{-- Guests take no room of the capacity, so they are counted apart (AC-PANEL-11). --}}
+            @if ($guests > 0)
+                <p class="text-xs font-medium text-muted" data-guests>+ {{ trans_choice('app.guests', $guests) }}</p>
+            @endif
         </div>
         <div class="rounded-lg border border-line p-3 text-center">
             <p class="text-3xl font-bold" data-checked-in>{{ $checkedIn }}</p>
@@ -57,7 +61,7 @@
     <form method="POST" action="{{ route('events.capacity', $event) }}" class="mb-6 space-y-3">
         @csrf
         <x-field :label="__('Capacity')" name="capacity" type="number" min="1" :value="$event->capacity"
-                 :hint="__('Empty means no limit. It cannot be lower than the tickets already issued.')" />
+                 :hint="__('Empty means no limit. It cannot be lower than the spots already taken (guests do not count).')" />
         <x-button variant="secondary" :block="false">{{ __('Save capacity') }}</x-button>
     </form>
 

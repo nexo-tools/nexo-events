@@ -113,10 +113,30 @@ class Event extends Model
         return $this->hasMany(Ticket::class);
     }
 
-    /** Tickets that count against capacity (everything not revoked). */
+    /**
+     * Tickets issued and not released, guests included: the people the event's
+     * mails go to, and the API's issued_tickets_count (La Herrería reads it as
+     * «anotados»). It can exceed the capacity by the number of guests.
+     */
     public function issuedTicketsCount(): int
     {
         return $this->tickets()->where('status', '!=', TicketStatus::Revoked->value)->count();
+    }
+
+    /**
+     * The spots of the capacity already taken: tickets neither released nor guests
+     * (Ticket::scopeCountsAgainstCapacity). Sold out, the capacity floor and the
+     * summary's «N / capacity» use this one (AC-PANEL-11).
+     */
+    public function takenSpotsCount(): int
+    {
+        return $this->tickets()->countsAgainstCapacity()->count();
+    }
+
+    /** Guests holding a ticket that was not released: outside the capacity, shown next to it (AC-PANEL-11). */
+    public function guestTicketsCount(): int
+    {
+        return $this->tickets()->where('status', '!=', TicketStatus::Revoked->value)->where('is_guest', true)->count();
     }
 
     /** People who actually came in — the door's number, next to issuedTicketsCount(). */
@@ -127,7 +147,7 @@ class Event extends Model
 
     public function isSoldOut(): bool
     {
-        return $this->capacity !== null && $this->issuedTicketsCount() >= $this->capacity;
+        return $this->capacity !== null && $this->takenSpotsCount() >= $this->capacity;
     }
 
     /**

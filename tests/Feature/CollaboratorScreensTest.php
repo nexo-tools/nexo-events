@@ -124,7 +124,7 @@ it('AC-COLLAB-13: a collaborator changes the capacity but never under the ticket
     $this->actingAs($band)->from(route('events.manage', $event))
         ->post(route('events.capacity', $event), ['capacity' => 1])
         ->assertRedirect(route('events.manage', $event))
-        ->assertSessionHasErrors(['capacity' => __('The capacity cannot be lower than the :count tickets already issued.', ['count' => 2])]);
+        ->assertSessionHasErrors(['capacity' => __('The capacity cannot be lower than the :count spots already taken (guests do not count).', ['count' => 2])]);
     expect($event->fresh()->capacity)->toBe(10);
 
     $this->actingAs($band)->post(route('events.capacity', $event), ['capacity' => 2])->assertSessionHasNoErrors();

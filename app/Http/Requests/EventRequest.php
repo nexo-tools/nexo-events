@@ -65,7 +65,7 @@ class EventRequest extends FormRequest
     }
 
     /**
-     * Not below the tickets already issued (revoked ones do not count) — only
+     * Not below the spots already taken (released tickets and guests do not count) — only
      * when editing an existing event, and only when the value changes: the
      * edit form always posts the stored capacity back, and an event whose
      * older data sits under the floor must still be editable.
@@ -79,10 +79,10 @@ class EventRequest extends FormRequest
                 return;
             }
 
-            $issued = $event->issuedTicketsCount();
+            $issued = $event->takenSpotsCount();
 
             if ((int) $value < $issued) {
-                $fail(__('The capacity cannot be lower than the :count tickets already issued.', ['count' => $issued]));
+                $fail(__('The capacity cannot be lower than the :count spots already taken (guests do not count).', ['count' => $issued]));
             }
         };
     }

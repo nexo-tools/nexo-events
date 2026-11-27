@@ -31,8 +31,9 @@ class TicketRestoreController extends Controller
                 return 'inactive';
             }
 
-            $issued = $event->tickets()->where('status', '!=', TicketStatus::Revoked->value)->count();
-            if ($event->capacity !== null && $issued >= $event->capacity) {
+            // A guest takes no room (AC-PANEL-11), so it comes back even when the event is full.
+            $isGuest = (bool) Ticket::query()->whereKey($ticket->getKey())->value('is_guest');
+            if (! $isGuest && $event->capacity !== null && $event->tickets()->countsAgainstCapacity()->count() >= $event->capacity) {
                 return 'full';
             }
 

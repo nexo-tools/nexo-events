@@ -53,10 +53,31 @@ Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./ven
 
 ## Accumulated context
 
+- **2026-11-27** — **«Invitado» and the released-email message** (10.35; Alvaro's call; SPEC-event-panel
+  AC-PANEL-11, SPEC-event-collaborators AC-COLLAB-21). People register as usual and the owner or a
+  collaborator marks a ticket as a guest from the list: `POST /app/tickets/{ticket}/invitado`
+  (`TicketGuestController`, `guest` 0|1 read with `boolean()`, `throttle:60,1`) sets `tickets.is_guest`
+  (additive migration `2026_11_27_000001`, default false; **not fillable**, so registering can never make a
+  guest). A guest takes no room: **`Ticket::scopeCountsAgainstCapacity`** (not released, not guest) is the one
+  capacity count — `Event::takenSpotsCount()` for sold out, registration (`EventRegistrar`), the capacity floor
+  (`EventRequest`, `EventManagementController`; its message now says «lugares ya ocupados (los invitados no
+  cuentan)»), the summary's «N / cupo» and restore — never a raw `status != revoked` count. Counting a guest
+  again needs room under the event-row lock; a released ticket cannot be marked; a released guest comes back
+  even when the event is full. **`Event::issuedTicketsCount()` keeps counting guests** (not released): the
+  API's `issued_tickets_count`, which La Herrería shows as «anotados» and uses for its cancel text, and the
+  people cancellation and reminder mails reach. The list shows «Invitado» (never on a released row) and «(N
+  invitados)», the summary «+ N invitados»; the door scans a guest like anyone else; nobody is mailed. A
+  released email that registers again now reads «La persona organizadora liberó el lugar de este email…»
+  instead of «ya estás registrado… pide el reenvío» (which sent nothing). Adversarial review (3 lenses,
+  each finding verified) before the deploy: kept the API meaning for La Herrería, hid the guest badge on
+  released rows, no wrong «Sin cupo» on a cancelled event, `boolean()` for JSON 0/1. Known and not fixed
+  here: the capacity floor is checked outside the event lock (pre-existing; BACKLOG in alvaro).
+
 - **2026-11-27** — **«Devolver el lugar»** (Alvaro's call; ADR-011 §6 amendment, SPEC-event-collaborators
   AC-COLLAB-19/20). Owner and collaborators undo a release from the registrations list: `POST
   /app/tickets/{ticket}/devolver` (`TicketRestoreController`, `throttle:60,1`) sets the ticket back to `valid`
-  — the same QR gets in again — only while there is room, counted under the event-row lock registrations use;
+  — the same QR gets in again — only while there is room (a released guest needs none), counted under the
+  event-row lock registrations use;
   a cancelled event gives nothing back; a ticket that was not released is left alone; nothing is mailed
   (releasing mails nothing either). A released ticket keeps its row with its own status, «Lugar liberado»
   (`TicketStatus::Revoked` label), and «Devolver el lugar» or «Sin cupo para devolverlo»; the door answers

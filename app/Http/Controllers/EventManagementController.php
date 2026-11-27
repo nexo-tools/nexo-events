@@ -27,7 +27,8 @@ class EventManagementController extends Controller
 
         return view('app.events.manage', [
             'event' => $event,
-            'issued' => $event->issuedTicketsCount(),
+            'taken' => $event->takenSpotsCount(),
+            'guests' => $event->guestTicketsCount(),
             'checkedIn' => $event->checkedInCount(),
             'isOwner' => $isOwner,
             // The collaborator list is the owner's (ADR-011): a collaborator's
@@ -40,7 +41,7 @@ class EventManagementController extends Controller
     {
         $this->managed($request, $event);
 
-        $issued = $event->issuedTicketsCount();
+        $issued = $event->takenSpotsCount();
 
         $validated = $request->validate([
             'capacity' => [
@@ -49,7 +50,7 @@ class EventManagementController extends Controller
                 // anybody's ticket — it would only make the counters lie.
                 function (string $attribute, mixed $value, \Closure $fail) use ($issued): void {
                     if ($value !== null && (int) $value < $issued) {
-                        $fail(__('The capacity cannot be lower than the :count tickets already issued.', ['count' => $issued]));
+                        $fail(__('The capacity cannot be lower than the :count spots already taken (guests do not count).', ['count' => $issued]));
                     }
                 },
             ],

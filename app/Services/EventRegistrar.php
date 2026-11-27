@@ -50,7 +50,7 @@ class EventRegistrar
                 return ['result' => self::DUPLICATE, 'ticket' => $existing, 'token' => null];
             }
 
-            $issued = $locked->tickets()->where('status', '!=', TicketStatus::Revoked->value)->count();
+            $issued = $locked->tickets()->countsAgainstCapacity()->count(); // guests and released spots take no room
             if ($locked->capacity !== null && $issued >= $locked->capacity) {
                 return ['result' => self::SOLD_OUT, 'ticket' => null, 'token' => null];
             }

@@ -98,12 +98,13 @@ showing the QR (task 10.12, SPEC-ticket-info AC-TICKET-8).
 
 **Giving a spot back** (2026-11-27, Alvaro's call): `POST /app/tickets/{ticket}/devolver` undoes
 a release — the ticket goes back to `valid` and the same QR gets in again — only while the event
-has room: the count runs under the same event-row lock as a registration, so a restore and a
+has room (a released guest needs none, SPEC-event-panel AC-PANEL-11): the count runs under the same event-row lock as a registration, so a restore and a
 last-spot sign-up cannot both win; a cancelled event gives nothing back; a ticket that was not
 released is left as it is. Nothing is mailed, either way. The list keeps a released ticket with
 its own status, «Lugar liberado», and offers «Devolver el lugar» while there is room («Sin cupo
 para devolverlo» otherwise). At the door a released QR answers «✗ Lugar liberado: ya no sirve
-para entrar» plus the name, instead of a generic «revoked».
+para entrar» plus the name, instead of a generic «revoked». A released email that registers again
+is told its spot was released, instead of «ya estás registrado» (AC-COLLAB-21).
 
 ### Who sees what
 
@@ -185,12 +186,17 @@ landed with 10.9, AC-COLLAB-11..16 with 10.10.
 - **AC-COLLAB-18** — Releasing a spot sets the ticket to `revoked`, frees capacity,
   refuses a checked-in ticket, and the released QR answers `revoked` at the scanner.
 - **AC-COLLAB-19** — Giving a released spot back (owner or collaborator) sets the ticket to
-  `valid` and its QR gets in again, with no mail; with no room left it is refused and the list
-  says «Sin cupo para devolverlo» instead of offering it; an event without capacity always has
+  `valid` and its QR gets in again, with no mail; with no room left it is refused (a released
+  guest needs none) and the list says «Sin cupo para devolverlo» instead of offering it — on a
+  cancelled event it offers nothing and gives no reason; an event without capacity always has
   room; a cancelled event gives nothing back; a ticket that was not released is left alone.
 - **AC-COLLAB-20** — A released ticket reads «Lugar liberado» in the registrations list, and the
   door (camera scanner and manual check-in) says «✗ Lugar liberado: ya no sirve para entrar»;
   the scanner answer keeps the attendee's name.
+- **AC-COLLAB-21** — A released email that registers again is told «La persona organizadora liberó
+  el lugar de este email…» (the words of its ticket page), not «Ya estás registrado… pide que te
+  reenviemos tu entrada», which would send nothing; still no mail. A ticket that was not released
+  keeps the usual answer.
 
 ## Guardians
 

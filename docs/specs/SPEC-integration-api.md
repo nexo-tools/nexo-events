@@ -171,6 +171,13 @@ Since 10.21 (SPEC-event-panel AC-PANEL-6) a `PATCH` that changes `capacity` to l
 tickets already issued is a 422 on `capacity`, with the same message as the panel; sending
 the stored value again, or not sending `capacity` at all, is unaffected.
 
+**`issued_tickets_count`** counts every ticket issued and not released, guests included
+(SPEC-event-panel AC-PANEL-11, 2026-11-27): it is the people who hold a ticket and get the
+event's mails, and La Herrería reads it as «anotados» and as the people a cancellation tells.
+With guests it can exceed `capacity`. `is_sold_out` compares with `capacity` only the tickets
+that take a spot (guests take none), and `checked_in_count` counts every check-in, guests
+included. The key set does not change; telling guests apart would be a new key (BACKLOG).
+
 **Event payload** — one shape for every event-returning endpoint, frozen by AC-API-6c:
 `{id, slug, title, description, status, starts_at, venue, capacity, issued_tickets_count,
 is_sold_out, public_url}` in v1, plus `access_info`, `payment_info` and `checked_in_count`

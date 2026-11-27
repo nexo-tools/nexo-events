@@ -61,7 +61,8 @@ band by email from its own panel, and reuse the same band account next time.
 
 Owner and collaborators can undo a release: `POST /app/tickets/{ticket}/devolver` sets the
 ticket back to `valid` — the same token, so the QR the person already has gets in again — only
-while the event has room, counted under the event-row lock that registrations use. It is the
+while the event has room, counted under the event-row lock that registrations use (a released
+guest needs none: guests take no room, SPEC-event-panel AC-PANEL-11). It is the
 organizer's explicit act, so it does not contradict ADR-008 §4 (a resend never revives a revoked
 ticket; that still holds). Nothing is mailed, as releasing mails nothing. The list shows a
 released ticket as «Lugar liberado» with «Devolver el lugar», and the door names the reason

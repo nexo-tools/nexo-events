@@ -327,5 +327,15 @@ check-in endpoint, what the scanner sends and the Integration API are unchanged.
   Nexo ID», no «identity provider», password lines only in local mode, AC-SEC-5). The door's
   «Volver a entrar» stays on one line (`shrink-0 whitespace-nowrap`, nothing else of the
   scanner changed). symfony 8.1.12 in its own commit (composer audit green).
+- [x] 10.30 F3 usability pass: an unknown event's 404 speaks the visitor's language; the login
+  explains what Nexo ID is.
+- [x] 10.31 The «Tu cuenta quedó unida a Nexo ID» mail replies to support, not to the sending box.
+- [x] 10.32 The suite pins its language (`APP_LOCALE=es`); the Reply-To test checks two addresses.
+- [x] 10.33 `nexo-sso-client` v2.3: `enter` answers a guest with a page of its own, so Safari's
+  «atrás» after «Cerrar sesión» reaches Nexo ID's login (deployed 2026-11-27).
+- [x] 10.34 «Devolver el lugar» (ADR-011 §6 amendment, AC-COLLAB-19/20): a released spot comes
+  back from the list while there is room; the list and the door say «Lugar liberado».
+- [x] 10.35 «Invitado» (AC-PANEL-11): guests take no room of the capacity; and the released-email
+  message on registering again (AC-COLLAB-21).
 
 **Gate 10:** per integration — real cross-tool flow exercised, **standalone mode still green** (self-host story intact), owner sign-off.

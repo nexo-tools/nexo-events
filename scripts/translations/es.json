@@ -76,7 +76,6 @@
     "Edit": "Editar",
     "Email": "Correo electrónico",
     "Email of the person to invite": "Email de la persona a invitar",
-    "Empty means no limit. It cannot be lower than the tickets already issued.": "Vacío significa sin límite. No puede ser menor que las entradas ya emitidas.",
     "Enter your email and we'll send you a link to create a new password.": "Ingresa tu email y te enviaremos un enlace para crear una nueva contraseña.",
     "Entry": "Entrada",
     "Event": "Evento",
@@ -205,7 +204,6 @@
     "Terms": "Términos",
     "Thank you. We review reports and act when needed.": "Gracias. Revisamos los reportes y actuamos si corresponde.",
     "That person already checked in: their spot cannot be released.": "Esa persona ya entró: su lugar no se puede liberar.",
-    "The capacity cannot be lower than the :count tickets already issued.": "El cupo no puede ser menor que las :count entradas ya emitidas.",
     "The event was cancelled": "El evento se canceló",
     "The invitation is on its way. You can also share this link — it only works for the invited email, and it is not shown again.": "La invitación está en camino. También puedes compartir este enlace: solo sirve para el email invitado y no se vuelve a mostrar.",
     "The numbers": "Los datos",
@@ -339,5 +337,15 @@
     "Spot given back. That ticket gets in again.": "Lugar devuelto. Esa entrada vuelve a servir para entrar.",
     "There is no room left to give this spot back: raise the capacity or release another spot first.": "No queda cupo para devolver este lugar: sube el cupo o libera otro lugar antes.",
     "This event was cancelled: its spots cannot be given back.": "Este evento se canceló: sus lugares no se pueden devolver.",
-    "No room to give it back": "Sin cupo para devolverlo"
+    "No room to give it back": "Sin cupo para devolverlo",
+    "Guest": "Invitado",
+    "Mark as guest": "Marcar como invitado",
+    "Remove from guests": "Quitar de invitados",
+    ":name's ticket is now a guest one: it no longer counts against the capacity.": "La entrada de :name ahora es de invitado: ya no descuenta del cupo.",
+    ":name's ticket counts against the capacity again.": "La entrada de :name vuelve a descontar del cupo.",
+    "There is no room to count this ticket against the capacity again: raise the capacity first.": "No queda cupo para que esta entrada vuelva a descontar: sube el cupo antes.",
+    "A released spot cannot be a guest one.": "Un lugar liberado no puede ser de invitado.",
+    "The organizer released the spot of this email. If you think this is a mistake, talk to whoever is organizing the event.": "La persona organizadora liberó el lugar de este email. Si crees que es un error, habla con quien organiza el evento.",
+    "The capacity cannot be lower than the :count spots already taken (guests do not count).": "El cupo no puede ser menor que los :count lugares ya ocupados (los invitados no cuentan).",
+    "Empty means no limit. It cannot be lower than the spots already taken (guests do not count).": "Vacío significa sin límite. No puede ser menor que los lugares ya ocupados (los invitados no cuentan)."
 }

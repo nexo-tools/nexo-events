@@ -45,7 +45,7 @@ it('AC-PANEL-6: the edit form refuses a capacity below the tickets issued, with 
     $this->actingAs($event->organizer)->from(route('events.edit', $event))
         ->put(route('events.update', $event), floorForm($event, 2))
         ->assertRedirect(route('events.edit', $event))
-        ->assertSessionHasErrors(['capacity' => __('The capacity cannot be lower than the :count tickets already issued.', ['count' => 3])]);
+        ->assertSessionHasErrors(['capacity' => __('The capacity cannot be lower than the :count spots already taken (guests do not count).', ['count' => 3])]);
 
     expect($event->fresh()->capacity)->toBe(10);
 
@@ -93,7 +93,7 @@ it('AC-PANEL-6: the API applies the same floor on PATCH, and leaves the capacity
 
     $this->patchJson('/api/v1/events/'.$event->id, ['capacity' => 2], $headers)
         ->assertStatus(422)
-        ->assertJsonValidationErrors(['capacity' => __('The capacity cannot be lower than the :count tickets already issued.', ['count' => 3])]);
+        ->assertJsonValidationErrors(['capacity' => __('The capacity cannot be lower than the :count spots already taken (guests do not count).', ['count' => 3])]);
     expect($event->fresh()->capacity)->toBe(10);
 
     // What the first consumer sends after creation: content only, no capacity.
