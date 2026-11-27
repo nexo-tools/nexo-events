@@ -21,6 +21,11 @@ cd ~/nexoevents && docker compose up -d                      # this app
 docker compose exec laravel.test php artisan migrate
 ```
 
+The CI runs the suite on `.env.example` (`NEXO_API_ENABLED=false`, among others), not on this machine's `.env`.
+To reproduce it, give the suite a `.env.testing` copied from `.env.example` plus an `APP_KEY` (Laravel loads it
+instead of `.env` under `APP_ENV=testing`), run Pest, and delete it: on 2026-11-27 a test that needed the API passed
+here and failed in the CI.
+
 | What | Where |
 |---|---|
 | App | http://localhost:8103 (`APP_PORT`) |

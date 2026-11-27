@@ -131,6 +131,7 @@ it('AC-PANEL-11: the door scans a guest like anyone else, and registering can ne
 });
 
 it('AC-PANEL-11: guests do not count for the capacity floor or sold out; the API still counts them as issued', function (): void {
+    config(['nexo.api.enabled' => true]); // off on a fresh install (AC-API-1): the API part has to say so
     $event = Event::factory()->withCapacity(3)->create();
     guestRegister($event, 'Ana');
     guestRegister($event, 'Beto');
