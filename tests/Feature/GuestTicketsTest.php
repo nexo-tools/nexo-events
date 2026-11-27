@@ -18,6 +18,14 @@ beforeEach(function (): void {
     Mail::fake();
 });
 
+/** The HTML of one section of the registrations list (data-section="guests"|"general"), or ''. */
+function registrationsSection(string $html, string $section): string
+{
+    preg_match('#<(section|ul)[^>]*data-section="'.$section.'"[^>]*>(.*?)</\\1>#s', $html, $m);
+
+    return $m[0] ?? '';
+}
+
 /** Registers $name on $event and returns the outcome (ticket + token). */
 function guestRegister(Event $event, string $name): array
 {
@@ -40,11 +48,18 @@ it('AC-PANEL-11: marking a ticket as a guest gives its spot back to the public, 
         ->and(guestRegister($event, 'Beto')['result'])->toBe(EventRegistrar::OK)
         ->and($event->fresh()->isSoldOut())->toBeTrue();
 
+    // Two sections in one screen: «Invitados» on top with Ana, then «General» with Beto.
     $list = (string) $this->actingAs($event->organizer)->get(route('events.registrations', $event))->assertOk()->getContent();
-    expect($list)->toContain('data-ticket-guest>Invitado</span>')
-        ->and($list)->toContain('data-guests-count>(1 invitado)</span>')
-        ->and($list)->toContain('Quitar de invitados')
-        ->and($list)->toContain('Marcar como invitado');
+    $guests = registrationsSection($list, 'guests');
+    $general = registrationsSection($list, 'general');
+    expect(strpos($list, 'data-section="guests"'))->toBeLessThan(strpos($list, 'data-section="general"'))
+        ->and($guests)->toContain('Invitados <span class="font-normal text-muted">(1)</span>')
+        ->and($guests)->toContain('Ana')->and($guests)->not->toContain('Beto')
+        ->and($guests)->toContain('data-ticket-guest>Invitado</span>')
+        ->and($guests)->toContain('Quitar de invitados')
+        ->and($general)->toContain('General <span class="font-normal text-muted">(1)</span>')
+        ->and($general)->toContain('Beto')->and($general)->not->toContain('Ana')
+        ->and($general)->toContain('Marcar como invitado');
 
     $this->actingAs($event->organizer)->get(route('events.manage', $event))
         ->assertOk()
@@ -95,6 +110,9 @@ it('AC-PANEL-11: a released spot is never a guest one, and a released guest come
     $this->actingAs($event->organizer)->post(route('tickets.restore', $caro['ticket']))->assertSessionHasNoErrors();
     expect($caro['ticket']->fresh()->status)->toBe(TicketStatus::Valid)
         ->and($caro['ticket']->fresh()->is_guest)->toBeTrue();
+    // Given back, the guest goes up to «Invitados» again.
+    expect(registrationsSection((string) $this->actingAs($event->organizer)->get(route('events.registrations', $event))->getContent(), 'guests'))
+        ->toContain('Caro');
 });
 
 it('AC-PANEL-11: a collaborator marks guests too; a stranger cannot, and only 0 or 1 is accepted', function (): void {
@@ -126,6 +144,12 @@ it('AC-PANEL-11: the door scans a guest like anyone else, and registering can ne
         ->assertOk()->assertJsonPath('result', 'ok');
     expect($ana['ticket']->fresh()->is_guest)->toBeTrue();
 
+    // Once inside, a guest is still in «Invitados» — the moment the door looks at that list.
+    $list = (string) $this->actingAs($event->organizer)->get(route('events.registrations', $event))->getContent();
+    expect(registrationsSection($list, 'guests'))->toContain('Ana')->toContain(__('Checked in'))
+        // Everyone is a guest: no «General» heading over an empty list.
+        ->and($list)->not->toContain('id="general-heading"');
+
     $this->post(route('public.register', $event), ['name' => 'Beto', 'email' => 'beto@example.com', 'is_guest' => '1']);
     expect($event->tickets()->where('attendee_email', 'beto@example.com')->value('is_guest'))->toBeFalse();
 });
@@ -149,4 +173,22 @@ it('AC-PANEL-11: guests do not count for the capacity floor or sold out; the API
         ->assertJsonPath('capacity', 2)
         ->assertJsonPath('issued_tickets_count', 3)
         ->assertJsonPath('is_sold_out', true);
+});
+
+it('AC-PANEL-11: without guests the list is one plain list, as before; a released guest sits in «General»', function (): void {
+    $event = Event::factory()->create();
+    $ana = guestRegister($event, 'Ana');
+    guestRegister($event, 'Beto');
+
+    $plain = (string) $this->actingAs($event->organizer)->get(route('events.registrations', $event))->getContent();
+    expect($plain)->not->toContain('data-section="guests"')
+        ->and($plain)->not->toContain('id="general-heading"')
+        ->and(registrationsSection($plain, 'general'))->toContain('Ana')->toContain('Beto');
+
+    // Ana becomes a guest, then her spot is released: she is not a guest any more, so she goes back to «General».
+    $this->actingAs($event->organizer)->post(route('tickets.guest', $ana['ticket']), ['guest' => '1']);
+    $this->actingAs($event->organizer)->post(route('tickets.release', $ana['ticket']));
+    $list = (string) $this->actingAs($event->organizer)->get(route('events.registrations', $event))->getContent();
+    expect($list)->not->toContain('data-section="guests"')
+        ->and(registrationsSection($list, 'general'))->toContain('Ana')->toContain('Lugar liberado');
 });

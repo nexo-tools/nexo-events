@@ -347,5 +347,7 @@
     "A released spot cannot be a guest one.": "Un lugar liberado no puede ser de invitado.",
     "The organizer released the spot of this email. If you think this is a mistake, talk to whoever is organizing the event.": "La persona organizadora liberó el lugar de este email. Si crees que es un error, habla con quien organiza el evento.",
     "The capacity cannot be lower than the :count spots already taken (guests do not count).": "El cupo no puede ser menor que los :count lugares ya ocupados (los invitados no cuentan).",
-    "Empty means no limit. It cannot be lower than the spots already taken (guests do not count).": "Vacío significa sin límite. No puede ser menor que los lugares ya ocupados (los invitados no cuentan)."
+    "Empty means no limit. It cannot be lower than the spots already taken (guests do not count).": "Vacío significa sin límite. No puede ser menor que los lugares ya ocupados (los invitados no cuentan).",
+    "Guests": "Invitados",
+    "General": "General"
 }

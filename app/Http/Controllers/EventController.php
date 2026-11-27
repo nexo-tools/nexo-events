@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Enums\EventStatus;
+use App\Enums\TicketStatus;
 use App\Http\Requests\EventRequest;
 use App\Models\Event;
+use App\Models\Ticket;
 use App\Services\EventCreator;
 use App\Services\EventLifecycle;
 use Illuminate\Http\RedirectResponse;
@@ -98,14 +100,23 @@ class EventController extends Controller
     {
         $this->managed($request, $event);
         $active = ! in_array($event->status, [EventStatus::Cancelled, EventStatus::Killed], true);
+        $tickets = $event->tickets()->with('checkin')->latest()->get();
+
+        // Two sections in one screen (Alvaro, 2026-11-27): «Invitados» on top, then «General».
+        // A released ticket is never a guest one (AC-PANEL-11), so it stays in «General»,
+        // flag or not; given back, a guest goes up again.
+        [$guestTickets, $generalTickets] = $tickets->partition(
+            fn (Ticket $ticket): bool => $ticket->is_guest && $ticket->status !== TicketStatus::Revoked
+        );
 
         return view('app.events.registrations', [
             'event' => $event,
             // Collaborators see names and status; attendee emails stay with the
             // owner, who is the one answerable for them (ADR-011 §2).
             'showEmails' => $event->organizer_id === $request->user()->id,
-            'tickets' => $event->tickets()->with('checkin')->latest()->get(),
-            'guests' => $event->guestTicketsCount(),
+            'tickets' => $tickets,
+            'guestTickets' => $guestTickets->values(),
+            'generalTickets' => $generalTickets->values(),
             // «Devolver el lugar» is offered only while there is room (a guest
             // needs none); the restore itself counts again under a lock (AC-COLLAB-19).
             'eventActive' => $active,

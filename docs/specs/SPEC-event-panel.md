@@ -105,8 +105,12 @@ SPEC with the prefix `AC-PANEL-`).
   released, guests included (`Event::issuedTicketsCount`) — so marking one gives the spot back to
   the public; counting it again needs room, under the event-row
   lock registrations use; a released spot is never a guest one, and a released guest comes back
-  even when the event is full. The list shows «Invitado» in the row (not on a released one) and «(N invitados)» next to
-  the ticket count, the summary «+ N invitados» under «Registrados»; the door scans a guest like
+  even when the event is full. With guests, the list is two sections in one screen (10.36): «Invitados (N)» on top —
+  few, and what the door looks for first — then «General (M)», each row as before; a released
+  ticket sits in «General» (it is not a guest), a guest who already came in stays in «Invitados»,
+  with no general ticket only «Invitados» shows, and without guests the list is one plain list,
+  as before. A guest's row reads «Invitado» next to its status; the summary says «+ N
+  invitados» under «Registrados»; the door scans a guest like
   anyone else; nobody is mailed; registering can never make a guest (`is_guest` is not mass
   assignable).
 

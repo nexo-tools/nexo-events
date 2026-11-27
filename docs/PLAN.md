@@ -337,5 +337,7 @@ check-in endpoint, what the scanner sends and the Integration API are unchanged.
   back from the list while there is room; the list and the door say «Lugar liberado».
 - [x] 10.35 «Invitado» (AC-PANEL-11): guests take no room of the capacity; and the released-email
   message on registering again (AC-COLLAB-21).
+- [x] 10.36 «Registrados» in two sections when there are guests: «Invitados» on top, «General»
+  below (Alvaro's call, 2026-11-27; AC-PANEL-11).
 
 **Gate 10:** per integration — real cross-tool flow exercised, **standalone mode still green** (self-host story intact), owner sign-off.

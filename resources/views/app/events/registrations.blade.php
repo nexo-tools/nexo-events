@@ -1,12 +1,7 @@
 <x-app-layout :title="__('Registrations').' · '.$event->title">
     @include('app.events._header', ['event' => $event, 'current' => 'registrations'])
 
-    <p class="mb-4 flex flex-wrap gap-x-2 text-sm text-muted" data-registrations-count>
-        <span>{{ trans_choice('app.tickets', $tickets->count()) }}</span>
-        @if ($guests > 0)
-            <span data-guests-count>({{ trans_choice('app.guests', $guests) }})</span>
-        @endif
-    </p>
+    <p class="mb-4 text-sm text-muted" data-registrations-count>{{ trans_choice('app.tickets', $tickets->count()) }}</p>
 
     @if (session('checkin'))
         @include('app._checkin-flash', ['result' => session('checkin')])
@@ -25,79 +20,10 @@
         <p class="nexo-flash nexo-flash--danger mb-4" role="alert">{{ $message }}</p>
     @enderror
 
-    <ul class="space-y-2">
-        @forelse ($tickets as $ticket)
-            <li class="flex items-center justify-between gap-3 rounded-lg border border-line p-3">
-                <div class="min-w-0">
-                    <span class="font-medium">{{ $ticket->attendee_name }}</span>
-                    {{-- Same rule as the phone line below (10.16, 10.22): pieces
-                         that wrap whole with a gap, no printed separator — a long
-                         email used to push "· Valid" alone onto the next line, and
-                         an email wider than the column broke the page width. --}}
-                    <span class="flex flex-wrap gap-x-2 text-xs text-muted" data-ticket-meta>
-                        @if ($showEmails)
-                            <span class="min-w-0 wrap-anywhere" data-ticket-email>{{ $ticket->attendee_email }}</span>
-                        @endif
-                        <span class="whitespace-nowrap" data-ticket-status>{{ $ticket->status->label() }}</span>
-                        @if ($ticket->is_guest && $ticket->status->value !== 'revoked')
-                            <span class="whitespace-nowrap font-medium text-fg" data-ticket-guest>{{ __('Guest') }}</span>
-                        @endif
-                    </span>
-                    {{-- PLAN 10.13: the optional phone sits with the email, so
-                         it rides the same owner-only condition. Collaborators
-                         never get it. 10.16: formatted the way its country
-                         writes it, the number dials and WhatsApp opens the chat. --}}
-                    @if ($showEmails && $ticket->attendee_phone)
-                        {{-- Pieces that wrap whole (never mid-number) and no
-                             separator left dangling at a line end — the
-                             column is narrow next to the door buttons. --}}
-                        @php($phone = \App\Support\AttendeePhone::present($ticket->attendee_phone))
-                        <span class="flex flex-wrap gap-x-2 text-xs text-muted" data-attendee-phone>
-                            <a href="{{ $phone['tel'] }}" class="whitespace-nowrap text-link underline">{{ $phone['display'] }}</a>
-                            @if ($phone['country'])
-                                <span class="whitespace-nowrap">({{ $phone['country'] }})</span>
-                            @endif
-                            @if ($phone['whatsapp'])
-                                <a href="{{ $phone['whatsapp'] }}" target="_blank" rel="noopener noreferrer" class="whitespace-nowrap text-link underline">WhatsApp</a>
-                            @endif
-                        </span>
-                    @endif
-                    {{-- «Invitado» (AC-PANEL-11): takes no room of the capacity; the door scans it like any other. --}}
-                    @if ($ticket->status->value !== 'revoked')
-                        <form method="POST" action="{{ route('tickets.guest', $ticket) }}">@csrf
-                            <input type="hidden" name="guest" value="{{ $ticket->is_guest ? '0' : '1' }}">
-                            <button type="submit" class="inline-flex min-h-11 items-center text-xs font-medium text-link hover:underline" data-guest-toggle>{{ $ticket->is_guest ? __('Remove from guests') : __('Mark as guest') }}</button>
-                        </form>
-                    @endif
-                </div>
-                @if ($ticket->checkin === null && $ticket->status->value === 'valid')
-                    <div class="flex flex-wrap gap-2">
-                        <form method="POST" action="{{ route('tickets.checkin', $ticket) }}">@csrf
-                            <x-button variant="secondary" class="nexo-btn--sm" :block="false">{{ __('Check in') }}</x-button>
-                        </form>
-                        {{-- ADR-011 §6: the reservation that was never paid. --}}
-                        <form method="POST" action="{{ route('tickets.release', $ticket) }}"
-                              data-confirm="{{ __('Release the spot of :name? Their ticket stops working at the door.', ['name' => $ticket->attendee_name]) }}">@csrf
-                            <x-button variant="secondary" class="nexo-btn--sm" :block="false">{{ __('Release spot') }}</x-button>
-                        </form>
-                    </div>
-                @elseif ($ticket->status->value === 'revoked')
-                    {{-- «Devolver el lugar» (AC-COLLAB-19): its status already says «Lugar liberado». --}}
-                    @if (! $eventActive)
-                        {{-- A cancelled event gives nothing back: no reason to print. --}}
-                    @elseif ($ticket->is_guest || $canRestore)
-                        <form method="POST" action="{{ route('tickets.restore', $ticket) }}"
-                              data-confirm="{{ __('Give :name their spot back? Their ticket gets in at the door again.', ['name' => $ticket->attendee_name]) }}">@csrf
-                            <x-button variant="secondary" class="nexo-btn--sm" :block="false">{{ __('Give spot back') }}</x-button>
-                        </form>
-                    @else
-                        <span class="text-xs font-medium text-muted" data-no-room>{{ __('No room to give it back') }}</span>
-                    @endif
-                @else
-                    <span class="text-xs font-medium text-success-subtle-fg">{{ __('Checked in') }}</span>
-                @endif
-            </li>
-        @empty
+    {{-- Two sections in one screen (Alvaro, 2026-11-27; AC-PANEL-11): «Invitados» on top — few, and
+         what the door looks for first — then «General». Without guests the list stays as before. --}}
+    @if ($tickets->isEmpty())
+        <ul class="space-y-2">
             <li class="rounded-lg border border-dashed border-line p-6 text-center">
                 <p class="text-sm font-medium">{{ __('No one has registered yet.') }}</p>
                 <p class="mt-1 text-sm text-muted">{{ __('Share the event\'s public page so people can start registering.') }}</p>
@@ -105,7 +31,32 @@
                     <a href="{{ route('public.event', $event) }}" class="break-all text-link hover:underline">{{ route('public.event', $event) }}</a>
                 </p>
             </li>
-        @endforelse
-    </ul>
+        </ul>
+    @elseif ($guestTickets->isEmpty())
+        <ul class="space-y-2" data-section="general">
+            @foreach ($generalTickets as $ticket)
+                @include('app.events._registration-row')
+            @endforeach
+        </ul>
+    @else
+        <section class="mb-6" aria-labelledby="guests-heading" data-section="guests">
+            <h2 id="guests-heading" class="mb-2 text-base font-semibold">{{ __('Guests') }} <span class="font-normal text-muted">({{ $guestTickets->count() }})</span></h2>
+            <ul class="space-y-2">
+                @foreach ($guestTickets as $ticket)
+                    @include('app.events._registration-row')
+                @endforeach
+            </ul>
+        </section>
+        @if ($generalTickets->isNotEmpty())
+            <section aria-labelledby="general-heading" data-section="general">
+                <h2 id="general-heading" class="mb-2 text-base font-semibold">{{ __('General') }} <span class="font-normal text-muted">({{ $generalTickets->count() }})</span></h2>
+                <ul class="space-y-2">
+                    @foreach ($generalTickets as $ticket)
+                        @include('app.events._registration-row')
+                    @endforeach
+                </ul>
+            </section>
+        @endif
+    @endif
 
 </x-app-layout>

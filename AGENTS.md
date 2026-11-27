@@ -70,8 +70,10 @@ Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./ven
   again needs room under the event-row lock; a released ticket cannot be marked; a released guest comes back
   even when the event is full. **`Event::issuedTicketsCount()` keeps counting guests** (not released): the
   API's `issued_tickets_count`, which La Herrería shows as «anotados» and uses for its cancel text, and the
-  people cancellation and reminder mails reach. The list shows «Invitado» (never on a released row) and «(N
-  invitados)», the summary «+ N invitados»; the door scans a guest like anyone else; nobody is mailed. A
+  people cancellation and reminder mails reach. Since 10.36 the list has two sections when there are guests,
+  «Invitados (N)» on top and «General (M)» below (one row partial, `_registration-row`; a released ticket
+  sits in «General»), and a guest's row reads «Invitado» (never on a released row); the summary says «+ N
+  invitados»; the door scans a guest like anyone else; nobody is mailed. A
   released email that registers again now reads «La persona organizadora liberó el lugar de este email…»
   instead of «ya estás registrado… pide el reenvío» (which sent nothing). Adversarial review (3 lenses,
   each finding verified) before the deploy: kept the API meaning for La Herrería, hid the guest badge on
