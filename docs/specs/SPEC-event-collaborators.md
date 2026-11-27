@@ -96,6 +96,15 @@ inside). The use case is a paid event with capacity where people reserved and di
 The released person gets no email; their ticket page says the spot was released and stops
 showing the QR (task 10.12, SPEC-ticket-info AC-TICKET-8).
 
+**Giving a spot back** (2026-11-27, Alvaro's call): `POST /app/tickets/{ticket}/devolver` undoes
+a release — the ticket goes back to `valid` and the same QR gets in again — only while the event
+has room: the count runs under the same event-row lock as a registration, so a restore and a
+last-spot sign-up cannot both win; a cancelled event gives nothing back; a ticket that was not
+released is left as it is. Nothing is mailed, either way. The list keeps a released ticket with
+its own status, «Lugar liberado», and offers «Devolver el lugar» while there is room («Sin cupo
+para devolverlo» otherwise). At the door a released QR answers «✗ Lugar liberado: ya no sirve
+para entrar» plus the name, instead of a generic «revoked».
+
 ### Who sees what
 
 | Actor | Sees | Never sees |
@@ -115,6 +124,7 @@ showing the QR (task 10.12, SPEC-ticket-info AC-TICKET-8).
 | `POST /app/eventos/{event}/reabrir` | owner + collaborator | only from `closed`; uses the **owner's** verified email |
 | `GET /app/eventos/{event}/registrados` · `/escanear` · `POST /checkin` · `POST /app/tickets/{ticket}/checkin` · `POST /app/eventos/{event}/cerrar` | owner + collaborator | existing, now `managed()` |
 | `POST /app/tickets/{ticket}/liberar` | owner + collaborator | release a spot, `throttle:60,1` |
+| `POST /app/tickets/{ticket}/devolver` | owner + collaborator | give a released spot back while there is room, `throttle:60,1` |
 | `POST /app/eventos/{event}/colaboradores` · `POST …/colaboradores/{collaborator}/revocar` | owner | invite / resend · revoke |
 | `GET /app/invitaciones/{token}` · `POST …/aceptar` | signed in | review and accept, `throttle:30,1` |
 
@@ -174,6 +184,13 @@ landed with 10.9, AC-COLLAB-11..16 with 10.10.
   answers `UNVERIFIED`, and no row and no mail are created.
 - **AC-COLLAB-18** — Releasing a spot sets the ticket to `revoked`, frees capacity,
   refuses a checked-in ticket, and the released QR answers `revoked` at the scanner.
+- **AC-COLLAB-19** — Giving a released spot back (owner or collaborator) sets the ticket to
+  `valid` and its QR gets in again, with no mail; with no room left it is refused and the list
+  says «Sin cupo para devolverlo» instead of offering it; an event without capacity always has
+  room; a cancelled event gives nothing back; a ticket that was not released is left alone.
+- **AC-COLLAB-20** — A released ticket reads «Lugar liberado» in the registrations list, and the
+  door (camera scanner and manual check-in) says «✗ Lugar liberado: ya no sirve para entrar»;
+  the scanner answer keeps the attendee's name.
 
 ## Guardians
 

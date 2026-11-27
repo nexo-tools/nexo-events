@@ -14,7 +14,8 @@ enum TicketStatus: string
         return match ($this) {
             self::Valid => __('Valid'),
             self::CheckedIn => __('Checked in'),
-            self::Revoked => __('Revoked'),
+            // Releasing a spot is the only way to it (ADR-011 §6): the list says so.
+            self::Revoked => __('Spot released'),
         };
     }
 }

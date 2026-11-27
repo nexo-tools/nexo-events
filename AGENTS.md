@@ -53,6 +53,17 @@ Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./ven
 
 ## Accumulated context
 
+- **2026-11-27** — **«Devolver el lugar»** (Alvaro's call; ADR-011 §6 amendment, SPEC-event-collaborators
+  AC-COLLAB-19/20). Owner and collaborators undo a release from the registrations list: `POST
+  /app/tickets/{ticket}/devolver` (`TicketRestoreController`, `throttle:60,1`) sets the ticket back to `valid`
+  — the same QR gets in again — only while there is room, counted under the event-row lock registrations use;
+  a cancelled event gives nothing back; a ticket that was not released is left alone; nothing is mailed
+  (releasing mails nothing either). A released ticket keeps its row with its own status, «Lugar liberado»
+  (`TicketStatus::Revoked` label), and «Devolver el lugar» or «Sin cupo para devolverlo»; the door answers
+  «✗ Lugar liberado: ya no sirve para entrar» plus the name (scanner and manual check-in), instead of
+  «Entrada revocada». pt says «vagas», never «capacidade» (`CapacityWordingTest`). Mutation-checked (8 cases)
+  and verified in WebKit and Chromium at 390 px, light and dark, on the local e2e stack: release → «Lugar
+  liberado» + «Devolver el lugar» (44 px, no overflow) → restore → «Válida».
 - **2026-11-26** — **nexo-sso-client v2.3** (after the F3 deploy; copied whole, byte-identical to the
   template outside the adaptation points). `GET /auth/nexo/enter` answers a guest with a page of this origin that
   jumps to Nexo ID (`resources/views/nexo-sso/handoff.blade.php`: meta refresh + a «Continuar» link that

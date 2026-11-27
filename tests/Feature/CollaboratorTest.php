@@ -345,3 +345,97 @@ it('AC-COLLAB-18: someone already inside cannot be released', function (): void 
 
     expect($issued['ticket']->fresh()->status)->toBe(TicketStatus::CheckedIn);
 });
+
+it('AC-COLLAB-19: giving a released spot back makes the ticket valid again — the same QR gets in, and nothing is mailed', function (): void {
+    $event = Event::factory()->withCapacity(2)->create();
+    $band = collabAccepted($event);
+    $issued = app(EventRegistrar::class)->register($event, 'Ana', 'ana@example.com');
+    $this->actingAs($band)->post(route('tickets.release', $issued['ticket']))->assertRedirect();
+    Mail::fake(); // only what giving it back would send
+
+    $this->actingAs($band)->post(route('tickets.restore', $issued['ticket']))
+        ->assertRedirect()->assertSessionHas('status');
+
+    expect($issued['ticket']->fresh()->status)->toBe(TicketStatus::Valid);
+    $this->actingAs($band)->postJson(route('events.checkin', $event), ['token' => $issued['token']])
+        ->assertOk()->assertJsonPath('result', 'ok');
+    Mail::assertNothingQueued();
+    Mail::assertNothingSent();
+});
+
+it('AC-COLLAB-19: with no room left the spot stays released, and the list says so instead of offering it', function (): void {
+    $event = Event::factory()->withCapacity(1)->create();
+    $ana = app(EventRegistrar::class)->register($event, 'Ana', 'ana@example.com');
+    $this->actingAs($event->organizer)->post(route('tickets.release', $ana['ticket']))->assertRedirect();
+    expect(app(EventRegistrar::class)->register($event->fresh(), 'Beto', 'beto@example.com')['result'])->toBe(EventRegistrar::OK);
+
+    $this->actingAs($event->organizer)->post(route('tickets.restore', $ana['ticket']))
+        ->assertRedirect()->assertSessionHasErrors('restore');
+
+    expect($ana['ticket']->fresh()->status)->toBe(TicketStatus::Revoked);
+    $this->actingAs($event->organizer)->get(route('events.registrations', $event))
+        ->assertOk()
+        ->assertSee('data-no-room', false)
+        ->assertDontSee(route('tickets.restore', $ana['ticket']), false);
+});
+
+it('AC-COLLAB-19: the list offers «Devolver el lugar» for a released ticket while there is room, and an event without capacity always has room', function (?int $capacity): void {
+    $event = $capacity === null ? Event::factory()->create() : Event::factory()->withCapacity($capacity)->create();
+    $issued = app(EventRegistrar::class)->register($event, 'Ana', 'ana@example.com');
+    $this->actingAs($event->organizer)->post(route('tickets.release', $issued['ticket']))->assertRedirect();
+
+    $this->actingAs($event->organizer)->get(route('events.registrations', $event))
+        ->assertOk()
+        ->assertSee(route('tickets.restore', $issued['ticket']), false);
+
+    $this->actingAs($event->organizer)->post(route('tickets.restore', $issued['ticket']))->assertSessionHasNoErrors();
+    expect($issued['ticket']->fresh()->status)->toBe(TicketStatus::Valid);
+})->with(['with room' => [5], 'without capacity' => [null]]);
+
+it('AC-COLLAB-19: only the owner or a collaborator gives a spot back', function (): void {
+    $event = Event::factory()->create();
+    $issued = app(EventRegistrar::class)->register($event, 'Ana', 'ana@example.com');
+    $this->actingAs($event->organizer)->post(route('tickets.release', $issued['ticket']))->assertRedirect();
+
+    $this->actingAs(User::factory()->create())->post(route('tickets.restore', $issued['ticket']))->assertForbidden();
+
+    expect($issued['ticket']->fresh()->status)->toBe(TicketStatus::Revoked);
+});
+
+it('AC-COLLAB-19: a ticket that was not released stays as it is, and a cancelled event gives nothing back', function (): void {
+    $event = Event::factory()->create();
+    $valid = app(EventRegistrar::class)->register($event, 'Ana', 'ana@example.com');
+    $inside = app(EventRegistrar::class)->register($event, 'Beto', 'beto@example.com');
+    app(TicketCheckin::class)->checkInTicket($inside['ticket'], $event->organizer);
+    $released = app(EventRegistrar::class)->register($event, 'Caro', 'caro@example.com');
+    $this->actingAs($event->organizer)->post(route('tickets.release', $released['ticket']))->assertRedirect();
+
+    $this->actingAs($event->organizer)->post(route('tickets.restore', $valid['ticket']))->assertSessionHasNoErrors();
+    $this->actingAs($event->organizer)->post(route('tickets.restore', $inside['ticket']))->assertSessionHasNoErrors();
+    expect($valid['ticket']->fresh()->status)->toBe(TicketStatus::Valid)
+        ->and($inside['ticket']->fresh()->status)->toBe(TicketStatus::CheckedIn);
+
+    $event->forceFill(['status' => EventStatus::Cancelled->value])->save();
+    $this->actingAs($event->organizer)->post(route('tickets.restore', $released['ticket']))
+        ->assertRedirect()->assertSessionHasErrors('restore');
+    expect($released['ticket']->fresh()->status)->toBe(TicketStatus::Revoked);
+});
+
+it('AC-COLLAB-20: a released ticket reads «Lugar liberado» in the list, and the door says so too', function (): void {
+    $event = Event::factory()->create();
+    $issued = app(EventRegistrar::class)->register($event, 'Ana', 'ana@example.com');
+    $this->actingAs($event->organizer)->post(route('tickets.release', $issued['ticket']))->assertRedirect();
+
+    $list = (string) $this->actingAs($event->organizer)->get(route('events.registrations', $event))->assertOk()->getContent();
+    preg_match('/<span class="whitespace-nowrap" data-ticket-status>([^<]*)<\/span>/', $list, $status);
+    expect(trim($status[1] ?? ''))->toBe('Lugar liberado')
+        ->and($list)->not->toContain('Revocada');
+
+    // The camera scanner (its labels come from the controller) and the manual check-in flash.
+    $this->actingAs($event->organizer)->get(route('events.scan', $event))
+        ->assertOk()->assertSee('Lugar liberado: ya no sirve para entrar');
+    $this->actingAs($event->organizer)->postJson(route('events.checkin', $event), ['token' => $issued['token']])
+        ->assertOk()->assertJsonPath('result', 'revoked')->assertJsonPath('name', 'Ana');
+    $this->actingAs($event->organizer)->withSession(['checkin' => 'revoked'])->get(route('events.registrations', $event))
+        ->assertSee('✗ Lugar liberado: ya no sirve para entrar', false);
+});

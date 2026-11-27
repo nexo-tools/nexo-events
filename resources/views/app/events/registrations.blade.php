@@ -13,6 +13,9 @@
     @error('release')
         <p class="nexo-flash nexo-flash--danger mb-4" role="alert">{{ $message }}</p>
     @enderror
+    @error('restore')
+        <p class="nexo-flash nexo-flash--danger mb-4" role="alert">{{ $message }}</p>
+    @enderror
 
     <ul class="space-y-2">
         @forelse ($tickets as $ticket)
@@ -61,7 +64,15 @@
                         </form>
                     </span>
                 @elseif ($ticket->status->value === 'revoked')
-                    <span class="text-xs font-medium text-muted">{{ __('Spot released') }}</span>
+                    {{-- «Devolver el lugar» (AC-COLLAB-19): its status already says «Lugar liberado». --}}
+                    @if ($canRestore)
+                        <form method="POST" action="{{ route('tickets.restore', $ticket) }}"
+                              data-confirm="{{ __('Give :name their spot back? Their ticket gets in at the door again.', ['name' => $ticket->attendee_name]) }}">@csrf
+                            <x-button variant="secondary" class="nexo-btn--sm" :block="false">{{ __('Give spot back') }}</x-button>
+                        </form>
+                    @else
+                        <span class="text-xs font-medium text-muted" data-no-room>{{ __('No room to give it back') }}</span>
+                    @endif
                 @else
                     <span class="text-xs font-medium text-success-subtle-fg">{{ __('Checked in') }}</span>
                 @endif

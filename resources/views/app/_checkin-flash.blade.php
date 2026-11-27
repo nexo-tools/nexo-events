@@ -8,7 +8,7 @@
         @switch($result)
             @case('ok') ✓ {{ __('Valid entry') }} @if(session('ticketName')) — {{ session('ticketName') }} @endif @break
             @case('already') ✗ {{ __('Ticket already used') }} @break
-            @case('revoked') ✗ {{ __('Ticket revoked') }} @break
+            @case('revoked') ✗ {{ __('Spot released: it no longer gets in') }} @break
             @case('event_inactive') ✗ {{ __('Event cancelled') }} @break
             @default ✗ {{ __('Invalid ticket') }}
         @endswitch

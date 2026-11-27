@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\EventStatus;
 use App\Http\Requests\EventRequest;
 use App\Models\Event;
 use App\Services\EventCreator;
@@ -103,6 +104,10 @@ class EventController extends Controller
             // owner, who is the one answerable for them (ADR-011 §2).
             'showEmails' => $event->organizer_id === $request->user()->id,
             'tickets' => $event->tickets()->with('checkin')->latest()->get(),
+            // «Devolver el lugar» is offered only while there is room; the
+            // restore itself counts again under a lock (AC-COLLAB-19).
+            'canRestore' => ! in_array($event->status, [EventStatus::Cancelled, EventStatus::Killed], true)
+                && ($event->capacity === null || $event->issuedTicketsCount() < $event->capacity),
         ]);
     }
 

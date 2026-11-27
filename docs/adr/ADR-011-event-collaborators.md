@@ -57,6 +57,17 @@ band by email from its own panel, and reuse the same band account next time.
    invitation made by a token mails the owner and records the token's name in
    `invited_via` (SPEC-integration-api v1.1).
 
+## Amendment to §6 (2026-11-27): giving a spot back
+
+Owner and collaborators can undo a release: `POST /app/tickets/{ticket}/devolver` sets the
+ticket back to `valid` — the same token, so the QR the person already has gets in again — only
+while the event has room, counted under the event-row lock that registrations use. It is the
+organizer's explicit act, so it does not contradict ADR-008 §4 (a resend never revives a revoked
+ticket; that still holds). Nothing is mailed, as releasing mails nothing. The list shows a
+released ticket as «Lugar liberado» with «Devolver el lugar», and the door names the reason
+(«Lugar liberado: ya no sirve para entrar») instead of a bare «revoked». SPEC-event-collaborators
+AC-COLLAB-19 and AC-COLLAB-20.
+
 ## Amendment to ADR-010 §4
 
 ADR-010 §4 says the blast radius of a leaked token is "the owner's event metadata, never

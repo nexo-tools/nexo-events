@@ -27,7 +27,8 @@ class CheckinController extends Controller
             'scannerLabels' => [
                 'ok' => '✓ '.__('Valid entry'),
                 'already' => '✗ '.__('Ticket already used'),
-                'revoked' => '✗ '.__('Ticket revoked'),
+                // A released spot (ADR-011 §6): the door says so, and the scanner adds the name.
+                'revoked' => '✗ '.__('Spot released: it no longer gets in'),
                 'event_inactive' => '✗ '.__('Event cancelled'),
                 'unknown' => '✗ '.__('Invalid ticket'),
                 'starting' => __('Opening the camera…'),

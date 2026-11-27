@@ -19,6 +19,7 @@ use App\Http\Controllers\PublicEventController;
 use App\Http\Controllers\SeoController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TicketReleaseController;
+use App\Http\Controllers\TicketRestoreController;
 use App\Http\Middleware\EnsureLocalAuth;
 use Illuminate\Support\Facades\Route;
 
@@ -123,6 +124,9 @@ Route::middleware('auth')->group(function () {
         // Owner or collaborator (ADR-011 §6): the reservation nobody paid for.
         Route::post('tickets/{ticket}/liberar', TicketReleaseController::class)
             ->middleware('throttle:60,1')->name('tickets.release');
+        // Its undo, while there is room (AC-COLLAB-19).
+        Route::post('tickets/{ticket}/devolver', TicketRestoreController::class)
+            ->middleware('throttle:60,1')->name('tickets.restore');
 
         // Collaborator invitations (ADR-011). Behind auth on purpose: the
         // signed-out visitor goes to login with this as the intended URL, so the

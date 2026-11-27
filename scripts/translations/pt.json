@@ -225,7 +225,6 @@
     "Ticket already used": "Ingresso já utilizado",
     "Ticket code": "Código do ingresso",
     "Ticket resend": "Reenvio do ingresso",
-    "Ticket revoked": "Ingresso revogado",
     "Title": "Título",
     "To accept the invitation, sign in or create your account with the same email it was sent to.": "Para aceitar o convite, entre ou crie sua conta com o mesmo e-mail para o qual ele foi enviado.",
     "Too many attempts in a row. Wait a few seconds.": "Tentativas demais seguidas. Aguarde alguns segundos.",
@@ -333,5 +332,12 @@
     "This account is already linked to another Nexo ID account. Write to us at :email and we will sort it out.": "Esta conta já está vinculada a outra conta do Nexo ID. Escreva para :email e nós resolvemos.",
     "This account is already linked to another Nexo ID account. Sign in with that Nexo ID account instead.": "Esta conta já está vinculada a outra conta do Nexo ID. Entre com essa conta do Nexo ID.",
     "Signing in with Nexo ID…": "Entrando com o Nexo ID…",
-    "Continue": "Continuar"
+    "Continue": "Continuar",
+    "Spot released: it no longer gets in": "Lugar liberado: não serve mais para entrar",
+    "Give spot back": "Devolver o lugar",
+    "Give :name their spot back? Their ticket gets in at the door again.": "Devolver o lugar para :name? O ingresso volta a valer na porta.",
+    "Spot given back. That ticket gets in again.": "Lugar devolvido. Esse ingresso volta a valer para entrar.",
+    "There is no room left to give this spot back: raise the capacity or release another spot first.": "Não há vagas para devolver este lugar: aumente as vagas ou libere outro lugar antes.",
+    "This event was cancelled: its spots cannot be given back.": "Este evento foi cancelado: os lugares não podem ser devolvidos.",
+    "No room to give it back": "Sem vagas para devolver"
 }
