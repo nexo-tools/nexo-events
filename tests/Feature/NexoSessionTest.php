@@ -244,8 +244,9 @@ it('AC-SESSION-3: the invitation link takes a signed-out band through Nexo ID â€
     $band = ['sub' => 'nexo-sub-band', 'email' => 'banda@example.com', 'email_verified' => true, 'name' => 'La Banda'];
     nexoSsoFakeProvider(['access_token' => 'fake', 'token_type' => 'Bearer', 'id_token' => nexoSsoIdToken($band)]);
 
-    $toNexoId = $this->get(route('nexo-sso.enter', ['to' => $invitation]));
-    expect((string) $toNexoId->headers->get('Location'))->toStartWith('https://nexoid.test/oauth/authorize?')
+    // Since nexo-sso-client v2.3 through the page that jumps there (AC-ENTER-7).
+    $toNexoId = $this->get(route('nexo-sso.enter', ['to' => $invitation]))->assertOk();
+    expect(nexoSsoAuthorizeUrl($toNexoId))->toStartWith('https://nexoid.test/oauth/authorize?')
         ->and(nexoSsoStoredFlow(nexoSsoAuthorizeQuery($toNexoId)['state'])['return'])->toBe($invitation);
 
     // 2. Back from Nexo ID with a new account.

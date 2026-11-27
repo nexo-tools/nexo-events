@@ -75,7 +75,8 @@ test('AC-SIGNUP-1: a visitor goes to authorize with prompt=create, and the flow 
 
     $response = $this->get(route('nexo-sso.enter', ['to' => '/some/page?tab=2', 'signup' => '1']));
 
-    expect((string) $response->headers->get('Location'))->toStartWith('https://nexoid.test/oauth/authorize?');
+    $response->assertOk();
+    expect(nexoSsoAuthorizeUrl($response))->toStartWith('https://nexoid.test/oauth/authorize?');
     $query = nexoSsoAuthorizeQuery($response);
     expect($query['prompt'] ?? null)->toBe('create')
         ->and($query['client_id'])->toBe('11111111-2222-3333-4444-555555555555')

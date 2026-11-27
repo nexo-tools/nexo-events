@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\Auth;
 use Throwable;
 
 /**
- * The Nexo ID client endpoints (nexo-sso-client v2.2). Identical in every tool:
+ * The Nexo ID client endpoints (nexo-sso-client v2.3). Identical in every tool:
  * what differs per tool lives in config('nexo-sso.home') and the silent
  * exclusions (adaptation points), in NexoSsoUserResolver::newUser()/linked(),
  * and in the layout of the signed-out and new-account views.
@@ -100,8 +100,12 @@ class NexoSsoController extends Controller
      * joining an account to Nexo ID is only ever explicit, through
      * nexo-sso.link. In sso mode such a session has no place (the guard closes
      * it), so it goes through Nexo ID like a guest. (AC-ENTER)
+     *
+     * The guest's way to Nexo ID is a page of this origin, not a redirect
+     * (v2.3, handoff()): this is where `auth` sends a guest deep link, so it is
+     * also where «atrás» after «Cerrar sesión» lands. (AC-ENTER-7)
      */
-    public function enter(Request $request, NexoSsoService $sso, NexoSsoFlows $flows): RedirectResponse
+    public function enter(Request $request, NexoSsoService $sso, NexoSsoFlows $flows): Response|RedirectResponse
     {
         abort_unless(config('nexo-sso.enabled'), 404);
 
@@ -120,7 +124,28 @@ class NexoSsoController extends Controller
             return $this->failed(__('Sign-in with Nexo ID is temporarily unavailable. Please try again later.'));
         }
 
-        return redirect()->away($url);
+        // Only an absolute http(s) URL goes into the page: a meta refresh and a
+        // link have none of the limits a Location had (an empty endpoint would
+        // reload this page forever; a redirect loop stops after ~20 hops). A
+        // discovery that gives anything else is a provider failure. (AC-ENTER-7)
+        if (preg_match('#^https?://[^/?\#]#i', $url) !== 1) {
+            return $this->failed(__('Sign-in with Nexo ID is temporarily unavailable. Please try again later.'));
+        }
+
+        // The page's «Continue» comes back here with direct=1 (exactly that
+        // value): a click is a new navigation, never a history traversal, so the
+        // plain redirect is safe, and it carries a state of its own — a tap
+        // while the page's refresh is still on its way never replays one; once
+        // the session is open it goes straight to `to` (above). (AC-ENTER-7)
+        if ($request->query('direct') === '1') {
+            return redirect()->away($url);
+        }
+
+        return $this->handoff($url, route('nexo-sso.enter', array_filter([
+            'to' => $to,
+            'signup' => $signup ? '1' : null,
+            'direct' => '1',
+        ])));
     }
 
     /**
@@ -639,6 +664,30 @@ class NexoSsoController extends Controller
         NexoSsoSession::renew($request, $claims, $idToken);
 
         return redirect()->to($return);
+    }
+
+    /**
+     * The jump to Nexo ID as a page of this origin (v2.3). WebKit (Safari, and
+     * every browser on iOS) mishandles a cross-origin redirect inside a history
+     * traversal: «atrás» after «Cerrar sesión» lands on a panel that now goes
+     * through `enter`, and the 302 to Nexo ID either stalls the traversal
+     * between different sites (the person stays on «Cerraste sesión») or,
+     * within one site and with COOP, shows Nexo ID's login under this tool's
+     * address and CSP — unstyled, its form dead (production). Answering with a
+     * document of this origin ends the traversal here;
+     * its meta refresh starts a new navigation, which WebKit handles like any
+     * other, and replaces this entry, so «atrás» from Nexo ID doesn't come
+     * back to it. A refresh and not a script: nothing for the CSP to allow (no
+     * nonce, no hash). No stylesheet either, since the refresh waits for the
+     * page to load. no-store: the URL carries a single-use state. `$continue`
+     * is the page's «Continue» link: `enter` again with direct=1. (AC-ENTER-7)
+     */
+    private function handoff(string $url, string $continue): Response
+    {
+        return response()
+            ->view('nexo-sso.handoff', ['url' => $url, 'continue' => $continue])
+            ->header('Cache-Control', 'no-store, private')
+            ->header('X-Robots-Tag', 'noindex, nofollow');
     }
 
     /** Starts a flow (state + PKCE + nonce + mode) and returns the provider URL. (AC-FLOW-1) */

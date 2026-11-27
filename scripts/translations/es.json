@@ -331,5 +331,7 @@
     "If you did not do this, change your password and write to us: Nexo ID confirmed that this email address is yours, so someone with access to it linked the account.": "Si no fuiste tú, cambia tu contraseña y escríbenos: Nexo ID confirmó que ese correo es tuyo, así que alguien con acceso a él unió la cuenta.",
     "If you did not do this, write to us: Nexo ID confirmed that this email address is yours, so someone with access to it linked the account.": "Si no fuiste tú, escríbenos: Nexo ID confirmó que ese correo es tuyo, así que alguien con acceso a él unió la cuenta.",
     "This account is already linked to another Nexo ID account. Write to us at :email and we will sort it out.": "Esta cuenta ya está unida a otra cuenta de Nexo ID. Escríbenos a :email y lo resolvemos.",
-    "This account is already linked to another Nexo ID account. Sign in with that Nexo ID account instead.": "Esta cuenta ya está unida a otra cuenta de Nexo ID. Inicia sesión con esa cuenta de Nexo ID."
+    "This account is already linked to another Nexo ID account. Sign in with that Nexo ID account instead.": "Esta cuenta ya está unida a otra cuenta de Nexo ID. Inicia sesión con esa cuenta de Nexo ID.",
+    "Signing in with Nexo ID…": "Iniciando sesión con Nexo ID…",
+    "Continue": "Continuar"
 }

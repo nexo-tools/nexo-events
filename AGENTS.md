@@ -53,6 +53,19 @@ Quality gate (all must pass before a commit): `./vendor/bin/pint --test`, `./ven
 
 ## Accumulated context
 
+- **2026-11-26** — **nexo-sso-client v2.3** (after the F3 deploy; copied whole, byte-identical to the
+  template outside the adaptation points). `GET /auth/nexo/enter` answers a guest with a page of this origin that
+  jumps to Nexo ID (`resources/views/nexo-sso/handoff.blade.php`: meta refresh + a «Continuar» link that
+  shows after 3 s and goes back through `enter` with `direct=1`, a plain 302 with a state of its own; no
+  script, no stylesheet; `no-store`) instead of a 302. WebKit mishandled that
+  cross-origin redirect inside «atrás» after «Cerrar sesión»: between different sites it stalled; within
+  one site and with COOP it showed Nexo ID's login under this address and CSP, unstyled — the only red
+  of the F3 production e2e. Only an absolute http(s) authorize URL goes into the page (else the friendly
+  «temporarily unavailable»). New strings «Iniciando sesión con Nexo ID…» and «Continuar» (es, pt).
+  AC-ENTER-7 in the template suite; the template README («v2.3») has the why and
+  `alvaro/inbox/experiencia-unificada/f3/safari-atras/` the reproduction and the verification.
+  Here too: `NexoSessionTest` AC-SESSION-3 reads the authorize URL with `nexoSsoAuthorizeUrl()` (it
+  read the `Location`). Deploy it outside the door window (28-nov 19:00 → 29-nov 03:00).
 - **2026-11-26** — **Nexo ID controls the session; shared chrome v2.1; the public event page
   without the tool chrome (PLAN 10.25–10.27, [SPEC-nexo-session](docs/specs/SPEC-nexo-session.md)).**
   Production is meant to run `NEXO_AUTH_MODE=sso` (owner decision D2: 133 local accounts, 1

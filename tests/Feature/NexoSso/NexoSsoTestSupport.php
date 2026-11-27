@@ -308,15 +308,34 @@ if (! function_exists('nexoSsoStoredFlow')) {
     }
 }
 
+if (! function_exists('nexoSsoAuthorizeUrl')) {
+    /**
+     * Where a response sends the browser on to Nexo ID: a redirect's Location,
+     * or the meta refresh of the page `enter` answers a guest with (v2.3,
+     * AC-ENTER-7) — '' when it does neither.
+     */
+    function nexoSsoAuthorizeUrl(TestResponse $response): string
+    {
+        $location = $response->headers->get('Location');
+        if ($location !== null) {
+            return (string) $location;
+        }
+
+        preg_match('/<meta http-equiv="refresh" content="0;url=([^"]*)">/', (string) $response->getContent(), $m);
+
+        return html_entity_decode($m[1] ?? '', ENT_QUOTES | ENT_HTML5);
+    }
+}
+
 if (! function_exists('nexoSsoAuthorizeQuery')) {
     /**
-     * The query of an authorize redirect.
+     * The query of the authorize request a response starts (nexoSsoAuthorizeUrl).
      *
      * @return array<string, string>
      */
     function nexoSsoAuthorizeQuery(TestResponse $response): array
     {
-        parse_str((string) parse_url((string) $response->headers->get('Location'), PHP_URL_QUERY), $query);
+        parse_str((string) parse_url(nexoSsoAuthorizeUrl($response), PHP_URL_QUERY), $query);
 
         return $query;
     }
